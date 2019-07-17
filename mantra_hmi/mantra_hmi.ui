@@ -603,7 +603,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Speed Zoom 50%</string>
+    <string>Speed Zoom 20%</string>
    </property>
   </widget>
  </widget>

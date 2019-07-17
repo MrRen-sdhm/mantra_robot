@@ -155,8 +155,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-1.9"
+      upper="1.9"
       effort="100"
       velocity="1" />
   </joint>
@@ -219,7 +219,7 @@
       velocity="1" />
   </joint>
   <link
-    name="joint4">
+    name="link4">
     <inertial>
       <origin
         xyz="9.50435857535385E-07 0.0539665921441028 0.0317108566437211"
@@ -267,12 +267,12 @@
     <parent
       link="link3" />
     <child
-      link="joint4" />
+      link="link4" />
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-1.9"
+      upper="1.9"
       effort="100"
       velocity="1" />
   </joint>
@@ -323,7 +323,7 @@
       xyz="0 0.16 0"
       rpy="-1.5708 0 0" />
     <parent
-      link="joint4" />
+      link="link4" />
     <child
       link="link5" />
     <axis
@@ -387,8 +387,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-1.9"
+      upper="1.9"
       effort="100"
       velocity="1" />
   </joint>
@@ -503,8 +503,8 @@
     <axis
       xyz="0 0 0" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-1.9"
+      upper="1.9"
       effort="100"
       velocity="1" />
   </joint>

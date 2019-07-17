@@ -313,5 +313,5 @@ class Ui_Form(object):
         self.resetButton.setText(_translate("Form", "Save states", None))
         self.finetuneButton.setText(_translate("Form", "Fine tuning", None))
         self.resetButton_2.setText(_translate("Form", "Reset robot", None))
-        self.label_8.setText(_translate("Form", "Speed Zoom 50%", None))
+        self.label_8.setText(_translate("Form", "Speed Zoom 20%", None))
 

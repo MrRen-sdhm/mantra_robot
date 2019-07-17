@@ -6,8 +6,6 @@
 # Date       : 20/05/2019 2:45 PM
 # File Name  : mantra_gui.py
 
-from __future__ import division
-
 import sys
 import rospy
 from std_msgs.msg import String, Int32MultiArray, Float32MultiArray
