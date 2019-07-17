@@ -1,0 +1,52 @@
+<launch>
+    <arg name="command_args" value="-d $(find mantra_application)/launch/calibration.rviz" />
+    <arg name="marker_size" doc="Size of the ArUco marker used, in meters" default="0.1" />
+    <arg name="marker_id" doc="The ID of the ArUco marker used" default="100" />
+
+    <!-- start the Realsense -->
+    <group ns="camera">
+        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
+            <arg name="color_width"       value="640" />
+            <arg name="color_height"      value="480" />
+            <arg name="color_fps"         value="30" />
+
+            <arg name="enable_depth"      value="false"/>
+            <arg name="enable_color"      value="true"/>
+            <arg name="enable_infra1"     value="false"/>
+            <arg name="enable_infra2"     value="false"/>
+            <arg name="enable_fisheye"    value="false"/>
+            <arg name="enable_gyro"       value="false"/>
+            <arg name="enable_accel"      value="false"/>
+            <arg name="enable_pointcloud" value="false"/>
+            <arg name="enable_sync"       value="false" />
+            <arg name="tf_prefix"         value="camera" />
+        </include>
+    </group>
+
+    <!-- start ArUco -->
+    <node name="aruco_tracker" pkg="aruco_ros" type="single">
+        <remap from="/camera_info" to="/camera/color/camera_info" />
+        <remap from="/image" to="/camera/color/image_raw" />
+        <param name="image_is_rectified" value="true" />
+        <param name="marker_size"        value="$(arg marker_size)" />
+        <param name="marker_id"          value="$(arg marker_id)" />
+        <param name="reference_frame"    value="camera_color_optical_frame" />
+        <param name="camera_frame"       value="camera_color_optical_frame" />
+        <param name="marker_frame"       value="camera_marker" />
+    </node>
+
+    <!-- start the robot -->
+    <include file="$(find mantra_moveit_config)/launch/fake.launch">
+        <arg name="use_rviz" value="true" />
+    </include>
+
+    <!-- start the rviz -->
+    <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="$(arg command_args)" output="screen" />
+
+    <!-- start easy_handeye -->
+
+    <include file="$(find easy_handeye)/launch/publish_tf.launch">
+        <arg name="namespace_prefix" value="handeyecalibration"/>
+    </include>
+
+</launch>

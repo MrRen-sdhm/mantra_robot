@@ -17,6 +17,7 @@
   This corresponds to moving around the real robot without the use of MoveIt.
   -->
   <arg name="use_gui" default="false" />
+  <arg name="use_rviz" default="true"/>
 
   <!-- Load the URDF, SRDF and other .yaml configuration files on the param server -->
   <include file="$(find mantra_moveit_config)/launch/planning_context.launch">
@@ -44,7 +45,7 @@
   </include>
 
   <!-- Run Rviz and load the default config to see the state of the move_group node -->
-  <include file="$(find mantra_moveit_config)/launch/moveit_rviz.launch">
+  <include if="$(arg use_rviz)" file="$(find mantra_moveit_config)/launch/moveit_rviz.launch">
     <arg name="config" value="true"/>
     <arg name="debug" value="$(arg debug)"/>
   </include>
