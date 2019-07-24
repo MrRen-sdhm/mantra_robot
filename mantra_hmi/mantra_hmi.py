@@ -31,7 +31,7 @@ class Thread(QtCore.QThread):
         r = rospy.Rate(50)  # 50hz
         while not rospy.is_shutdown():
             pub.publish(array)
-            print(array.data)
+            # print(array.data)
 
             # 复位消息已发送, 置位
             if array.data[7] is 1:
@@ -54,6 +54,8 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
         self.time_out_cnt = 1
         # 微调启用标志位
         self.fine_tuning_flag = False
+        self.max_step = 5
+        self.min_step = 1
         # 状态保存相关参数
         self.fp = open('joint_states' + '.xml', 'a')
         self.fp.write('\n<new joint_states/>\n')
@@ -77,14 +79,14 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
                 if joint_ctl_arr[i] != 0:
                     if joint_ctl_arr[i] == -1:
                         if self.fine_tuning_flag:
-                            array.data[i] -= 1
+                            array.data[i] -= self.min_step
                         else:
-                            array.data[i] -= 10
+                            array.data[i] -= self.max_step
                     elif joint_ctl_arr[i] == 1:
                         if self.fine_tuning_flag:
-                            array.data[i] += 1
+                            array.data[i] += self.min_step
                         else:
-                            array.data[i] += 10
+                            array.data[i] += self.max_step
                     # 限幅
                     if array.data[i] < -314:
                         array.data[i] = -314
@@ -173,9 +175,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint1_minus(self):
         joint_ctl_arr[0] = -1
         if self.fine_tuning_flag:
-            array.data[0] -= 1
+            array.data[0] -= self.min_step
         else:
-            array.data[0] -= 10
+            array.data[0] -= self.max_step
 
         if array.data[0] < -314:
             array.data[0] = -314
@@ -192,9 +194,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint1_plus(self):
         joint_ctl_arr[0] = 1
         if self.fine_tuning_flag:
-            array.data[0] += 1
+            array.data[0] += self.min_step
         else:
-            array.data[0] += 10
+            array.data[0] += self.max_step
 
         if array.data[0] > 314:
             array.data[0] = 314
@@ -211,9 +213,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint2_minus(self):
         joint_ctl_arr[1] = -1
         if self.fine_tuning_flag:
-            array.data[1] -= 1
+            array.data[1] -= self.min_step
         else:
-            array.data[1] -= 10
+            array.data[1] -= self.max_step
 
         if array.data[1] < -314:
             array.data[1] = -314
@@ -230,9 +232,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint2_plus(self):
         joint_ctl_arr[1] = 1
         if self.fine_tuning_flag:
-            array.data[1] += 1
+            array.data[1] += self.min_step
         else:
-            array.data[1] += 10
+            array.data[1] += self.max_step
 
         if array.data[1] > 314:
             array.data[1] = 314
@@ -249,9 +251,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint3_minus(self):
         joint_ctl_arr[2] = -1
         if self.fine_tuning_flag:
-            array.data[2] -= 1
+            array.data[2] -= self.min_step
         else:
-            array.data[2] -= 10
+            array.data[2] -= self.max_step
 
         if array.data[2] < -314:
             array.data[2] = -314
@@ -268,9 +270,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint3_plus(self):
         joint_ctl_arr[2] = 1
         if self.fine_tuning_flag:
-            array.data[2] += 1
+            array.data[2] += self.min_step
         else:
-            array.data[2] += 10
+            array.data[2] += self.max_step
 
         if array.data[2] > 314:
             array.data[2] = 314
@@ -287,9 +289,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint4_minus(self):
         joint_ctl_arr[3] = -1
         if self.fine_tuning_flag:
-            array.data[3] -= 1
+            array.data[3] -= self.min_step
         else:
-            array.data[3] -= 10
+            array.data[3] -= self.max_step
 
         if array.data[3] < -314:
             array.data[3] = -314
@@ -306,9 +308,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint4_plus(self):
         joint_ctl_arr[3] = 1
         if self.fine_tuning_flag:
-            array.data[3] += 1
+            array.data[3] += self.min_step
         else:
-            array.data[3] += 10
+            array.data[3] += self.max_step
 
         if array.data[3] > 314:
             array.data[3] = 314
@@ -325,9 +327,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint5_minus(self):
         joint_ctl_arr[4] = -1
         if self.fine_tuning_flag:
-            array.data[4] -= 1
+            array.data[4] -= self.min_step
         else:
-            array.data[4] -= 10
+            array.data[4] -= self.max_step
 
         if array.data[4] < -314:
             array.data[4] = -314
@@ -344,9 +346,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint5_plus(self):
         joint_ctl_arr[4] = 1
         if self.fine_tuning_flag:
-            array.data[4] += 1
+            array.data[4] += self.min_step
         else:
-            array.data[4] += 10
+            array.data[4] += self.max_step
 
         if array.data[4] > 314:
             array.data[4] = 314
@@ -363,9 +365,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint6_minus(self):
         joint_ctl_arr[5] = -1
         if self.fine_tuning_flag:
-            array.data[5] -= 1
+            array.data[5] -= self.min_step
         else:
-            array.data[5] -= 10
+            array.data[5] -= self.max_step
 
         if array.data[5] < -314:
             array.data[5] = -314
@@ -382,9 +384,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint6_plus(self):
         joint_ctl_arr[5] = 1
         if self.fine_tuning_flag:
-            array.data[5] += 1
+            array.data[5] += self.min_step
         else:
-            array.data[5] += 10
+            array.data[5] += self.max_step
 
         if array.data[5] > 314:
             array.data[5] = 314
@@ -401,9 +403,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint7_minus(self):
         joint_ctl_arr[6] = -1
         if self.fine_tuning_flag:
-            array.data[6] -= 1
+            array.data[6] -= self.min_step
         else:
-            array.data[6] -= 10
+            array.data[6] -= self.max_step
 
         if array.data[6] < -314:
             array.data[6] = -314
@@ -420,9 +422,9 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
     def joint7_plus(self):
         joint_ctl_arr[6] = 1
         if self.fine_tuning_flag:
-            array.data[6] += 1
+            array.data[6] += self.min_step
         else:
-            array.data[6] += 10
+            array.data[6] += self.max_step
 
         if array.data[6] > 314:
             array.data[6] = 314
