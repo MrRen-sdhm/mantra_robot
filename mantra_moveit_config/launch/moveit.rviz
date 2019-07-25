@@ -249,7 +249,7 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
-      Velocity_Scaling_Factor: 0.1
+      Velocity_Scaling_Factor: 0.25
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -266,7 +266,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.704257011413574
+      Distance: 3.0287678241729736
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -281,10 +281,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8047970533370972
+      Pitch: 0.84979647397995
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 3.4962656497955322
+      Yaw: 2.7862350940704346
     Saved: ~
 Window Geometry:
   Displays:

@@ -6,24 +6,18 @@
 # Date       : 20/05/2019 2:45 PM
 # File Name  : mantra_gui.py
 
-import sys
-
-## ROS相关
-import rospy
+# ROS相关
 from std_msgs.msg import String, Int32MultiArray, Float32MultiArray
 from sensor_msgs.msg import JointState
 
-## Moveit相关
+# Moveit相关
 from move_group import *
 
 from ui_mantra_hmi import *
 from save_states import create_group_state
 
-## QT相关
-from PyQt4.QtGui import QPalette
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QApplication, QWidget, QDesktopWidget
-from PyQt4.QtCore import QTimer
+# QT相关
+from PyQt4.QtGui import QDesktopWidget
 
 # 变量定义
 command_arr = Int32MultiArray()
@@ -143,10 +137,6 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
         self.center()  # 窗口居中
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)  # 窗口置顶
         self.setupUi(self)
-        self.timer = QTimer(self)
-        QtCore.QTimer.connect(self.timer, QtCore.SIGNAL("timeout()"), self.timeout)
-        self.timer.start(200)  # 0.2s 0.1rad->36/(2*3.14)度=5.73度 5.73/0.2=28.66度每秒=0.5rad每秒
-        self.time_out_cnt = 1
         # 运动规划
         self.move_group = move_group_
         self.go_to_busy = False
@@ -170,14 +160,6 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
         # self.move((screen.width() - size.width()) / 2,
         #           (screen.height() - size.height()) / 2)
         self.move((screen.width() - size.width()), (screen.height() - size.height()) / 2)
-
-    # 定时器中断
-    def timeout(self):
-        if self.time_out_cnt >= 100 / self.horizontalSlider.value():
-            self.time_out_cnt = 1
-            # 调整角度
-
-        self.time_out_cnt += 1
 
     # 使能按钮
     def power(self):
@@ -214,8 +196,10 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
     @staticmethod
     def set_home():
+        global goal_positions
         print("[INFO] Arm set home.")
         command_arr.data[2] = 1  # 置零指令位置一
+        goal_positions = [0.000000] * 7  # 目标位置置零
 
     # 状态保存按钮
     def save_state(self):
@@ -293,7 +277,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
         joint_ctl_arr[1] = 0
 
     def joint3_minus(self):
-        index = 4
+        index = 2
         global running
         if not running:
             running = True
