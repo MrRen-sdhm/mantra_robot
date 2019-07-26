@@ -523,7 +523,8 @@
    </property>
    <property name="font">
     <font>
-     <pointsize>14</pointsize>
+     <family>Ubuntu Mono</family>
+     <pointsize>16</pointsize>
      <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
@@ -667,6 +668,36 @@
    <item>
     <property name="text">
      <string>0.01 rad</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>60.0 deg</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>30.0 deg</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>10.0 deg</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>5.00 deg</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>1.00 deg</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>0.50 deg</string>
     </property>
    </item>
   </widget>

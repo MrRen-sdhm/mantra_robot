@@ -44,7 +44,7 @@
     </node>
 
     <!-- start the robot -->
-    <include file="$(find mantra_moveit_config)/launch/fake.launch">
+    <include file="$(find mantra_moveit_config)/launch/demo.launch">
         <arg name="use_rviz" value="true" />
     </include>
 

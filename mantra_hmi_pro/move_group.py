@@ -105,7 +105,6 @@ class MoveGroup(object):
         return False
 
     def go_to_joint_state(self, goal_positions):
-        print (goal_positions)
         group = self.group
         ret = False
 
