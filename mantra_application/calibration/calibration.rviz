@@ -109,7 +109,7 @@ Visualization Manager:
       Transport Hint: raw
       Unreliable: false
       Value: false
-    - Acceleration_Scaling_Factor: 1
+    - Acceleration_Scaling_Factor: 0.5
       Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
@@ -281,7 +281,7 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
-      Velocity_Scaling_Factor: 1
+      Velocity_Scaling_Factor: 0.5
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -325,7 +325,7 @@ Visualization Manager:
       Pitch: 0.5647974014282227
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.9821622371673584
+      Yaw: 4.3221659660339355
     Saved: ~
 Window Geometry:
   Displays:

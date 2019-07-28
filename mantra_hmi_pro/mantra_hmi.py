@@ -222,6 +222,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
     # 状态保存按钮
     def save_state(self):
+        global curr_positions
         self.save_cnt += 1
         create_group_state(self.group_state_prefix + str(self.save_cnt), self.group, curr_positions, self.fp)
         print("[INFO] joint states have been saved to joint_states.xml")

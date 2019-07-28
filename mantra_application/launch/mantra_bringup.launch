@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<launch>  
+    <!-- robot_ip: IP-address of the robot's socket-messaging server -->
+    <!-- <arg name="robot_ip" doc="IP of the controller" /> -->
+
+    <!-- robot driver -->
+    <node name="mantra_driver" pkg="mantra_driver" type="main" output="screen">
+    </node>
+
+    <!-- robot model -->
+    <include file="$(find mantra_moveit_config)/launch/demo.launch">
+      <arg name="use_rviz" value="true" />
+    </include>
+
+
+</launch>

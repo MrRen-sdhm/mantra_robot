@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>266</width>
+    <height>142</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>500</width>
+    <height>500</height>
+   </size>
+  </property>
+  <property name="cursor">
+   <cursorShape>ArrowCursor</cursorShape>
+  </property>
+  <property name="windowTitle">
+   <string>Mantra HMI</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <widget class="QPushButton" name="powerButton">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>6</y>
+     <width>132</width>
+     <height>132</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>30</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>200</width>
+     <height>200</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <family>Ubuntu Mono</family>
+     <pointsize>16</pointsize>
+     <weight>50</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
+   <property name="text">
+    <string>Power OFF</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="resetButton">
+   <property name="geometry">
+    <rect>
+     <x>4</x>
+     <y>6</y>
+     <width>120</width>
+     <height>64</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>96</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>120</width>
+     <height>120</height>
+    </size>
+   </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
+   <property name="text">
+    <string>Reset Arm</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="setHomeButton">
+   <property name="geometry">
+    <rect>
+     <x>4</x>
+     <y>74</y>
+     <width>120</width>
+     <height>64</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>96</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>120</width>
+     <height>120</height>
+    </size>
+   </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
+   <property name="text">
+    <string>Set Home</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>powerButton</sender>
+   <signal>pressed()</signal>
+   <receiver>Form</receiver>
+   <slot>power()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>303</x>
+     <y>335</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>222</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>resetButton</sender>
+   <signal>pressed()</signal>
+   <receiver>Form</receiver>
+   <slot>reset_arm()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>162</x>
+     <y>327</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>342</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>setHomeButton</sender>
+   <signal>pressed()</signal>
+   <receiver>Form</receiver>
+   <slot>set_home()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>156</x>
+     <y>376</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>joint1_minus()</slot>
+  <slot>joint1_plus()</slot>
+  <slot>joint2_minus()</slot>
+  <slot>joint2_plus()</slot>
+  <slot>joint3_minus()</slot>
+  <slot>joint3_plus()</slot>
+  <slot>joint4_minus()</slot>
+  <slot>joint4_plus()</slot>
+  <slot>joint5_minus()</slot>
+  <slot>joint5_plus()</slot>
+  <slot>joint6_minus()</slot>
+  <slot>joint6_plus()</slot>
+  <slot>joint7_minus()</slot>
+  <slot>joint7_plus()</slot>
+  <slot>save_state()</slot>
+  <slot>joint1_minus_done()</slot>
+  <slot>joint2_minus_done()</slot>
+  <slot>joint3_minus_done()</slot>
+  <slot>joint4_minus_done()</slot>
+  <slot>joint5_minus_done()</slot>
+  <slot>joint6_minus_done()</slot>
+  <slot>joint7_minus_done()</slot>
+  <slot>joint1_plus_done()</slot>
+  <slot>joint2_plus_done()</slot>
+  <slot>joint3_plus_done()</slot>
+  <slot>joint4_plus_done()</slot>
+  <slot>joint5_plus_done()</slot>
+  <slot>joint6_plus_done()</slot>
+  <slot>joint7_plus_done()</slot>
+  <slot>slide_moved()</slot>
+  <slot>selectionchange()</slot>
+  <slot>power()</slot>
+  <slot>set_home()</slot>
+  <slot>back_home()</slot>
+  <slot>reset_arm()</slot>
+ </slots>
+</ui>

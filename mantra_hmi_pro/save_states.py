@@ -46,11 +46,11 @@ def create_group_state(group_state, group, joint_states, fp):
     for i in range(7):
         node_joint = Element('joint')
         node_joint.set('name', 'joint' + str(i+1))
-        node_joint.set('value', '%.2f' % float(joint_states[i]/100.0))
+        node_joint.set('value', '%.3f' % float(joint_states[i]))
 
         node_root.append(node_joint)
 
-    print etree.tostring(node_root, pretty_print=True)
+    print(etree.tostring(node_root, pretty_print=True))
 
     tree = etree.ElementTree(node_root)
     tree.write(fp, pretty_print=True, xml_declaration=False, encoding='utf-8')

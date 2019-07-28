@@ -2,8 +2,23 @@
 
 <!-- static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
 <launch>
-    <node pkg="tf" type="static_transform_publisher" name="camera2effector_broadcaster" 
-          args="0.2 0.0 0.0 0.0 0.0 0.0 1.0 gripper camera_color_optical_frame 100" /> 
+    <node pkg="tf" type="static_transform_publisher" name="effector2camera_broadcaster" 
+          args="0.06738735758570064 0.10296693051666847 0.03701829145313676 -0.00036975006947008443 -0.012123861830067783 0.9983419456124443 0.05626930681971186 gripper camera_color_optical_frame 100" /> 
     <node pkg="tf" type="static_transform_publisher" name="camera_color_optical2camera_link_broadcaster" 
           args="0.015 0.0 0.01 0.50 -0.501 0.499 0.501 camera_color_optical_frame camera_link 100" />
 </launch>
+
+<!-- args="0.0351178991086 0.0959630630166 0.0744596246251 0.00202513005408 -0.00922970103159 0.999955141476 0.000653071980103 gripper camera_color_optical_frame 100" />  -->
+
+<!-- translation:
+  x: 0.0351178991086
+  y: 0.0959630630166
+  z: 0.0744596246251
+rotation:
+  x: 0.00202513005408
+  y: -0.00922970103159
+  z: 0.999955141476
+  w: 0.000653071980103 -->
+
+  <!-- transformation: {qw: 0.05626930681971186, qx: -0.00036975006947008443, qy: -0.012123861830067783,
+  qz: 0.9983419456124443, x: 0.06738735758570064, y: 0.10296693051666847, z: 0.03701829145313676} -->
