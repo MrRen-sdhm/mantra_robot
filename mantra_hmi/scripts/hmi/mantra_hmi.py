@@ -8,7 +8,7 @@
 
 from __future__ import print_function
 # ROS相关
-from std_msgs.msg import String, Int32MultiArray, Float32MultiArray
+from std_msgs.msg import String, Int32MultiArray, Float32MultiArray, Bool
 from sensor_msgs.msg import JointState
 
 # Moveit相关
@@ -20,10 +20,23 @@ from save_states import create_group_state
 # QT相关
 from PyQt4.QtGui import QDesktopWidget
 
-# 变量定义
+# 发送给Mantra_driver的控制指令
 command_arr = Int32MultiArray()
 command_cnt = 3
 command_arr.data = [0]*command_cnt  # 0:使能 1:复位 2:置零
+
+# 发送给Moveit移动节点的控制指令
+move_command_arr = Int32MultiArray()
+move_command_cnt = 3
+move_command_arr.data = [0]*move_command_cnt  # 0:移动 1:回零 2:调速
+
+# 发布给Moveit移动节点的目标位置及速度列表
+goal_pose_vel = Float32MultiArray()
+goal_pose_vel.data = [0]*8  # 0-6为目标位置, 7为目标速度
+
+# Moveit移动节点发布的执行状态
+move_group_state = False
+
 joint_ctl_arr = [0]*7
 
 vel_scaling = 0.0  # 速度调整比例
@@ -39,7 +52,7 @@ change_vel = False  # 调整速度标志
 class PubThread(QtCore.QThread):
     def __init__(self):
         super(PubThread, self).__init__()
-        self.pub = rospy.Publisher('mantra_hmi', Int32MultiArray, queue_size=1)
+        self.pub = rospy.Publisher('mantra_hmi', Int32MultiArray, queue_size=1)  # 发布给Mantra_driver的控制指令
 
     def run(self):
         global running, command_cnt
@@ -47,6 +60,7 @@ class PubThread(QtCore.QThread):
         while not rospy.is_shutdown():
             try:
                 self.pub.publish(command_arr)
+
             except rospy.exceptions.ROSException:
                 print ("Stop publish.")
                 break
@@ -65,12 +79,19 @@ class SubThread(QtCore.QThread):
     def __init__(self):
         super(SubThread, self).__init__()
         self.sub = rospy.Subscriber("joint_states", JointState, self.callback)
+        self.move_sub = rospy.Subscriber("mantra_move_state", Bool, self.move_state_callback)
 
     # 获取关节当前位置
     @staticmethod
     def callback(joint_states):
         global curr_positions
         curr_positions = joint_states.position  # 获取新状态
+
+    # 获取Moveit节点执行状态
+    @staticmethod
+    def move_state_callback(state):
+        global move_group_state
+        move_group_state = state.data
 
     def stop(self):
         self.terminate()
@@ -79,29 +100,36 @@ class SubThread(QtCore.QThread):
 class MoveThread(QtCore.QThread):
     def __init__(self):
         super(MoveThread, self).__init__()
-        self.move_group = MoveGroup()
+        self.move_pub = rospy.Publisher('mantra_move_command', Int32MultiArray, queue_size=1)  # 发布给Moveit节点的控制指令
+        self.goal_pose_pub = rospy.Publisher('mantra_goal_pose_vel', Float32MultiArray,
+                                             queue_size=1)  # 发布给Moveit节点的目标位置及速度
 
     def run(self):
-        global running, back_home, change_vel
+        global running, back_home, change_vel, move_group_state
         r = rospy.Rate(50)  # 50hz
         while not rospy.is_shutdown():
 
-            if running:  # 关节运动
-                self.move_group.go_to_joint_state(goal_positions)
-                print('curr_positions:', curr_positions)
-                print('goal_positions:', goal_positions)
-                print('')
-                # print ("[INFO] Go to joint state done.")
-                running = False  # 标志复位
+            if move_group_state is not True:  # Move_group 空闲
+                if running:  # 关节运动
+                    goal_pose_vel.data[0:7] = goal_positions  # 更新目标位置
+                    move_command_arr.data[0] = 1  # 移动指令位置一
+                    print("[INFO] Go to joint state...")
+                    running = False  # 标志复位
 
-            if back_home:  # 回零点
-                self.move_group.go_to_pose_named("home")
-                print ("[INFO] Back home done.")
-                back_home = False  # 标志复位
+                if back_home:  # 回零点
+                    move_command_arr.data[1] = 1  # 回零指令位置一
+                    print ("[INFO] Back home...")
+                    back_home = False  # 标志复位
 
-            if change_vel:  # 调整速度
-                self.move_group.set_vel_scaling(vel_scaling)
-                change_vel = False  # 标志复位
+                if change_vel:  # 调整速度
+                    goal_pose_vel.data[7] = vel_scaling  # 更新目标速度
+                    move_command_arr.data[2] = 1  # 调速指令位置一
+                    print ("[INFO] Change speed...")
+                    change_vel = False  # 标志复位
+
+            self.goal_pose_pub.publish(goal_pose_vel)  # 实时发布新的目标位置
+            self.move_pub.publish(move_command_arr)  # 实时发布指令
+            move_command_arr.data = [0]*move_command_cnt  # 指令发布后立即清空
 
             r.sleep()
 
@@ -501,7 +529,7 @@ if __name__ == "__main__":
     ui = Ui_Form()
     window = MyWindow()
 
-    rospy.init_node('mantra_control_pub')
+    rospy.init_node('mantra_hmi')
 
     thread_sub = SubThread()
     thread_sub.start()  # 启动消息订阅线程
@@ -510,7 +538,7 @@ if __name__ == "__main__":
     thread_pub.start()  # 启动消息发布线程
 
     thread_move = MoveThread()
-    thread_move.start()  # 启动运动线程
+    thread_move.start()  # 启动关节运动线程
 
     thread_window = WindowThread(window)
     thread_window.start()  # 启动界面刷新线程
@@ -524,7 +552,3 @@ if __name__ == "__main__":
     thread_move.exit()
     thread_window.exit()
     sys.exit(app.exec_())
-
-
-
-

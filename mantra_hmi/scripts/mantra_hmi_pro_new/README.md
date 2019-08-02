@@ -1,0 +1,1 @@
+Python2中使用pyqt存在界面假死的现象，目前无法解决，使用Python3无法集成Moveit，因而将Moveit的移动指令放到单独的节点中执行，通过HMI发送Topic给Moveit移动节点来执行关节运动规划

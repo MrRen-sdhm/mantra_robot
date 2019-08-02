@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>  
+    <!-- mantra hmi basic-->
+    <node name="mantra_hmi_basic" pkg="mantra_hmi" type="mantra_hmi_basic.py" respawn="false" output="screen" />
+
+    <!-- mantra hmi -->
+    <node name="mantra_hmi_pro" pkg="mantra_hmi" type="mantra_hmi.py" respawn="false" output="screen" />
+
+    <!-- move group -->
+    <node name="mantra_move_group" pkg="mantra_hmi" type="move_group.py" respawn="true" output="screen" />
+
+</launch>

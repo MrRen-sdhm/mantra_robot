@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author     : Zhenyu Ren
 # E-mail     : rzy.1996@qq.com
-# Description: 
+# Description:
 # Date       : 20/05/2019 2:45 PM
 # File Name  : mantra_gui.py
 
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     ui = Ui_Form()
     window = MyWindow()
 
-    rospy.init_node('mantra_control_pub')
+    rospy.init_node('mantra_hmi_basic')
 
     thread_pub = PubThread()
     thread_pub.start()  # 启动消息发布线程
