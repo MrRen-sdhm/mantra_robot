@@ -3,7 +3,8 @@ Panels:
     Help Height: 0
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /PointCloud21
       Splitter Ratio: 0.605654776096344
     Tree Height: 262
   - Class: rviz/Help
@@ -55,8 +56,6 @@ Visualization Manager:
           Value: false
         camera_link:
           Value: false
-        grasp:
-          Value: true
         gripper:
           Value: true
         link1:
@@ -97,8 +96,6 @@ Visualization Manager:
                               camera_depth_frame:
                                 camera_depth_optical_frame:
                                   {}
-                            grasp:
-                              {}
       Update Interval: 0
       Value: true
     - Acceleration_Scaling_Factor: 0.5
@@ -296,9 +293,9 @@ Visualization Manager:
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
-      Size (Pixels): 3
+      Size (Pixels): 1
       Size (m): 0.009999999776482582
-      Style: Flat Squares
+      Style: Points
       Topic: /camera/depth/color/points
       Unreliable: false
       Use Fixed Frame: true
@@ -329,25 +326,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 7.422061920166016
+      Distance: 3.069206953048706
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.0597660094499588
-        Y: -0.12233588099479675
-        Z: 0.03514742851257324
+        X: 0.5906935930252075
+        Y: -0.20397643744945526
+        Z: 0.15608282387256622
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.28979727625846863
+      Pitch: 1.1097971200942993
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 1.8457003831863403
+      Yaw: 4.448855400085449
     Saved: ~
 Window Geometry:
   Displays:

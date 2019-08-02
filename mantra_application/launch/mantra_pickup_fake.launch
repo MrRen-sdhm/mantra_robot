@@ -36,7 +36,7 @@
     <!-- robot model -->
     <include file="$(find mantra_moveit_config)/launch/fake.launch">
       <arg name="use_rviz" value="false" />
-      <arg name="use_publisher" value="true" />
+      <arg name="use_publisher" value="false" />
     </include>
     
     <!-- publish tf between  camera_color_optical frame and gripper frame-->

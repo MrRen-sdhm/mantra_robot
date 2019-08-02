@@ -66,7 +66,10 @@ class MantraPickup:
         # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
         arm.set_goal_position_tolerance(0.01)
         arm.set_goal_orientation_tolerance(0.05)
-        arm.set_max_velocity_scaling_factor(0.5)
+        arm.set_max_velocity_scaling_factor(0.8)
+        arm.set_max_acceleration_scaling_factor(0.5)
+        arm.set_planning_time(1) # 规划时间限制为2秒
+        arm.set_num_planning_attempts(1) # 规划两次
         
         # 获取终端link的名称
         eef_link = arm.get_end_effector_link()
@@ -76,8 +79,9 @@ class MantraPickup:
         print arm.get_current_pose(eef_link).pose
                                         
         # 控制机械臂运动到之前设置的姿态
-        arm.set_named_target('cali_1')
+        arm.set_named_target('pick_1')
         arm.go()
+        rospy.sleep(2)
 
         self.box_name = ''
         self.scene = scene
@@ -87,7 +91,7 @@ class MantraPickup:
         self.moveit_commander = moveit_commander
 
         self.move_distance = 0.1
-        self.back_distance = 0.15
+        self.back_distance = 0.2
 
     def add_box(self, timeout=0.5):
       box_name = self.box_name
@@ -101,7 +105,7 @@ class MantraPickup:
       # 设置桌面的高度
       table_ground = 0
       # 设置table的三维尺寸[长, 宽, 高]
-      table_size = [0.4, 0.8, 0.42]
+      table_size = [0.4, 0.8, 0.39]
       scene.remove_world_object(table_id)
       # 将个物体加入场景当中
       table_pose = geometry_msgs.msg.PoseStamped()
@@ -124,7 +128,7 @@ class MantraPickup:
       left_wall_pose.pose.position.y = -0.6
       left_wall_pose.pose.position.z = 0.3
       left_wall_pose.pose.orientation.w = 1.0
-      scene.add_box(left_wall_id, left_wall_pose, left_wall_size)
+      # scene.add_box(left_wall_id, left_wall_pose, left_wall_size)
 
       # 设置场景物体的名称 
       bottom_wall_id = 'bottom_wall'  
@@ -136,25 +140,25 @@ class MantraPickup:
       bottom_wall_pose.header.frame_id = 'base_link'
       bottom_wall_pose.pose.position.x = 0.5
       bottom_wall_pose.pose.position.y = 0.0
-      bottom_wall_pose.pose.position.z = -0.47 # -0.425
+      bottom_wall_pose.pose.position.z = -0.39
       bottom_wall_pose.pose.orientation.w = 1.0
       scene.add_box(bottom_wall_id, bottom_wall_pose, bottom_wall_size)
 
     def go_to_pose_goal(self):
       group = self.group
 
-      pose_goal = geometry_msgs.msg.PoseStamped()
-      pose_goal.header.frame_id = self.reference_frame
-      pose_goal.header.stamp = rospy.Time.now()
+      # pose_goal = geometry_msgs.msg.PoseStamped()
+      # pose_goal.header.frame_id = self.reference_frame
+      # pose_goal.header.stamp = rospy.Time.now()
 
-      pose_goal.pose.position.x = 0.436639379573
-      pose_goal.pose.position.y = 0.0203186032519
-      pose_goal.pose.position.z = -0.244789596306
+      # pose_goal.pose.position.x = 0.436639379573
+      # pose_goal.pose.position.y = 0.0203186032519
+      # pose_goal.pose.position.z = -0.244789596306
 
-      pose_goal.pose.orientation.x = 0.706261175087
-      pose_goal.pose.orientation.y = 0.707490503556
-      pose_goal.pose.orientation.z = 0.0178783311735
-      pose_goal.pose.orientation.w = 0.0182402087981
+      # pose_goal.pose.orientation.x = 0.706261175087
+      # pose_goal.pose.orientation.y = 0.707490503556
+      # pose_goal.pose.orientation.z = 0.0178783311735
+      # pose_goal.pose.orientation.w = 0.0182402087981
 
       listener = tf.TransformListener()
       while not rospy.is_shutdown():
@@ -162,36 +166,44 @@ class MantraPickup:
             (obj_position, obj_orientation) = listener.lookupTransform('/base_link', '/grasp', rospy.Time(0))
             rospy.loginfo("Selected grasp pose reference to base_link:\nposition:\n %s\norientation:\n %s\n", 
               str(obj_position), str(obj_orientation))
-            break
+            print("Try to plan a path to pick up the object once...")
+
+            ## We can plan a motion for this group to a desired pose for the end-effector:
+            pose_goal = geometry_msgs.msg.PoseStamped()
+            pose_goal.header.frame_id = self.reference_frame
+            pose_goal.header.stamp = rospy.Time.now()
+
+            pose_goal.pose.position.x = obj_position[0]
+            pose_goal.pose.position.y = obj_position[1]
+            pose_goal.pose.position.z = obj_position[2]
+
+            pose_goal.pose.orientation.x = obj_orientation[0]
+            pose_goal.pose.orientation.y = obj_orientation[1]
+            pose_goal.pose.orientation.z = obj_orientation[2]
+            pose_goal.pose.orientation.w = obj_orientation[3]
+
+            middle_pose = cal_end_pose_by_quat(pose_goal.pose, -self.move_distance, 2)
+
+            group.set_start_state_to_current_state()
+            group.set_pose_target(middle_pose, self.eef_link)
+
+            if pose_goal.pose.position.z > 0.9: # 滤除不在地面的抓取姿态
+              continue
+
+            plan = group.go(wait=True)
+
+            if(plan): # 规划完成，退出
+              break
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             continue
 
-      ## We can plan a motion for this group to a desired pose for the end-effector:
-      pose_goal = geometry_msgs.msg.PoseStamped()
-      pose_goal.header.frame_id = self.reference_frame
-      pose_goal.header.stamp = rospy.Time.now()
-
-      pose_goal.pose.position.x = obj_position[0]
-      pose_goal.pose.position.y = obj_position[1]
-      pose_goal.pose.position.z = obj_position[2]
-
-      pose_goal.pose.orientation.x = obj_orientation[0]
-      pose_goal.pose.orientation.y = obj_orientation[1]
-      pose_goal.pose.orientation.z = obj_orientation[2]
-      pose_goal.pose.orientation.w = obj_orientation[3]
-
-      middle_pose = cal_end_pose_by_quat(pose_goal.pose, -self.back_distance, 2)
-
-      group.set_start_state_to_current_state()
-      group.set_pose_target(middle_pose, self.eef_link)
-
-      plan = group.go(wait=True)
       group.stop()
       group.clear_pose_targets()
 
-      return plan
+      # return plan
 
     def cartesian_move(self):
+      cartesian = False
       arm = self.group
       # 获取当前位姿数据最为机械臂运动的起始位姿
       start_pose = arm.get_current_pose(self.eef_link).pose
@@ -205,43 +217,48 @@ class MantraPickup:
       # 按末端坐标系方向向量平移, 计算终点位姿
       wpose = cal_end_pose_by_quat(start_pose, self.move_distance, 2)
 
-      waypoints.append(deepcopy(wpose))
-
-      ## 开始笛卡尔空间轨迹规划
-      fraction = 0.0   #路径规划覆盖率
-      maxtries = 10    #最大尝试规划次数
-      attempts = 0     #已经尝试规划次数
-      
-      # 设置机器臂当前的状态作为运动初始状态
-      arm.set_start_state_to_current_state()
-  
-      # 尝试规划一条笛卡尔空间下的路径，依次通过所有路点
-      while fraction < 1.0 and attempts < maxtries:
-          (plan, fraction) = arm.compute_cartesian_path (
-                                  waypoints,   # waypoint poses，路点列表
-                                  0.01,        # eef_step，终端步进值
-                                  0.0,         # jump_threshold，跳跃阈值
-                                  True)        # avoid_collisions，避障规划
-          
-          # 尝试次数累加
-          attempts += 1
-          
-          # 打印运动规划进程
-          if attempts % 10 == 0:
-              rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
-                      
-      # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
-      if fraction == 1.0:
-          rospy.loginfo("Path computed successfully. Moving the arm.")
-          arm.execute(plan)
-          rospy.loginfo("Path execution complete.")
-      # 如果路径规划失败，则打印失败信息
+      if cartesian:
+        waypoints.append(deepcopy(wpose))
       else:
-          rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")  
+        arm.set_pose_target(wpose)
+        arm.go()
+
+      if cartesian:
+        ## 开始笛卡尔空间轨迹规划
+        fraction = 0.0   #路径规划覆盖率
+        maxtries = 10    #最大尝试规划次数
+        attempts = 0     #已经尝试规划次数
+        
+        # 设置机器臂当前的状态作为运动初始状态
+        arm.set_start_state_to_current_state()
+    
+        # 尝试规划一条笛卡尔空间下的路径，依次通过所有路点
+        while fraction < 1.0 and attempts < maxtries:
+            (plan, fraction) = arm.compute_cartesian_path (
+                                    waypoints,   # waypoint poses，路点列表
+                                    0.01,        # eef_step，终端步进值
+                                    0.0,         # jump_threshold，跳跃阈值
+                                    True)        # avoid_collisions，避障规划
+            
+            # 尝试次数累加
+            attempts += 1
+            
+            # 打印运动规划进程
+            if attempts % 10 == 0:
+                rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
+                        
+        # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
+        if fraction == 1.0:
+            rospy.loginfo("Path computed successfully. Moving the arm.")
+            arm.execute(plan)
+            rospy.loginfo("Path execution complete.")
+        # 如果路径规划失败，则打印失败信息
+        else:
+            rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")  
       
     def shift_pose_target(self):
       arm = self.group
-      arm.shift_pose_target(2, self.move_distance, self.eef_link)
+      arm.shift_pose_target(2, self.back_distance, self.eef_link)
       arm.go()
 
 
@@ -251,14 +268,21 @@ if __name__ == "__main__":
 
     mantra_pickup.add_box()
 
-    ret = mantra_pickup.go_to_pose_goal()
-
-    rospy.sleep(1)
-
-    if ret:
-      mantra_pickup.cartesian_move()
+    for i in range(4):
+      print("Move to top of the object...")
+      mantra_pickup.go_to_pose_goal()
       rospy.sleep(1)
-      mantra_pickup.shift_pose_target()
+
+      if True:
+        print("Move approach to the object...")
+        mantra_pickup.cartesian_move()
+        rospy.sleep(1)
+        print("Bring up the object...")
+        mantra_pickup.shift_pose_target()
+
+      rospy.sleep(2)
+      mantra_pickup.group.set_named_target('pick_1')
+      mantra_pickup.group.go()
 
     # 关闭并退出moveit
     mantra_pickup.moveit_commander.roscpp_shutdown()

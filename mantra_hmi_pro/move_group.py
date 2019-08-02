@@ -37,7 +37,7 @@ class MoveGroup(object):
         # Instantiate a `MoveGroupCommander`_ object.
         group_name = "arm"
         group = moveit_commander.MoveGroupCommander(group_name)
-        group.set_max_velocity_scaling_factor(0.25)
+        group.set_max_velocity_scaling_factor(0.5)
         group.set_max_acceleration_scaling_factor(0.5)
 
         # 当运动规划失败后，允许重新规划

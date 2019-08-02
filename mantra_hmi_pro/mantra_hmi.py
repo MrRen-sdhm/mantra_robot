@@ -26,10 +26,10 @@ command_cnt = 3
 command_arr.data = [0]*command_cnt  # 0:使能 1:复位 2:置零
 joint_ctl_arr = [0]*7
 
-vel_scaling = 0.25  # 速度调整比例
+vel_scaling = 0.0  # 速度调整比例
 curr_positions = [0.000000]*7  # 当前位置
 goal_positions = [0.000000]*7  # 目标位置
-joint_limits = [1.5708, 1.9, 1.5708, 1.9, 1.5708, 1.9, 3.1415]  # 各关节限位
+joint_limits = [1.5699, 1.8499, 1.5699, 1.8499, 1.5699, 1.8499, 3.1399]  # 各关节限位
 
 running = False  # 关节运动标志
 back_home = False  # 回零点标志
@@ -252,7 +252,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
             goal_positions[index] -= self.step  # 操作当前关节目标位置
 
-            if goal_positions[index] > joint_limits[index]:
+            if goal_positions[index] < -joint_limits[index]:
                 goal_positions[index] = joint_limits[index]
 
         joint_ctl_arr[index] = -1
@@ -288,7 +288,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
             goal_positions[index] -= self.step  # 操作当前关节目标位置
 
-            if goal_positions[index] > joint_limits[index]:
+            if goal_positions[index] < -joint_limits[index]:
                 goal_positions[index] = joint_limits[index]
 
         joint_ctl_arr[index] = -1
@@ -324,7 +324,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
             goal_positions[index] -= self.step  # 操作当前关节目标位置
 
-            if goal_positions[index] > joint_limits[index]:
+            if goal_positions[index] < -joint_limits[index]:
                 goal_positions[index] = joint_limits[index]
 
         joint_ctl_arr[index] = -1
@@ -360,7 +360,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
             goal_positions[index] -= self.step  # 操作当前关节目标位置
 
-            if goal_positions[index] > joint_limits[index]:
+            if goal_positions[index] < -joint_limits[index]:
                 goal_positions[index] = joint_limits[index]
 
         joint_ctl_arr[index] = -1
@@ -396,7 +396,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
             goal_positions[index] -= self.step  # 操作当前关节目标位置
 
-            if goal_positions[index] > joint_limits[index]:
+            if goal_positions[index] < -joint_limits[index]:
                 goal_positions[index] = joint_limits[index]
 
         joint_ctl_arr[index] = -1
@@ -432,7 +432,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
             goal_positions[index] -= self.step  # 操作当前关节目标位置
 
-            if goal_positions[index] > joint_limits[index]:
+            if goal_positions[index] < -joint_limits[index]:
                 goal_positions[index] = joint_limits[index]
 
         joint_ctl_arr[index] = -1
@@ -468,7 +468,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
 
             goal_positions[index] -= self.step  # 操作当前关节目标位置
 
-            if goal_positions[index] > joint_limits[index]:
+            if goal_positions[index] < -joint_limits[index]:
                 goal_positions[index] = joint_limits[index]
 
         joint_ctl_arr[index] = -1
