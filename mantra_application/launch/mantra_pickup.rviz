@@ -4,9 +4,10 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /PointCloud21
+        - /MotionPlanning1
+        - /MotionPlanning1/Planning Request1
       Splitter Ratio: 0.605654776096344
-    Tree Height: 262
+    Tree Height: 310
   - Class: rviz/Help
     Name: Help
   - Class: rviz/Views
@@ -39,7 +40,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/TF
       Enabled: true
-      Frame Timeout: 15
+      Frame Timeout: 4
       Frames:
         All Enabled: false
         base_link:
@@ -58,6 +59,8 @@ Visualization Manager:
           Value: false
         gripper:
           Value: true
+        juggle:
+          Value: true
         link1:
           Value: false
         link2:
@@ -72,7 +75,7 @@ Visualization Manager:
           Value: false
         link7:
           Value: false
-      Marker Scale: 1
+      Marker Scale: 0.6000000238418579
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -96,6 +99,8 @@ Visualization Manager:
                               camera_depth_frame:
                                 camera_depth_optical_frame:
                                   {}
+                            juggle:
+                              {}
       Update Interval: 0
       Value: true
     - Acceleration_Scaling_Factor: 0.5
@@ -293,7 +298,7 @@ Visualization Manager:
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
-      Size (Pixels): 1
+      Size (Pixels): 2
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /camera/depth/color/points
@@ -306,8 +311,7 @@ Visualization Manager:
       Marker Topic: /detect_grasps/grasps_rviz
       Name: MarkerArray
       Namespaces:
-        finger: true
-        hand_base: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -326,30 +330,30 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.069206953048706
+      Distance: 3.0321664810180664
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.5906935930252075
-        Y: -0.20397643744945526
-        Z: 0.15608282387256622
+        X: 0.3376935124397278
+        Y: -0.09530060738325119
+        Z: 0.007098522502928972
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.1097971200942993
+      Pitch: 0.734796404838562
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 4.448855400085449
+      Yaw: 2.4238483905792236
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1056
+  Height: 904
   Help:
     collapsed: false
   Hide Left Dock: false
@@ -358,9 +362,9 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd000000020000000000000295000003dcfc0200000006fb000000100044006900730070006c006100790073010000002700000143000000c900fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e00670100000170000002930000018900ffffff000000010000015800000302fc0200000001fb0000000a00560069006500770073000000002700000302000000a400ffffff000004a4000003dc00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000002000000000000029500000344fc0200000006fb000000100044006900730070006c006100790073010000002700000173000000c900fffffffb0000000800480065006c00700000000342000000bb0000006e00fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006701000001a0000001cb0000018900ffffff000000010000015800000302fc0200000001fb0000000a00560069006500770073000000002700000302000000a400ffffff0000034e0000034400000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: true
-  Width: 1855
+  Width: 1513
   X: 65
   Y: 24

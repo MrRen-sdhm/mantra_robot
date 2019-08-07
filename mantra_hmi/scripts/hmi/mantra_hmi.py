@@ -206,7 +206,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
         size = self.geometry()
         # self.move((screen.width() - size.width()) / 2,
         #           (screen.height() - size.height()) / 2)
-        self.move((screen.width() - size.width()), (screen.height() - size.height()) / 2)
+        self.move((screen.width()), (screen.height() - size.height()))
 
     # 使能按钮
     def power(self):

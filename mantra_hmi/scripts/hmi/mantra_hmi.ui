@@ -476,7 +476,7 @@
    <property name="geometry">
     <rect>
      <x>8</x>
-     <y>310</y>
+     <y>360</y>
      <width>96</width>
      <height>40</height>
     </rect>
@@ -540,7 +540,7 @@
   <widget class="QPushButton" name="resetButton">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>8</x>
      <y>310</y>
      <width>96</width>
      <height>40</height>
@@ -738,7 +738,7 @@
    <property name="geometry">
     <rect>
      <x>110</x>
-     <y>360</y>
+     <y>310</y>
      <width>96</width>
      <height>40</height>
     </rect>
@@ -765,7 +765,7 @@
   <widget class="QPushButton" name="backHomeButton">
    <property name="geometry">
     <rect>
-     <x>8</x>
+     <x>110</x>
      <y>360</y>
      <width>96</width>
      <height>40</height>

@@ -76,20 +76,13 @@ class MoveGroup(object):
 
     def go_to_joint_state(self, goal_positions):
         group = self.group
-        ret = False
 
         # Planning to a Joint Goal
-        ret = group.go(goal_positions, wait=True)
-        # try:
-        #     ret = group.go(goal_positions, wait=True)
-        # except moveit_commander.MoveItCommanderException:
-        #     print (moveit_commander.MoveItCommanderException)
-
+        plan = group.go(goal_positions, wait=True)
         group.stop()
+        group.clear_pose_targets()
 
-        # current_joints = self.group.get_current_joint_values()
-
-        return ret
+        return plan
 
     def go_to_pose_named(self, pose_name):
         group = self.group
@@ -97,6 +90,9 @@ class MoveGroup(object):
         group.set_named_target(pose_name)
         group.go()
         group.stop()
+        group.clear_pose_targets()
+
+        return True
 
     def go_to_pose_goal(self):
         group = self.group
