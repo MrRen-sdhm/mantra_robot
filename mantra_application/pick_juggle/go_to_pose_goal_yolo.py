@@ -89,7 +89,7 @@ class MantraPickup:
         self.moveit_commander = moveit_commander
 
         self.move_distance = 0.1
-        self.back_distance = 0.2
+        self.back_distance = 0.15
 
     def add_box(self, timeout=0.5):
       box_name = self.box_name
@@ -166,7 +166,6 @@ class MantraPickup:
               str(obj_position), str(obj_orientation))
             print("\n\nTry to plan a path to pick up the object once...")
 
-            ## We can plan a motion for this group to a desired pose for the end-effector:
             pose_goal = geometry_msgs.msg.PoseStamped()
             pose_goal.header.frame_id = self.reference_frame
             pose_goal.header.stamp = rospy.Time.now()
@@ -287,10 +286,10 @@ if __name__ == "__main__":
       if True:
         print("Move approach to the object...")
         mantra_pickup.cartesian_move()
-        rospy.sleep(1)
+        rospy.sleep(0.5)
         print("Bring up the object...")
         mantra_pickup.shift_pose_target()
-        rospy.sleep(1)
+        rospy.sleep(0.5)
 
       print("Move to the init pose...")
       mantra_pickup.group.set_named_target('pick_4')

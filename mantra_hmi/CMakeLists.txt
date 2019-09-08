@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mantra_hmi)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,6 +14,23 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
+#打开Qt的MOC功能和UI文件处理功能
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_CXX_STANDARD 14)
+
+SET(CMAKE_PREFIX_PATH /opt/Qt5.12.0/5.12.0/gcc_64/lib/cmake)
+#查找Qt的库
+find_package(Qt5Widgets)
+
+message(STATUS "Qt5Widgets library status:")
+message(STATUS "    version: ${Qt5Widgets_VERSION}")
+message(STATUS "    libraries: ${Qt5Widgets_LIBRARIES}")
+message(STATUS "    include path: ${Qt5Widgets_INCLUDE_DIRS}")
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -132,7 +149,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/mantra_hmi_node.cpp)
+add_executable(${PROJECT_NAME} src/mantra_hmi.cpp src/mainwindow.cpp include/mainwindow.h)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -145,9 +162,10 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    Qt5::Widgets
+)
 
 #############
 ## Install ##

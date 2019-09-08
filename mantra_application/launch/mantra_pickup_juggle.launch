@@ -4,39 +4,17 @@
     <!-- start the Realsense -->
     <include file="$(find realsense2_viewer)/launch/realsense2_viewer.launch" />
 
-    <!-- robot driver -->
-    <!-- <node name="mantra_driver" pkg="mantra_driver" type="main" output="screen">
-    </node> -->
-
-    <!-- robot model -->
-    <!-- <include file="$(find mantra_moveit_config)/launch/fake.launch">
-      <arg name="use_rviz" value="false" />
-      <arg name="use_gui" value="false" />
-      <arg name="use_publisher" value="true" />
-    </include> -->
-
-    <!-- <include file="$(find mantra_moveit_config)/launch/demo.launch">
-      <arg name="use_rviz" value="false" />
-    </include> -->
-
-    <!-- <include file="$(find mantra_moveit_config)/launch/demo.launch">
-      <arg name="use_rviz" value="false" />
-    </include> -->
-
     <!-- bring up robot-->
     <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
       <arg name="fake" value="false" />
       <arg name="rviz" value="false" />
     </include>
     
-    <!-- publish tf between  camera_color_optical frame and gripper frame-->
+    <!-- publish tf between camera_color_optical frame and gripper frame-->
     <include file="$(find mantra_application)/calibration/publish_static_tf.launch" />
 
     <!-- get the translation between juggle frame and end effector frame -->
     <node name="get_juggle_pose" pkg="mantra_application" type="get_juggle_pose.py" output="screen" />
-
-    <!-- get the translation between grasp frame and end effector frame -->
-    <!-- <node name="detect_grasps_yolo" pkg="gpd_ros" type="detect_grasps_yolo" output="screen" /> -->
 
     <!-- start the rviz -->
     <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find mantra_application)/launch/mantra_pickup.rviz" output="screen" />
