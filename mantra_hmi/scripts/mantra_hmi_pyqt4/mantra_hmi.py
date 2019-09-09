@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author     : Zhenyu Ren
 # E-mail     : rzy.1996@qq.com
-# Description: 
+# Description: mantra mantra hmi implementation use python2 and PyQt4
 # Date       : 20/05/2019 2:45 PM
 # File Name  : mantra_gui.py
 
@@ -40,8 +40,9 @@ move_group_state = False
 joint_ctl_arr = [0]*7
 
 vel_scaling = 0.0  # 速度调整比例
-curr_positions = [0.000000]*7  # 当前位置
-goal_positions = [0.000000]*7  # 目标位置
+rad_deg_flag = 1  # 角度显示单为切换标志, 默认为角度
+curr_positions = [0.000000000000]*7  # 当前位置
+goal_positions = [0.000000000000]*7  # 目标位置
 joint_limits = [1.5699, 1.8499, 1.5699, 1.8499, 1.5699, 1.8499, 3.1399]  # 各关节限位
 
 running = False  # 关节运动标志
@@ -143,36 +144,68 @@ class WindowThread(QtCore.QThread):
         self.window = window_
 
     def run(self):
+        global rad_deg_flag;
         r = rospy.Rate(10)  # 10hz
         while not rospy.is_shutdown():
-            if curr_positions[0] < 0:
-                self.window.label_1.setText("Joint1 (%.3f rad )" % float(curr_positions[0]))
+            if rad_deg_flag is 0:
+                if curr_positions[0] < 0:
+                    self.window.label_1.setText("Joint1 (%.3f rad )" % float(curr_positions[0]))
+                else:
+                    self.window.label_1.setText("Joint1 ( %.3f rad )" % float(curr_positions[0]))
+                if curr_positions[1] < 0:
+                    self.window.label_2.setText("Joint2 (%.3f rad )" % float(curr_positions[1]))
+                else:
+                    self.window.label_2.setText("Joint2 ( %.3f rad )" % float(curr_positions[1]))
+                if curr_positions[2] < 0:
+                    self.window.label_3.setText("Joint3 (%.3f rad )" % float(curr_positions[2]))
+                else:
+                    self.window.label_3.setText("Joint3 ( %.3f rad )" % float(curr_positions[2]))
+                if curr_positions[3] < 0:
+                    self.window.label_4.setText("Joint4 (%.3f rad )" % float(curr_positions[3]))
+                else:
+                    self.window.label_4.setText("Joint4 ( %.3f rad )" % float(curr_positions[3]))
+                if curr_positions[4] < 0:
+                    self.window.label_5.setText("Joint5 (%.3f rad )" % float(curr_positions[4]))
+                else:
+                    self.window.label_5.setText("Joint5 ( %.3f rad )" % float(curr_positions[4]))
+                if curr_positions[5] < 0:
+                    self.window.label_6.setText("Joint6 (%.3f rad )" % float(curr_positions[5]))
+                else:
+                    self.window.label_6.setText("Joint6 ( %.3f rad )" % float(curr_positions[5]))
+                if curr_positions[6] < 0:
+                    self.window.label_7.setText("Joint7 (%.3f rad )" % float(curr_positions[6]))
+                else:
+                    self.window.label_7.setText("Joint7 ( %.3f rad )" % float(curr_positions[6]))
+
             else:
-                self.window.label_1.setText("Joint1 ( %.3f rad )" % float(curr_positions[0]))
-            if curr_positions[1] < 0:
-                self.window.label_2.setText("Joint2 (%.3f rad )" % float(curr_positions[1]))
-            else:
-                self.window.label_2.setText("Joint2 ( %.3f rad )" % float(curr_positions[1]))
-            if curr_positions[2] < 0:
-                self.window.label_3.setText("Joint3 (%.3f rad )" % float(curr_positions[2]))
-            else:
-                self.window.label_3.setText("Joint3 ( %.3f rad )" % float(curr_positions[2]))
-            if curr_positions[3] < 0:
-                self.window.label_4.setText("Joint4 (%.3f rad )" % float(curr_positions[3]))
-            else:
-                self.window.label_4.setText("Joint4 ( %.3f rad )" % float(curr_positions[3]))
-            if curr_positions[4] < 0:
-                self.window.label_5.setText("Joint5 (%.3f rad )" % float(curr_positions[4]))
-            else:
-                self.window.label_5.setText("Joint5 ( %.3f rad )" % float(curr_positions[4]))
-            if curr_positions[5] < 0:
-                self.window.label_6.setText("Joint6 (%.3f rad )" % float(curr_positions[5]))
-            else:
-                self.window.label_6.setText("Joint6 ( %.3f rad )" % float(curr_positions[5]))
-            if curr_positions[6] < 0:
-                self.window.label_7.setText("Joint7 (%.3f rad )" % float(curr_positions[6]))
-            else:
-                self.window.label_7.setText("Joint7 ( %.3f rad )" % float(curr_positions[6]))
+                if curr_positions[0] < 0:
+                    self.window.label_1.setText("Joint1 (%.3f deg )" % float(curr_positions[0] / pi * 180.0))
+                else:
+                    self.window.label_1.setText("Joint1 ( %.3f deg )" % float(curr_positions[0] / pi * 180.0))
+                if curr_positions[1] < 0:
+                    self.window.label_2.setText("Joint2 (%.3f deg )" % float(curr_positions[1] / pi * 180.0))
+                else:
+                    self.window.label_2.setText("Joint2 ( %.3f deg )" % float(curr_positions[1] / pi * 180.0))
+                if curr_positions[2] < 0:
+                    self.window.label_3.setText("Joint3 (%.3f deg )" % float(curr_positions[2] / pi * 180.0))
+                else:
+                    self.window.label_3.setText("Joint3 ( %.3f deg )" % float(curr_positions[2] / pi * 180.0))
+                if curr_positions[3] < 0:
+                    self.window.label_4.setText("Joint4 (%.3f deg )" % float(curr_positions[3] / pi * 180.0))
+                else:
+                    self.window.label_4.setText("Joint4 ( %.3f deg )" % float(curr_positions[3] / pi * 180.0))
+                if curr_positions[4] < 0:
+                    self.window.label_5.setText("Joint5 (%.3f deg )" % float(curr_positions[4] / pi * 180.0))
+                else:
+                    self.window.label_5.setText("Joint5 ( %.3f deg )" % float(curr_positions[4] / pi * 180.0))
+                if curr_positions[5] < 0:
+                    self.window.label_6.setText("Joint6 (%.3f deg )" % float(curr_positions[5] / pi * 180.0))
+                else:
+                    self.window.label_6.setText("Joint6 ( %.3f deg )" % float(curr_positions[5] / pi * 180.0))
+                if curr_positions[6] < 0:
+                    self.window.label_7.setText("Joint7 (%.3f deg )" % float(curr_positions[6] / pi * 180.0))
+                else:
+                    self.window.label_7.setText("Joint7 ( %.3f deg )" % float(curr_positions[6] / pi * 180.0))
 
             r.sleep()
 
@@ -192,7 +225,13 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
         # 微调启用标志位
         self.max_step = 0.1
         self.min_step = 0.05
-        self.step = 0.2
+        # 获取步长
+        mode = self.comboBox.currentText()[5:8]
+        if mode == QtCore.QString('rad'):
+            self.step = float(self.comboBox.currentText()[0:4])
+        elif mode == QtCore.QString('deg'):
+            self.step = float(self.comboBox.currentText()[0:4]) * (pi / 180.0)
+        print("Init step: %.2frad (%.2fdeg)" % (self.step, self.step * (180.0 / pi)))
         # 状态保存相关参数
         self.fp = open('joint_states' + '.xml', 'a')
         self.fp.write('\n<new joint_states/>\n')
@@ -206,7 +245,7 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
         size = self.geometry()
         # self.move((screen.width() - size.width()) / 2,
         #           (screen.height() - size.height()) / 2)
-        self.move((screen.width() - size.width()), (screen.height() - size.height()) / 2)
+        self.move((screen.width()), (screen.height() - size.height()))
 
     # 使能按钮
     def power(self):
@@ -229,6 +268,16 @@ class MyWindow(QtGui.QMainWindow, Ui_Form):
             font.setPointSize(14)
             self.powerButton.setFont(font)
             self.powerButton.setText("Power OFF")
+
+    # 角度显示切换
+    def rad_deg(self):
+        global rad_deg_flag
+        if rad_deg_flag is 0:
+            rad_deg_flag = 1
+            self.pushButton.setText("deg")
+        else:
+            rad_deg_flag = 0
+            self.pushButton.setText("rad")
 
     @staticmethod
     def reset_arm():
@@ -529,7 +578,7 @@ if __name__ == "__main__":
     ui = Ui_Form()
     window = MyWindow()
 
-    rospy.init_node('mantra_control_pub')
+    rospy.init_node('mantra_hmi')
 
     thread_sub = SubThread()
     thread_sub.start()  # 启动消息订阅线程
@@ -538,7 +587,7 @@ if __name__ == "__main__":
     thread_pub.start()  # 启动消息发布线程
 
     thread_move = MoveThread()
-    thread_move.start()  # 启动运动线程
+    thread_move.start()  # 启动关节运动线程
 
     thread_window = WindowThread(window)
     thread_window.start()  # 启动界面刷新线程
@@ -552,7 +601,3 @@ if __name__ == "__main__":
     thread_move.exit()
     thread_window.exit()
     sys.exit(app.exec_())
-
-
-
-
