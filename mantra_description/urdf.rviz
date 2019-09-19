@@ -6,6 +6,8 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /TF1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 576
   - Class: rviz/Selection
@@ -65,7 +67,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        gripper:
+        ee_link1:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ee_link2:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -118,8 +125,10 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: true
-        gripper:
-          Value: true
+        ee_link1:
+          Value: false
+        ee_link2:
+          Value: false
         link1:
           Value: false
         link2:
@@ -148,7 +157,9 @@ Visualization Manager:
                   link5:
                     link6:
                       link7:
-                        gripper:
+                        ee_link1:
+                          {}
+                        ee_link2:
                           {}
       Update Interval: 0
       Value: true
@@ -177,16 +188,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.0659780502319336
+      Distance: 1.6180143356323242
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.3023427724838257
-        Y: 0.01985008455812931
-        Z: 0.4331243634223938
+        X: -0.45876407623291016
+        Y: 0.09814056009054184
+        Z: 0.9311692714691162
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false

@@ -10,7 +10,10 @@
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
     <group name="arm">
-        <chain base_link="base_link" tip_link="gripper" />
+        <chain base_link="base_link" tip_link="link7" />
+    </group>
+    <group name="gripper">
+        <joint name="ee_joint1" />
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="home" group="arm">
@@ -23,295 +26,103 @@
         <joint name="joint7" value="0" />
     </group_state>
     <group_state name="test_1" group="arm">
-        <joint name="joint1" value="0.000"/>
-        <joint name="joint2" value="1.047"/>
-        <joint name="joint3" value="-0.000"/>
-        <joint name="joint4" value="1.047"/>
-        <joint name="joint5" value="0.000"/>
-        <joint name="joint6" value="1.047"/>
-        <joint name="joint7" value="-1.572"/>
+        <joint name="joint1" value="0" />
+        <joint name="joint2" value="1.047" />
+        <joint name="joint3" value="-0" />
+        <joint name="joint4" value="1.047" />
+        <joint name="joint5" value="0" />
+        <joint name="joint6" value="1.047" />
+        <joint name="joint7" value="-1.572" />
     </group_state>
     <group_state name="test_2" group="arm">
-        <joint name="joint1" value="-0.000"/>
-        <joint name="joint2" value="0.525"/>
-        <joint name="joint3" value="0.000"/>
-        <joint name="joint4" value="0.525"/>
-        <joint name="joint5" value="-0.000"/>
-        <joint name="joint6" value="0.526"/>
-        <joint name="joint7" value="0.000"/>
+        <joint name="joint1" value="-0" />
+        <joint name="joint2" value="0.525" />
+        <joint name="joint3" value="0" />
+        <joint name="joint4" value="0.525" />
+        <joint name="joint5" value="-0" />
+        <joint name="joint6" value="0.526" />
+        <joint name="joint7" value="0" />
     </group_state>
     <group_state name="test_3" group="arm">
-        <joint name="joint1" value="0.001"/>
-        <joint name="joint2" value="1.079"/>
-        <joint name="joint3" value="-0.002"/>
-        <joint name="joint4" value="1.714"/>
-        <joint name="joint5" value="0.005"/>
-        <joint name="joint6" value="0.348"/>
-        <joint name="joint7" value="-1.575"/>
+        <joint name="joint1" value="0.001" />
+        <joint name="joint2" value="1.079" />
+        <joint name="joint3" value="-0.002" />
+        <joint name="joint4" value="1.714" />
+        <joint name="joint5" value="0.005" />
+        <joint name="joint6" value="0.348" />
+        <joint name="joint7" value="-1.575" />
+    </group_state>
+    <group_state name="test_4" group="arm">
+        <joint name="joint1" value="1.047" />
+        <joint name="joint2" value="1.047" />
+        <joint name="joint3" value="1.047" />
+        <joint name="joint4" value="1.047" />
+        <joint name="joint5" value="1.047" />
+        <joint name="joint6" value="1.047" />
+        <joint name="joint7" value="1.047" />
     </group_state>
     <group_state name="pick_1" group="arm">
-        <joint name="joint1" value="-0.001"/>
-        <joint name="joint2" value="0.346"/>
-        <joint name="joint3" value="-0.000"/>
-        <joint name="joint4" value="1.419"/>
-        <joint name="joint5" value="0.000"/>
-        <joint name="joint6" value="1.266"/>
-        <joint name="joint7" value="-1.573"/>
+        <joint name="joint1" value="-0.001" />
+        <joint name="joint2" value="0.346" />
+        <joint name="joint3" value="-0" />
+        <joint name="joint4" value="1.419" />
+        <joint name="joint5" value="0" />
+        <joint name="joint6" value="1.266" />
+        <joint name="joint7" value="-1.573" />
     </group_state>
     <group_state name="pick_2" group="arm">
-        <joint name="joint1" value="-0.001"/>
-        <joint name="joint2" value="-0.003"/>
-        <joint name="joint3" value="-0.000"/>
-        <joint name="joint4" value="1.680"/>
-        <joint name="joint5" value="0.000"/>
-        <joint name="joint6" value="1.264"/>
-        <joint name="joint7" value="-1.573"/>
+        <joint name="joint1" value="-0.001" />
+        <joint name="joint2" value="-0.003" />
+        <joint name="joint3" value="-0" />
+        <joint name="joint4" value="1.68" />
+        <joint name="joint5" value="0" />
+        <joint name="joint6" value="1.264" />
+        <joint name="joint7" value="-1.573" />
     </group_state>
     <group_state name="pick_3" group="arm">
-        <joint name="joint1" value="-0.001"/>
-        <joint name="joint2" value="0.260"/>
-        <joint name="joint3" value="0.001"/>
-        <joint name="joint4" value="1.586"/>
-        <joint name="joint5" value="-0.000"/>
-        <joint name="joint6" value="1.012"/>
-        <joint name="joint7" value="-1.572"/>
+        <joint name="joint1" value="-0.001" />
+        <joint name="joint2" value="0.26" />
+        <joint name="joint3" value="0.001" />
+        <joint name="joint4" value="1.586" />
+        <joint name="joint5" value="-0" />
+        <joint name="joint6" value="1.012" />
+        <joint name="joint7" value="-1.572" />
     </group_state>
     <group_state name="pick_4" group="arm">
-        <joint name="joint1" value="-0.001"/>
-        <joint name="joint2" value="-0.603"/>
-        <joint name="joint3" value="-0.000"/>
-        <joint name="joint4" value="1.850"/>
-        <joint name="joint5" value="-0.000"/>
-        <joint name="joint6" value="1.563"/>
-        <joint name="joint7" value="-1.574"/>
+        <joint name="joint1" value="-0.001" />
+        <joint name="joint2" value="-0.603" />
+        <joint name="joint3" value="-0" />
+        <joint name="joint4" value="1.85" />
+        <joint name="joint5" value="-0" />
+        <joint name="joint6" value="1.563" />
+        <joint name="joint7" value="-1.574" />
     </group_state>
-    <group_state name="cali_1" group="arm">
-        <joint name="joint1" value="0.000"/>
-        <joint name="joint2" value="0.524"/>
-        <joint name="joint3" value="0.000"/>
-        <joint name="joint4" value="1.887"/>
-        <joint name="joint5" value="-0.000"/>
-        <joint name="joint6" value="0.524"/>
-        <joint name="joint7" value="-1.568"/>
-    </group_state>
-    <group_state name="cali_2" group="arm">
-        <joint name="joint1" value="0.174"/>
-        <joint name="joint2" value="0.524"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.887"/>
-        <joint name="joint5" value="-0.000"/>
-        <joint name="joint6" value="0.349"/>
-        <joint name="joint7" value="-1.568"/>
-    </group_state>
-    <group_state name="cali_3" group="arm">
-        <joint name="joint1" value="0.174"/>
-        <joint name="joint2" value="0.611"/>
-        <joint name="joint3" value="-0.000"/>
-        <joint name="joint4" value="1.900"/>
-        <joint name="joint5" value="-0.174"/>
-        <joint name="joint6" value="0.349"/>
-        <joint name="joint7" value="-1.914"/>
-    </group_state>
-    <group_state name="cali_4" group="arm">
-        <joint name="joint1" value="0.262"/>
-        <joint name="joint2" value="0.698"/>
-        <joint name="joint3" value="-0.000"/>
-        <joint name="joint4" value="1.900"/>
-        <joint name="joint5" value="-0.174"/>
-        <joint name="joint6" value="0.349"/>
-        <joint name="joint7" value="-2.000"/>
-    </group_state>
-    <group_state name="cali_5" group="arm">
-        <joint name="joint1" value="0.262"/>
-        <joint name="joint2" value="0.698"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.899"/>
-        <joint name="joint5" value="-0.174"/>
-        <joint name="joint6" value="0.349"/>
-        <joint name="joint7" value="-1.654"/>
-    </group_state>
-    <group_state name="cali_6" group="arm">
-        <joint name="joint1" value="0.174"/>
-        <joint name="joint2" value="0.786"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.812"/>
-        <joint name="joint5" value="-0.174"/>
-        <joint name="joint6" value="0.436"/>
-        <joint name="joint7" value="-1.826"/>
-    </group_state>
-    <group_state name="cali_7" group="arm">
-        <joint name="joint1" value="0.261"/>
-        <joint name="joint2" value="0.786"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.811"/>
-        <joint name="joint5" value="-0.087"/>
-        <joint name="joint6" value="0.436"/>
-        <joint name="joint7" value="-2.256"/>
-    </group_state>
-    <group_state name="cali_8" group="arm">
-        <joint name="joint1" value="0.261"/>
-        <joint name="joint2" value="0.785"/>
-        <joint name="joint3" value="-0.262"/>
-        <joint name="joint4" value="1.811"/>
-        <joint name="joint5" value="-0.087"/>
-        <joint name="joint6" value="0.350"/>
-        <joint name="joint7" value="-2.256"/>
-    </group_state>
-    <group_state name="cali_9" group="arm">
-        <joint name="joint1" value="0.262"/>
-        <joint name="joint2" value="0.698"/>
-        <joint name="joint3" value="-0.262"/>
-        <joint name="joint4" value="1.723"/>
-        <joint name="joint5" value="-0.087"/>
-        <joint name="joint6" value="0.436"/>
-        <joint name="joint7" value="-2.084"/>
-    </group_state>
-    <group_state name="cali_10" group="arm">
-        <joint name="joint1" value="0.262"/>
-        <joint name="joint2" value="0.786"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.723"/>
-        <joint name="joint5" value="0.088"/>
-        <joint name="joint6" value="0.436"/>
-        <joint name="joint7" value="-2.084"/>
-    </group_state>
-    <group_state name="cali_11" group="arm">
-        <joint name="joint1" value="0.261"/>
-        <joint name="joint2" value="0.960"/>
-        <joint name="joint3" value="-0.088"/>
-        <joint name="joint4" value="1.723"/>
-        <joint name="joint5" value="0.088"/>
-        <joint name="joint6" value="0.436"/>
-        <joint name="joint7" value="-2.084"/>
-    </group_state>
-    <group_state name="cali_12" group="arm">
-        <joint name="joint1" value="0.087"/>
-        <joint name="joint2" value="0.960"/>
-        <joint name="joint3" value="-0.088"/>
-        <joint name="joint4" value="1.722"/>
-        <joint name="joint5" value="0.088"/>
-        <joint name="joint6" value="0.349"/>
-        <joint name="joint7" value="-2.342"/>
-    </group_state>
-    <group_state name="cali_13" group="arm">
-        <joint name="joint1" value="0.087"/>
-        <joint name="joint2" value="0.960"/>
-        <joint name="joint3" value="-0.262"/>
-        <joint name="joint4" value="1.722"/>
-        <joint name="joint5" value="0.613"/>
-        <joint name="joint6" value="0.349"/>
-        <joint name="joint7" value="-2.513"/>
-    </group_state>
-    <group_state name="cali_14" group="arm">
-        <joint name="joint1" value="0.087"/>
-        <joint name="joint2" value="1.048"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.722"/>
-        <joint name="joint5" value="0.613"/>
-        <joint name="joint6" value="0.349"/>
-        <joint name="joint7" value="-2.513"/>
-    </group_state>
-    <group_state name="cali_15" group="arm">
-        <joint name="joint1" value="-0.000"/>
-        <joint name="joint2" value="0.960"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.722"/>
-        <joint name="joint5" value="0.613"/>
-        <joint name="joint6" value="0.261"/>
-        <joint name="joint7" value="-2.513"/>
-    </group_state>
-    <group_state name="cali_16" group="arm">
-        <joint name="joint1" value="-0.176"/>
-        <joint name="joint2" value="0.872"/>
-        <joint name="joint3" value="-0.175"/>
-        <joint name="joint4" value="1.722"/>
-        <joint name="joint5" value="0.526"/>
-        <joint name="joint6" value="0.523"/>
-        <joint name="joint7" value="-2.599"/>
-    </group_state>
-    <group_state name="cali_17" group="arm">
-        <joint name="joint1" value="-0.176"/>
-        <joint name="joint2" value="0.785"/>
-        <joint name="joint3" value="-0.088"/>
-        <joint name="joint4" value="1.721"/>
-        <joint name="joint5" value="0.526"/>
-        <joint name="joint6" value="0.523"/>
-        <joint name="joint7" value="-3.112"/>
-    </group_state>
-    <group_state name="cali_18" group="arm">
-        <joint name="joint1" value="-0.376"/>
-        <joint name="joint2" value="0.785"/>
-        <joint name="joint3" value="0.112"/>
-        <joint name="joint4" value="1.721"/>
-        <joint name="joint5" value="0.326"/>
-        <joint name="joint6" value="0.523"/>
-        <joint name="joint7" value="-2.514"/>
-    </group_state>
-    <group_state name="cali_19" group="arm">
-        <joint name="joint1" value="-0.176"/>
-        <joint name="joint2" value="0.897"/>
-        <joint name="joint3" value="0.114"/>
-        <joint name="joint4" value="1.721"/>
-        <joint name="joint5" value="0.326"/>
-        <joint name="joint6" value="0.323"/>
-        <joint name="joint7" value="-1.923"/>
-    </group_state>
-    <group_state name="cali_20" group="arm">
-        <joint name="joint1" value="-0.176"/>
-        <joint name="joint2" value="0.897"/>
-        <joint name="joint3" value="0.027"/>
-        <joint name="joint4" value="1.633"/>
-        <joint name="joint5" value="0.150"/>
-        <joint name="joint6" value="0.235"/>
-        <joint name="joint7" value="-2.095"/>
-    </group_state>
-    <group_state name="cali_21" group="arm">
-        <joint name="joint1" value="-0.000"/>
-        <joint name="joint2" value="0.984"/>
-        <joint name="joint3" value="0.027"/>
-        <joint name="joint4" value="1.633"/>
-        <joint name="joint5" value="0.063"/>
-        <joint name="joint6" value="0.147"/>
-        <joint name="joint7" value="-2.268"/>
-    </group_state>
-    <group_state name="cali_22" group="arm">
-        <joint name="joint1" value="-0.000"/>
-        <joint name="joint2" value="1.159"/>
-        <joint name="joint3" value="0.026"/>
-        <joint name="joint4" value="1.633"/>
-        <joint name="joint5" value="0.063"/>
-        <joint name="joint6" value="0.147"/>
-        <joint name="joint7" value="-2.268"/>
-    </group_state>
-    <group_state name="cali_23" group="arm">
-        <joint name="joint1" value="-0.000"/>
-        <joint name="joint2" value="0.897"/>
-        <joint name="joint3" value="0.026"/>
-        <joint name="joint4" value="1.725"/>
-        <joint name="joint5" value="0.238"/>
-        <joint name="joint6" value="0.234"/>
-        <joint name="joint7" value="-2.697"/>
-    </group_state>
-    <group_state name="cali_24" group="arm">
-        <joint name="joint1" value="-0.175"/>
-        <joint name="joint2" value="0.722"/>
-        <joint name="joint3" value="0.026"/>
-        <joint name="joint4" value="1.899"/>
-        <joint name="joint5" value="0.238"/>
-        <joint name="joint6" value="0.233"/>
-        <joint name="joint7" value="-3.042"/>
-    </group_state>
+    <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
+    <end_effector name="gripper" parent_link="link7" group="gripper" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
+    <disable_collisions link1="base_link" link2="ee_link1" reason="Never" />
+    <disable_collisions link1="base_link" link2="ee_link2" reason="Never" />
     <disable_collisions link1="base_link" link2="link1" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="link2" reason="Never" />
     <disable_collisions link1="base_link" link2="link3" reason="Never" />
     <disable_collisions link1="base_link" link2="link4" reason="Never" />
-    <disable_collisions link1="gripper" link2="link1" reason="Never" />
-    <disable_collisions link1="gripper" link2="link3" reason="Never" />
-    <disable_collisions link1="gripper" link2="link4" reason="Never" />
-    <disable_collisions link1="gripper" link2="link5" reason="Never" />
-    <disable_collisions link1="gripper" link2="link6" reason="Never" />
-    <disable_collisions link1="gripper" link2="link7" reason="Adjacent" />
+    <disable_collisions link1="base_link" link2="link5" reason="Never" />
+    <disable_collisions link1="base_link" link2="link6" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="ee_link2" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="link1" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="link2" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="link3" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="link4" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="link5" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="link6" reason="Never" />
+    <disable_collisions link1="ee_link1" link2="link7" reason="Adjacent" />
+    <disable_collisions link1="ee_link2" link2="link1" reason="Never" />
+    <disable_collisions link1="ee_link2" link2="link2" reason="Never" />
+    <disable_collisions link1="ee_link2" link2="link3" reason="Never" />
+    <disable_collisions link1="ee_link2" link2="link4" reason="Never" />
+    <disable_collisions link1="ee_link2" link2="link5" reason="Never" />
+    <disable_collisions link1="ee_link2" link2="link6" reason="Never" />
+    <disable_collisions link1="ee_link2" link2="link7" reason="Adjacent" />
     <disable_collisions link1="link1" link2="link2" reason="Adjacent" />
     <disable_collisions link1="link1" link2="link3" reason="Never" />
     <disable_collisions link1="link1" link2="link4" reason="Never" />

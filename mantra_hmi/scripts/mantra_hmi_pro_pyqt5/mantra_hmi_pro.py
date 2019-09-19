@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Author     : Zhenyu Ren
 # E-mail     : rzy.1996@qq.com
-# Description: mantra mantra_hmi_pyqt4 implementation use python2 and PyQt5
+# Description: mantra mantra hmi implementation use python2 and PyQt5
 # Date       : 09/09/2019 3:07 PM
 # File Name  : mantra_gui.py
 
@@ -108,8 +108,8 @@ class MoveThread(QtCore.QThread):
     def run(self):
         global running, back_home, change_vel, move_group_state
         r = rospy.Rate(50)  # 50hz
+        # 运动控制指令发送
         while not rospy.is_shutdown():
-
             if move_group_state is not True:  # Move_group 空闲
                 if running:  # 关节运动
                     goal_pose_vel.data[0:7] = goal_positions  # 更新目标位置
@@ -153,8 +153,9 @@ class WindowThread(QtCore.QThread):
         self.window = window_
 
     def run(self):
-        global rad_deg_flag;
+        global rad_deg_flag
         r = rospy.Rate(10)  # 10hz
+        # 关节角刷新显示
         while not rospy.is_shutdown():
             if rad_deg_flag is 0:
                 if curr_positions[0] < 0:
@@ -284,11 +285,14 @@ class MyWindow(QMainWindow, Ui_Form):
             self.step = float(self.comboBox.currentText()[0:4]) * (pi / 180.0)
         print("Init step: %.2frad (%.2fdeg)" % (self.step, self.step * (180.0 / pi)))
         # 状态保存相关参数
-        self.fp = open('joint_states' + '.xml', 'a')
+        self.fp = open('joint_states' + '.xml', 'a+')
         self.fp.write('\n<new joint_states/>\n')
         self.group_state_prefix = 'cali_'
         self.group = 'arm'
         self.save_cnt = 0
+
+    def __del__(self):
+        self.fp.close()  # 关闭文件
 
     # 窗口居中
     def center(self):

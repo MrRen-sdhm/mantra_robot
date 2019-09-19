@@ -34,7 +34,7 @@ def create_xml_std(filename='None'):
         root.appendChild(node_manager)
 
     # 开始写xml文档
-    fp = open(filename + '.xml', 'a')
+    fp = open(filename + '.xml', 'a+')
     doc.writexml(fp, indent='\t', addindent='\t', newl='\n', encoding="utf-8", )
 
 
@@ -57,10 +57,11 @@ def create_group_state(group_state, group, joint_states, fp):
 
 
 if __name__ == "__main__":
-    fp = open('group_state' + '.xml', 'a')
+    fp = open('group_state' + '.xml', 'a+')
     fp.write('\n')
     joint_states = [0, 1, 2, 3, 4, 5, 6]
     group_state = 'test'
     group = 'arm'
     create_group_state(group_state, group, joint_states, fp)
+    fp.close()
 
