@@ -37,8 +37,3 @@ joint_limits:
     max_velocity: 1.5
     has_acceleration_limits: false
     max_acceleration: 0
-  ee_joint1:
-    has_velocity_limits: true
-    max_velocity: 2.5
-    has_acceleration_limits: false
-    max_acceleration: 0

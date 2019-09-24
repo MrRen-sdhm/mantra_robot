@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: mantra_with_gripper_description
+    relative_path: urdf/mantra_with_gripper_description.urdf
+    xacro_args: "--inorder "
+  SRDF:
+    relative_path: config/mantra_with_gripper_description.srdf
+  CONFIG:
+    author_name: Zhenyu Ren
+    author_email: rzy.1996@qq.com
+    generated_timestamp: 1568892964

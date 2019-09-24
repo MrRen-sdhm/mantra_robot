@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<launch>  
+    <arg name="fake" default="false" />
+    <arg name="rviz" default="true" />
+
+    <!-- robot_ip: IP-address of the robot's socket-messaging server -->
+    <!-- <arg name="robot_ip" doc="IP of the controller" /> -->
+
+    <!-- robot driver -->
+    <include unless="$(arg fake)" file="$(find mantra_driver)/launch/mantra_driver.launch" > 
+      <arg name="use_hand" value="true" />
+    </include>
+
+    <!-- robot model -->
+    <include unless="$(arg fake)" file="$(find mantra_with_gripper_moveit_config)/launch/demo.launch">
+      <arg name="use_rviz" value="$(arg rviz)" />
+    </include>
+
+    <!-- robot model fake -->
+    <include if="$(arg fake)" file="$(find mantra_with_gripper_moveit_config)/launch/fake.launch">
+      <arg name="use_rviz" value="$(arg rviz)" />
+      <arg name="use_publisher" value="true" />
+    </include>
+
+    <!-- robot hmi -->
+    <include file="$(find mantra_hmi)/launch/mantra_hmi.launch" />
+
+
+</launch>

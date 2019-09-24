@@ -86,7 +86,7 @@ class SubThread(QtCore.QThread):
     @staticmethod
     def callback(joint_states):
         global curr_positions
-        curr_positions = joint_states.position  # 获取新状态
+        curr_positions = joint_states.position[:7]  # 获取新状态
 
     # 获取Moveit节点执行状态
     @staticmethod

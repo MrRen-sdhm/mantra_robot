@@ -8,8 +8,8 @@
     <!-- <arg name="robot_ip" doc="IP of the controller" /> -->
 
     <!-- robot driver -->
-    <include unless="$(arg fake)" file="$(find mantra_driver)/launch/mantra_driver.launch">
-      <!-- <arg name="use_rviz" value="true" /> -->
+    <include unless="$(arg fake)" file="$(find mantra_driver)/launch/mantra_driver.launch"> 
+      <arg name="use_hand" value="false" />
     </include>
 
     <!-- robot model -->
