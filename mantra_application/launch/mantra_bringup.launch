@@ -3,6 +3,7 @@
 <launch>  
     <arg name="fake" default="false" />
     <arg name="rviz" default="true" />
+    <arg name="show" default="true" />
 
     <!-- robot_ip: IP-address of the robot's socket-messaging server -->
     <!-- <arg name="robot_ip" doc="IP of the controller" /> -->
@@ -10,6 +11,7 @@
     <!-- robot driver -->
     <include unless="$(arg fake)" file="$(find mantra_driver)/launch/mantra_driver.launch"> 
       <arg name="use_hand" value="false" />
+      <arg name="show_info" value="$(arg show)" />
     </include>
 
     <!-- robot model -->
