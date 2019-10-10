@@ -7,4 +7,8 @@
 
   <!-- loads ros_controllers to the param server -->
   <rosparam file="$(find mantra_with_gripper_moveit_config)/config/controllers.yaml"/>
+
+  <!-- gazebo -->
+  <rosparam file="$(find mantra_with_gripper_moveit_config)/config/controllers_gazebo.yaml"/>
+
 </launch>

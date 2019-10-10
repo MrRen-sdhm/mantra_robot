@@ -3,10 +3,10 @@
      Commit Version: 1.5.0-0-g9aa0fdb  Build Version: 1.5.7004.21443
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="mantra_description">
+  name="mantra">
   <link
     name="base_link">
-    <!-- <inertial>
+    <inertial>
       <origin
         xyz="5.69641035035207E-08 -7.52429850157642E-09 0.0534781808387783"
         rpy="0 0 0" />
@@ -19,7 +19,7 @@
         iyy="0.00919559841583678"
         iyz="3.46157313095082E-10"
         izz="0.011098052703463" />
-    </inertial> -->
+    </inertial>
     <visual>
       <origin
         xyz="0 0 0"

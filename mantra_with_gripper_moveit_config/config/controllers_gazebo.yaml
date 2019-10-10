@@ -1,0 +1,22 @@
+controller_manager_ns: controller_manager
+controller_list:
+  - name: mantra_with_gripper/arm_joint_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: true
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+      - joint7
+
+  - name: mantra_with_gripper/gripper_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    default: true
+    joints:
+      - ee_joint1
+      - ee_joint2

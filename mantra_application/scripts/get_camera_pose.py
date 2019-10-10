@@ -62,5 +62,3 @@ if __name__ == "__main__":
         if s is 's':
             print "get camera pose..."
             obj_position, obj_orientation = demo.obj_listener()
-
-    
