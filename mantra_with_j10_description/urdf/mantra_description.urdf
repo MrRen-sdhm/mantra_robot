@@ -3,10 +3,167 @@
      Commit Version: 1.5.0-0-g9aa0fdb  Build Version: 1.5.7004.21443
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
-  name="mantra">
+  name="mantra_with_j10_description">
+<!-- Defining the colors used in this robot -->
+    <material name="Black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <material name="White">
+        <color rgba="1 1 1 0.5"/>
+    </material>
+
+    <material name="Blue">
+        <color rgba="0 0 1 1"/>
+    </material>
+
+    <material name="Red">
+        <color rgba="1 0 0 1"/>
+    </material>
+    <!-- ///////////////////////////////////////   bottom_joint   ////////////////////////////////////////// -->
+    <joint name="bottom_joint" type="fixed">
+        <origin xyz="-2.19 0 0" rpy="0 0 0" />
+        <parent link="earth_link"/>
+        <child link="bottom_link"/>
+    </joint>
+    <joint name="bottom_joint2" type="fixed">
+        <origin xyz="0 0 1.49" rpy="0 0 0" />
+        <parent link="earth_link"/>
+        <child link="top_link"/>
+    </joint>
+   <joint name="top_joint" type="fixed">
+        <origin xyz="0.6 0 0.73" rpy="0 0 0" />
+        <parent link="top_link"/>
+        <child link="plane_link"/>
+    </joint>
+<joint name="base_joint" type="prismatic">
+<!--xyz="0.065704 -0.22324 1.5095"-->
+        <origin
+      xyz="0.065704 -0.22324 0.22"
+      rpy="0 -4.0598E-05 1.3143" />
+    <parent
+      link="bottom_link" />
+    <child
+      link="base_link" />
+    <axis
+      xyz="-4.0598E-05 0 1" />
+    <limit
+      lower="0"
+      upper="2"
+      effort="100"
+      velocity="1.0" />
+      <dynamics damping="50" friction="1"/>
+  </joint>
+ <!-- /////////////////////////////////////   plane LINK    ////////////////////////////////////////////// -->
+<link name="plane_link">
+        <visual>
+            <origin xyz="-4 38 -0.76" rpy="1.57 0 0" />
+            <geometry>
+        <mesh
+          filename="package://mantra_with_j10_description/meshes/J10B.STL" />
+      </geometry>
+            <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+        </visual>
+       <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mantra_with_j10_description/meshes/J10B.STL" />
+      </geometry>
+    </collision>
+	<mass
+        value="1" />
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="0.5" iyz="0.0" izz="1.0" />
+    </link>
+
+ <!-- /////////////////////////////////////   EARTH LINK    ////////////////////////////////////////////// -->
+    <link name="earth_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="5 13  0.02" />
+            </geometry>
+            <material name="White" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0.1 0.1 0.04" />
+            </geometry>
+        </collision>
+	<mass
+        value="100000" />
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="0.5" iyz="0.0" izz="1.0" />
+    </link>
+ <!-- /////////////////////////////////////   TOP LINK    ////////////////////////////////////////////// -->
+    <link name="top_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"
+
+ />
+            <geometry>
+                <box size="5 13  0.02" />
+            </geometry>
+            <material name="White" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0 0 0" />
+            </geometry>
+        </collision>
+	<mass
+        value="100000" />
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="0.5" iyz="0.0" izz="1.0" />
+    </link>
+ <!-- /////////////////////////////////////   BOTTOM LINK    ////////////////////////////////////////////// -->
+<link
+    name="bottom_link">
+    <inertial>
+      <origin
+        xyz="0.1 0.026667 0.75"
+        rpy="0 0 0" />
+      <mass
+        value="98000.55" />
+      <inertia
+        ixx="18.498"
+        ixy="-4.4409E-16"
+        ixz="-2.6353E-15"
+        iyy="18.841"
+        iyz="1.9537E-16"
+        izz="0.38243" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mantra_with_j10_description/meshes/bottom_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.64706 0.61961 0.58824 1" />
+      </material>
+    </visual>
+    <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="0 0 0" />
+            </geometry>
+        </collision>
+  </link>
+ <!-- /////////////////////////////////////   BASE LINK    ////////////////////////////////////////////// -->
   <link
     name="base_link">
-    <inertial>
+    <!-- <inertial>
       <origin
         xyz="5.69641035035207E-08 -7.52429850157642E-09 0.0534781808387783"
         rpy="0 0 0" />
@@ -19,14 +176,14 @@
         iyy="0.00919559841583678"
         iyz="3.46157313095082E-10"
         izz="0.011098052703463" />
-    </inertial>
+    </inertial> -->
     <visual>
       <origin
         xyz="0 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/base_link.STL" />
+          filename="package://mantra_with_j10_description/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -40,18 +197,19 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/base_link.STL" />
+          filename="package://mantra_with_j10_description/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
+
   <link
     name="link1">
     <inertial>
       <origin
-        xyz="3.33697354947896E-06 0.0376725326992402 0.113954575937932"
+        xyz="0 0 0"
         rpy="0 0 0" />
       <mass
-        value="0.449846417611502" />
+        value="1111110.449846417611502" />
       <inertia
         ixx="0.00281542194513947"
         ixy="-2.97928363529748E-08"
@@ -66,7 +224,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link1.STL" />
+          filename="package://mantra_with_j10_description/meshes/link1.STL" />
       </geometry>
       <material
         name="">
@@ -80,7 +238,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link1.STL" />
+          filename="package://mantra_with_j10_description/meshes/link1.STL" />
       </geometry>
     </collision>
   </link>
@@ -88,7 +246,7 @@
     name="joint1"
     type="revolute">
     <origin
-      xyz="0 0 0.2005"
+      xyz="0.09 -0.005 0.171"
       rpy="0 0 0" />
     <parent
       link="base_link" />
@@ -97,8 +255,8 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-3.1415"
+      upper="3.1415"
       effort="100"
       velocity="1" />
   </joint>
@@ -124,7 +282,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link2.STL" />
+          filename="package://mantra_with_j10_description/meshes/link2.STL" />
       </geometry>
       <material
         name="">
@@ -138,7 +296,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link2.STL" />
+          filename="package://mantra_with_j10_description/meshes/link2.STL" />
       </geometry>
     </collision>
   </link>
@@ -153,10 +311,10 @@
     <child
       link="link2" />
     <axis
-      xyz="0 0 -1" />
+      xyz="0 0 1" />
     <limit
-      lower="-1.85"
-      upper="1.85"
+      lower="-3.1415"
+      upper="3.1415"
       effort="100"
       velocity="1" />
   </joint>
@@ -182,7 +340,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link3.STL" />
+          filename="package://mantra_with_j10_description/meshes/link3.STL" />
       </geometry>
       <material
         name="">
@@ -196,7 +354,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link3.STL" />
+          filename="package://mantra_with_j10_description/meshes/link3.STL" />
       </geometry>
     </collision>
   </link>
@@ -211,10 +369,10 @@
     <child
       link="link3" />
     <axis
-      xyz="0 0 -1" />
+      xyz="0 0 1" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-3.1415"
+      upper="3.1415"
       effort="100"
       velocity="1" />
   </joint>
@@ -240,7 +398,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/joint4.STL" />
+          filename="package://mantra_with_j10_description/meshes/joint4.STL" />
       </geometry>
       <material
         name="">
@@ -254,7 +412,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/joint4.STL" />
+          filename="package://mantra_with_j10_description/meshes/joint4.STL" />
       </geometry>
     </collision>
   </link>
@@ -271,8 +429,8 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-1.85"
-      upper="1.85"
+      lower="-3.1415"
+      upper="3.1415"
       effort="100"
       velocity="1" />
   </joint>
@@ -298,7 +456,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link5.STL" />
+          filename="package://mantra_with_j10_description/meshes/link5.STL" />
       </geometry>
       <material
         name="">
@@ -312,7 +470,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link5.STL" />
+          filename="package://mantra_with_j10_description/meshes/link5.STL" />
       </geometry>
     </collision>
   </link>
@@ -329,8 +487,8 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-3.1415"
+      upper="3.1415"
       effort="100"
       velocity="1" />
   </joint>
@@ -356,7 +514,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link6.STL" />
+          filename="package://mantra_with_j10_description/meshes/link6.STL" />
       </geometry>
       <material
         name="">
@@ -370,7 +528,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link6.STL" />
+          filename="package://mantra_with_j10_description/meshes/link6.STL" />
       </geometry>
     </collision>
   </link>
@@ -385,10 +543,10 @@
     <child
       link="link6" />
     <axis
-      xyz="0 0 -1" />
+      xyz="0 0 1" />
     <limit
-      lower="-1.85"
-      upper="1.85"
+      lower="-3.1415"
+      upper="3.1415"
       effort="100"
       velocity="1" />
   </joint>
@@ -414,7 +572,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link7.STL" />
+          filename="package://mantra_with_j10_description/meshes/link7.STL" />
       </geometry>
       <material
         name="">
@@ -428,7 +586,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/link7.STL" />
+          filename="package://mantra_with_j10_description/meshes/link7.STL" />
       </geometry>
     </collision>
   </link>
@@ -445,82 +603,9 @@
     <axis
       xyz="0 0 -1" />
     <limit
-      lower="-1.5708"
-      upper="1.5708"
+      lower="-3.1415"
+      upper="3.1415"
       effort="100"
       velocity="1" />
-  </joint>
-  <!-- <link
-    name="gripper">
-    <inertial>
-      <origin
-        xyz="5.62206240665474E-07 3.00957007919871E-05 -0.838686124360706"
-        rpy="0 0 0" />
-      <mass
-        value="4.65959936378476" />
-      <inertia
-        ixx="0.733167737230715"
-        ixy="5.4495923074898E-08"
-        ixz="-1.43570428467062E-06"
-        iyy="0.72846366486061"
-        iyz="0.00112567728047823"
-        izz="0.0215950330422125" />
-    </inertial>
-    <visual>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://mantra_description/meshes/gripper.STL" />
-      </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://mantra_description/meshes/gripper.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint
-    name="gripper"
-    type="fixed">
-    <origin
-      xyz="0 0 0.0655"
-      rpy="0 0 0" />
-    <parent
-      link="link7" />
-    <child
-      link="gripper" />
-    <axis
-      xyz="0 0 0" />
-    <limit
-      lower="-1.85"
-      upper="1.85"
-      effort="100"
-      velocity="1" />
-  </joint> -->
-
-  <material name="green"><color rgba="0 1 0 1"/></material>
-  <link name="box">
-    <visual>
-      <geometry>
-        <box size="0.1 0.1 0.1"/>
-      </geometry>
-      <material name="green"/>
-    </visual>
-  </link>
-  <joint name="base_to_box" type="fixed">
-    <parent link="base_link"/>
-    <child link="box"/>
-    <origin xyz="0.88 0.0 0.546" rpy="0 0 0"/>
   </joint>
 </robot>

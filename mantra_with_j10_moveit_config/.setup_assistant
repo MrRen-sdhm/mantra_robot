@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: mantra_with_j10_description
+    relative_path: urdf/mantra_description.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/mantra_description.srdf
+  CONFIG:
+    author_name: cbc
+    author_email: cbc@hust.com
+    generated_timestamp: 1562943693

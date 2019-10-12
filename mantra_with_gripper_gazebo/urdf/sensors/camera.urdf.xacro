@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!-- http://gazebosim.org/tutorials?tut=ros_gzplugins -->
+<!-- http://gazebosim.org/tutorials/?tut=ros_depth_camera -->
+
+<robot name="camera" xmlns:xacro="http://ros.org/wiki/xacro">
+
+   <joint name="camera_joint" type="fixed">
+        <!-- <origin xyz="0.3 0 0.7" rpy="0 ${M_PI/2} 0"/> -->
+        <!-- <parent link="base_link"/> -->
+        <origin xyz="-0.1 0.0 0.0" rpy="0 ${-M_PI/2} 0"/>
+        <parent link="link7"/>
+        <child link="camera_link"/>
+   </joint>
+  
+   <!-- Camera -->
+   <link name="camera_link">
+       <collision>
+           <origin xyz="0 0 0" rpy="${-M_PI} 0 ${M_PI/2}"/>
+           <geometry>
+           <mesh filename="package://mantra_with_gripper_gazebo/meshes/d435.STL" />
+           </geometry>
+       </collision> 
+
+       <visual>
+           <origin xyz="0 0 0" rpy="${-M_PI} 0 ${M_PI/2}"/>
+           <geometry>
+           <mesh filename="package://mantra_with_gripper_gazebo/meshes/d435.STL" />
+           </geometry>
+           <!-- <material name="red"/> -->
+       </visual>
+
+       <inertial>
+        <mass value="0.00001" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="1.0" ixy="0.0" ixz="0.0"
+          iyy="1.0" iyz="0.0"
+          izz="1.0" />
+       </inertial>
+   </link>
+
+   <!-- <xacro:include filename="$(find mantra_with_gripper_gazebo)/urdf/sensors/camera.gazebo.xacro"/> -->
+   <xacro:include filename="$(find mantra_with_gripper_gazebo)/urdf/sensors/depth_camera.gazebo.xacro"/>
+</robot>
