@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+
+<robot name="scene" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- ///////////////  oil_filler1  /////////////// -->
+    <joint name="oil_filler_joint" type="fixed">
+        <origin xyz="0.91 0.0 0.55" rpy="0 ${-M_PI/2} 0"/>
+        <parent link="base_link"/>
+        <child link="oil_filler_link"/>
+    </joint>
+    <link name="oil_filler_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+            <geometry>
+                <mesh filename="package://mantra_with_oil_gun_gazebo/meshes/oil_filler.STL" />
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+            <geometry>
+                <mesh filename="package://mantra_with_oil_gun_gazebo/meshes/oil_filler.STL" />
+            </geometry>
+            <material
+                name="">
+                <color
+                rgba="1 1 1 1" />
+            </material>
+        </visual>
+
+        <inertial>
+            <mass value="0.00" />
+            <origin xyz="0 0 0" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0"
+            iyy="1.0" iyz="0.0"
+            izz="1.0" />
+        </inertial>
+    </link>
+
+    <gazebo reference="oil_filler_link">
+        <material>Gazebo/Green</material>
+    </gazebo>
+
+    <!-- ///////////////  background  /////////////// -->
+    <joint name="background_joint" type="fixed">
+        <origin xyz="0.95 -0.6 0.0" rpy="0 ${-M_PI/2} 0"/>
+        <parent link="base_link"/>
+        <child link="background_link"/>
+    </joint>
+  
+    <!-- background -->
+    <link name="background_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+            <geometry>
+                <mesh filename="package://mantra_with_oil_gun_gazebo/meshes/background.STL" />
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 0" rpy="${M_PI/2} 0 ${M_PI/2}"/>
+            <geometry>
+                <mesh filename="package://mantra_with_oil_gun_gazebo/meshes/background.STL" />
+            </geometry>
+            <material
+                name="">
+                <color
+                rgba="1 1 1 1" />
+            </material>
+        </visual>
+
+        <inertial>
+            <mass value="10" />
+            <origin xyz="0 0 0" />
+            <inertia ixx="1.0" ixy="0.0" ixz="0.0"
+            iyy="1.0" iyz="0.0"
+            izz="1.0" />
+        </inertial>
+    </link>
+
+    <gazebo reference="background_link">
+        <material>Gazebo/BlueLaser</material>
+    </gazebo>
+</robot>

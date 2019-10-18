@@ -1,0 +1,9 @@
+<launch>
+
+    <!-- 启动Gazebo  -->
+    <include file="$(find mantra_with_oil_gun_gazebo)/launch/mantra_with_oil_gun_world.launch" />   
+
+    <!-- 启动Gazebo controllers -->
+    <include file="$(find mantra_with_oil_gun_gazebo)/launch/mantra_with_oil_gun_gazebo_controller.launch" />   
+
+</launch>

@@ -1,0 +1,15 @@
+<launch>
+  
+    <!-- Launch Gazebo  -->
+    <include file="$(find mantra_with_oil_gun_gazebo)/launch/mantra_with_oil_gun_world.launch" />
+
+    <!-- ros_control arm launch file -->
+    <include file="$(find mantra_with_oil_gun_gazebo)/launch/mantra_with_oil_gun_gazebo_states.launch" />   
+
+    <!-- ros_control trajectory control dof arm launch file -->
+    <include file="$(find mantra_with_oil_gun_gazebo)/launch/mantra_with_oil_gun_trajectory_controller.launch" />
+
+    <!-- moveit launch file -->
+    <include file="$(find mantra_with_oil_gun_moveit_config)/launch/moveit_planning_execution.launch" />
+
+</launch>

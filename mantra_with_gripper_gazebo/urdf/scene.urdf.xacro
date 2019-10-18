@@ -4,12 +4,10 @@
 
     <!-- ///////////////  oil_filler1  /////////////// -->
     <joint name="oil_filler_joint" type="fixed">
-        <origin xyz="1.15 0.2 1.0" rpy="0 ${-M_PI/2} 0"/>
+        <origin xyz="1.0 0.0 1.0" rpy="0 ${-M_PI/2} 0"/>
         <parent link="base_link"/>
         <child link="oil_filler_link"/>
     </joint>
-  
-    <!-- oil_filler -->
     <link name="oil_filler_link">
         <collision>
             <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
@@ -40,13 +38,11 @@
     </gazebo>
 
     <!-- ///////////////  oil_filler2  /////////////// -->
-    <joint name="oil_filler_joint2" type="fixed">
-        <origin xyz="1.15 -0.2 1.2" rpy="0 ${-M_PI/2} 0"/>
+    <!-- <joint name="oil_filler_joint2" type="fixed">
+        <origin xyz="0.9 -0.2 1.2" rpy="0 ${-M_PI/2} 0"/>
         <parent link="base_link"/>
         <child link="oil_filler_link2"/>
     </joint>
-  
-    <!-- oil_filler2 -->
     <link name="oil_filler_link2">
         <collision>
             <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
@@ -60,7 +56,6 @@
             <geometry>
             <mesh filename="package://mantra_with_gripper_gazebo/meshes/oil_filler.STL" />
             </geometry>
-            <!-- <material name="red"/> -->
         </visual>
 
         <inertial>
@@ -74,7 +69,7 @@
 
     <gazebo reference="oil_filler_link2">
         <material>Gazebo/WhiteGlow</material>
-    </gazebo>
+    </gazebo> -->
 
 
     <!-- ///////////////  background  /////////////// -->

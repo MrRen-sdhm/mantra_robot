@@ -1,16 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com)
-     Commit Version: 1.5.0-0-g9aa0fdb  Build Version: 1.5.7004.21443
-     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
-<robot
-  name="mantra_with_gripper_description">
+<?xml version="1.0"?>
+
+<robot name="mantra_with_oil_gun_description" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:property name="M_PI" value="3.1415926536" />
+
   <link
     name="base_link">
     <inertial>
       <origin
         xyz="5.69641035035705E-08 -7.52429850161379E-09 0.0534781808387783"
         rpy="0 0 0" />
-      <mass value="500" />  <!-- modified -->
+      <mass value="5" />  <!-- modified -->
       <!-- modified -->
       <inertia  
         ixx="1.0"
@@ -26,7 +25,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/base_link.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -40,7 +39,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/base_link.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -52,13 +51,13 @@
         rpy="0 0 0" />
       <mass
         value="0.449846417611502" />
-      <inertia
-        ixx="0.00281542194513947"
-        ixy="-2.97928363529203E-08"
-        ixz="2.31552459198658E-09"
-        iyy="0.00237879024815951"
-        iyz="-0.000689611051918419"
-        izz="0.00161666621542504" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -66,7 +65,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link1.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link1.STL" />
       </geometry>
       <material
         name="">
@@ -80,7 +79,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link1.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link1.STL" />
       </geometry>
     </collision>
   </link>
@@ -110,13 +109,13 @@
         rpy="0 0 0" />
       <mass
         value="0.449846417611509" />
-      <inertia
-        ixx="0.00281542194513949"
-        ixy="-2.3155245922964E-09"
-        ixz="-2.97928363554505E-08"
-        iyy="0.00161666621542506"
-        iyz="0.000689611051918419"
-        izz="0.00237879024815952" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -124,7 +123,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link2.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link2.STL" />
       </geometry>
       <material
         name="">
@@ -138,7 +137,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link2.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link2.STL" />
       </geometry>
     </collision>
   </link>
@@ -168,13 +167,13 @@
         rpy="0 0 0" />
       <mass
         value="0.392582340089193" />
-      <inertia
-        ixx="0.0020755242879527"
-        ixy="1.39339603463947E-08"
-        ixz="-2.854811113402E-08"
-        iyy="0.00178702026485436"
-        iyz="-0.000503155834932376"
-        izz="0.00121405044233485" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -182,7 +181,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link3.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link3.STL" />
       </geometry>
       <material
         name="">
@@ -196,7 +195,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link3.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link3.STL" />
       </geometry>
     </collision>
   </link>
@@ -226,13 +225,13 @@
         rpy="0 0 0" />
       <mass
         value="0.367226253241491" />
-      <inertia
-        ixx="0.00189945127986856"
-        ixy="1.10761786473211E-08"
-        ixz="-3.7570793904099E-09"
-        iyy="0.00102605162314097"
-        iyz="0.000467411288512599"
-        izz="0.00163165412446067" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -240,7 +239,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link4.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link4.STL" />
       </geometry>
       <material
         name="">
@@ -254,7 +253,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link4.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link4.STL" />
       </geometry>
     </collision>
   </link>
@@ -284,13 +283,13 @@
         rpy="0 0 0" />
       <mass
         value="0.367226254016741" />
-      <inertia
-        ixx="0.00189945125870264"
-        ixy="-3.75974500932253E-09"
-        ixz="-1.10613008672603E-08"
-        iyy="0.00163165410820963"
-        iyz="-0.000467411240126133"
-        izz="0.00102605163568241" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -298,7 +297,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link5.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link5.STL" />
       </geometry>
       <material
         name="">
@@ -312,7 +311,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link5.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link5.STL" />
       </geometry>
     </collision>
   </link>
@@ -342,13 +341,13 @@
         rpy="0 0 0" />
       <mass
         value="0.367226253239117" />
-      <inertia
-        ixx="0.00189945137374859"
-        ixy="1.10879827352058E-08"
-        ixz="-3.81500844090566E-09"
-        iyy="0.00102605167941246"
-        iyz="0.000467411315869438"
-        izz="0.00163165420801843" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -356,7 +355,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link6.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link6.STL" />
       </geometry>
       <material
         name="">
@@ -370,7 +369,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link6.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link6.STL" />
       </geometry>
     </collision>
   </link>
@@ -396,17 +395,17 @@
     name="link7">
     <inertial>
       <origin
-        xyz="7.46099887346881E-17 -1.10416395174554E-05 -0.0250031652588534"
+        xyz="7.91773891106126E-17 -1.10416395174545E-05 0.0404968347411467"
         rpy="0 0 0" />
       <mass
         value="0.14043817532843" />
-      <inertia
-        ixx="0.000166560052257127"
-        ixy="2.71160607993557E-20"
-        ixz="-8.59213210250315E-20"
-        iyy="0.000166602712740968"
-        iyz="2.78725555163462E-08"
-        izz="0.000232492320290339" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -414,7 +413,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link7.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link7.STL" />
       </geometry>
       <material
         name="">
@@ -428,7 +427,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/link7.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/link7.STL" />
       </geometry>
     </collision>
   </link>
@@ -436,7 +435,7 @@
     name="joint7"
     type="revolute">
     <origin
-      xyz="0 0.2255 0"
+      xyz="0 0.16 0"
       rpy="-1.5708 0 0" />
     <parent
       link="link6" />
@@ -451,20 +450,20 @@
       velocity="1" />
   </joint>
   <link
-    name="ee_link1">
+    name="oil_gun_link">
     <inertial>
       <origin
-        xyz="2.85464193978627E-17 0.046 0.002"
+        xyz="0 0 -0.838686124360706"
         rpy="0 0 0" />
       <mass
-        value="0.00194999999999999" />
-      <inertia
-        ixx="1.50312499999997E-07"
-        ixy="6.61485086202342E-25"
-        ixz="1.48998375260736E-23"
-        iyy="1.73712499999997E-07"
-        iyz="-4.21006794862361E-25"
-        izz="3.15249999999998E-08" />
+        value="0.045959936378476" />
+      <inertia  
+        ixx="1.0"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="1.0"
+        iyz="0.0"
+        izz="1.0" />
     </inertial>
     <visual>
       <origin
@@ -472,12 +471,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/ee_link1.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/oil_gun.STL" />
       </geometry>
       <material
         name="">
         <color
-          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+          rgba="1 1 1 1" />
       </material>
     </visual>
     <collision>
@@ -486,93 +485,38 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_with_gripper_description/meshes/ee_link1.STL" />
+          filename="package://mantra_with_oil_gun_description/meshes/oil_gun.STL" />
       </geometry>
     </collision>
   </link>
   <joint
-    name="ee_joint1"
-    type="prismatic">
+    name="oil_gun_joint"
+    type="fixed">
     <origin
-      xyz="0 0 0.126"
-      rpy="0 0 0" />
+      xyz="0 0 0.0655"
+      rpy="1.5708 0 0" />
     <parent
       link="link7" />
     <child
-      link="ee_link1" />
+      link="oil_gun_link" />
     <axis
-      xyz="0 -1 0" />
+      xyz="0 0 0" />
     <limit
-      lower="0"
-      upper="0.04"
-      effort="0"
-      velocity="0" />
-  </joint>
-  <link
-    name="ee_link2">
-    <inertial>
-      <origin
-        xyz="1.46922127701119E-17 -0.046 0.002"
-        rpy="0 0 0" />
-      <mass
-        value="0.00194999999999999" />
-      <inertia
-        ixx="1.50312499999997E-07"
-        ixy="6.61485086202342E-25"
-        ixz="1.48998375260736E-23"
-        iyy="1.73712499999997E-07"
-        iyz="-4.21006794862361E-25"
-        izz="3.15249999999998E-08" />
-    </inertial>
-    <visual>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://mantra_with_gripper_description/meshes/ee_link2.STL" />
-      </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin
-        xyz="0 0 0"
-        rpy="0 0 0" />
-      <geometry>
-        <mesh
-          filename="package://mantra_with_gripper_description/meshes/ee_link2.STL" />
-      </geometry>
-    </collision>
-  </link>
-  <joint
-    name="ee_joint2"
-    type="prismatic">
-    <origin
-      xyz="0 0 0.126"
-      rpy="0 0 0" />
-    <parent
-      link="link7" />
-    <child
-      link="ee_link2" />
-    <axis
-      xyz="0 1 0" />
-    <limit
-      lower="-0.04"
-      upper="0"
-      effort="0"
-      velocity="0" />
-    <mimic
-      joint="ee_joint1"
-      multiplier="1"
-      offset="0" />
+      lower="-1.85"
+      upper="1.85"
+      effort="100"
+      velocity="1" />
   </joint>
 
+  <gazebo reference="oil_gun_link">
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+  <!-- scene -->
+  <xacro:include filename="$(find mantra_with_oil_gun_gazebo)/urdf/scene.urdf.xacro" />
+
   <!-- sensors -->
-  <include filename="$(find mantra_with_gripper_gazebo)/urdf/sensors/camera.urdf.xacro"/>
+  <xacro:include filename="$(find mantra_with_oil_gun_gazebo)/urdf/sensors/camera.urdf.xacro" />
 
   <!-- #################################  gazebo ################################## -->
   <!-- modify EffortJointInterface to PositionJointInterface -->
@@ -646,31 +590,11 @@
           <mechanicalReduction>1</mechanicalReduction>
       </actuator>
   </transmission>
-  <transmission name="trans_ee_joint1">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="ee_joint1">
-          <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="ee_joint1_motor">
-          <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-          <mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-  </transmission>
-  <transmission name="trans_ee_joint2">
-      <type>transmission_interface/SimpleTransmission</type>
-      <joint name="ee_joint2">
-          <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      </joint>
-      <actuator name="ee_joint2_motor">
-          <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-          <mechanicalReduction>1</mechanicalReduction>
-      </actuator>
-  </transmission>
   
   <!-- gazebo_ros_control -->
   <gazebo>
       <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-          <robotNamespace>/mantra_with_gripper</robotNamespace>  <!-- modified -->
+          <robotNamespace>/mantra_with_oil_gun</robotNamespace>  <!-- modified -->
           <legacyModeNS>true</legacyModeNS> <!-- modified -->
           <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType> <!-- modified -->
       </plugin>
