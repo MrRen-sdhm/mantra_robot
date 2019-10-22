@@ -10,6 +10,7 @@
     <!-- start the robot-->
     <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
         <arg name="fake" value="true" />
+        <arg name="rviz" value="false" />
         <arg name="hmi" value="false" />
     </include>
 

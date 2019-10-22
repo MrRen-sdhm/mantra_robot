@@ -11,6 +11,7 @@ build/
 .settings/
 .vscode/
 .idea/
+mantra_application/reconstruction/data/
 
 *.pwf
 *.git

@@ -1,0 +1,18 @@
+<launch>
+    <!-- start the Realsense -->
+    <include file="$(find realsense2_viewer)/launch/realsense2_viewer.launch" />
+
+    <!-- start the robot-->
+    <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
+        <arg name="fake" value="true" />
+        <arg name="rviz" value="false" />
+        <arg name="hmi" value="false" />
+    </include>
+
+    <include file="$(find mantra_application)/calibration/launch/publish_static_tf.launch" />
+
+    <!-- start the rviz -->
+    <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" 
+        args="-d $(find mantra_application)/reconstruction/config/get_camera_pose_image.rviz" output="screen" />
+
+</launch>
