@@ -1,0 +1,30 @@
+<launch>
+    <arg name="marker_size" doc="Size of the ArUco marker used, in meters" default="0.1" />
+    <arg name="marker_id" doc="The ID of the ArUco marker used" default="100" />
+
+    <!-- start the Realsense and aruco tracker-->
+    <include file="$(find mantra_application)/calibration/launch/aruco_tracker.launch" >
+        <arg name="use_rviz" value="false" />
+    </include>
+
+    <!-- start the robot-->
+    <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
+        <arg name="fake" value="true" />
+        <arg name="hmi" value="false" />
+    </include>
+
+    <!-- publish tf between camera_color_optical frame and camera_link frame-->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="camera_color_optical2camera_link_broadcaster" 
+          args="0.015 0.0 0.01 0.50 -0.501 0.499 0.501 camera_color_optical_frame camera_link 1000" /> -->
+
+    <!-- publish tf between gripper frame and camera_color_optical frame-->
+    <!-- <include file="$(find mantra_application)/calibration/launch/publish_tf.launch">
+        <arg name="namespace_prefix" value="mantra"/>
+    </include> -->
+
+    <include file="$(find mantra_application)/calibration/launch/publish_static_tf.launch" />
+
+    <!-- start the rviz -->
+    <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" args="-d $(find mantra_application)/calibration/config/result_show.rviz" output="screen" />
+
+</launch>

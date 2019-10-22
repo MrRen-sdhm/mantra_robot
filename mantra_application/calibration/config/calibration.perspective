@@ -1,0 +1,147 @@
+{
+  "keys": {},
+  "groups": {
+    "pluginmanager": {
+      "keys": {
+        "running-plugins": {
+          "type": "repr",
+          "repr": "{u'rqt_easy_handeye/Hand-eye Calibration': [1], u'rqt_image_view/ImageView': [1]}"
+        }
+      },
+      "groups": {
+        "plugin__rqt_controller_manager__ControllerManagerGUI__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "u'true'"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_image_view__ImageView__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__ImageViewWidget": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Image View'"
+                }
+              },
+              "groups": {}
+            },
+            "plugin": {
+              "keys": {
+                "max_range": {
+                  "type": "repr",
+                  "repr": "10.0"
+                },
+                "rotate": {
+                  "type": "repr",
+                  "repr": "0"
+                },
+                "smooth_image": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "mouse_pub_topic": {
+                  "type": "repr",
+                  "repr": "u'/aruco_tracker/result_mouse_left'"
+                },
+                "num_gridlines": {
+                  "type": "repr",
+                  "repr": "0"
+                },
+                "toolbar_hidden": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "zoom1": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "dynamic_range": {
+                  "type": "repr",
+                  "repr": "False"
+                },
+                "topic": {
+                  "type": "repr",
+                  "repr": "u'/aruco_tracker/result'"
+                },
+                "publish_click_location": {
+                  "type": "repr",
+                  "repr": "False"
+                }
+              },
+              "groups": {}
+            }
+          }
+        },
+        "plugin__rqt_easy_handeye__Hand-eye Calibration__1": {
+          "keys": {},
+          "groups": {
+            "dock_widget__RqtHandeyeCalibrationUI": {
+              "keys": {
+                "dockable": {
+                  "type": "repr",
+                  "repr": "True"
+                },
+                "parent": {
+                  "type": "repr",
+                  "repr": "None"
+                },
+                "dock_widget_title": {
+                  "type": "repr",
+                  "repr": "u'Form'"
+                }
+              },
+              "groups": {}
+            }
+          }
+        }
+      }
+    },
+    "mainwindow": {
+      "keys": {
+        "geometry": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('01d9d0cb0003000000000041000001e90000038800000437000000410000020500000388000004370000000000000000078000000041000002050000038800000437')",
+          "pretty-print": "     A     7 A     7      A     7"
+        },
+        "state": {
+          "type": "repr(QByteArray.hex)",
+          "repr(QByteArray.hex)": "QtCore.QByteArray('000000ff00000000fd0000000100000003000003480000021dfc0100000003fb00000090007200710074005f00680061006e006400650079006500630061006c006900620072006100740069006f006e005f005f00480061006e0064002d006500790065002000430061006c006900620072006100740069006f006e005f005f0031005f005f00520071007400480061006e006400650079006500430061006c006900620072006100740069006f006e0055004901000000000000042b0000000000000000fb00000084007200710074005f0065006100730079005f00680061006e0064006500790065005f005f00480061006e0064002d006500790065002000430061006c006900620072006100740069006f006e005f005f0031005f005f00520071007400480061006e006400650079006500430061006c006900620072006100740069006f006e005500490100000000000001ca0000019900fffffffb0000005a007200710074005f0069006d006100670065005f0076006900650077005f005f0049006d0061006700650056006900650077005f005f0031005f005f0049006d006100670065005600690065007700570069006400670065007401000001d000000178000000c700ffffff000003480000000000000004000000040000000800000008fc00000001000000030000000100000036004d0069006e0069006d0069007a006500640044006f0063006b00570069006400670065007400730054006f006f006c0062006100720000000000ffffffff0000000000000000')",
+          "pretty-print": "                  rqt_handeyecalibration__Hand-eye Calibration__1__RqtHandeyeCalibrationUI           rqt_easy_handeye__Hand-eye Calibration__1__RqtHandeyeCalibrationUI          Zrqt_image_view__ImageView__1__ImageViewWidget                            6MinimizedDockWidgetsToolbar        "
+        }
+      },
+      "groups": {
+        "toolbar_areas": {
+          "keys": {
+            "MinimizedDockWidgetsToolbar": {
+              "type": "repr",
+              "repr": "8"
+            }
+          },
+          "groups": {}
+        }
+      }
+    }
+  }
+}

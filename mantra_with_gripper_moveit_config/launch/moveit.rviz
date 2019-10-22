@@ -42,11 +42,7 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        background_link:
-          Value: false
         base_link:
-          Value: false
-        camera_link:
           Value: false
         ee_link1:
           Value: false
@@ -66,10 +62,6 @@ Visualization Manager:
           Value: false
         link7:
           Value: false
-        oil_filler_link:
-          Value: false
-        oil_filler_link2:
-          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -77,8 +69,6 @@ Visualization Manager:
       Show Names: false
       Tree:
         base_link:
-          background_link:
-            {}
           link1:
             link2:
               link3:
@@ -86,16 +76,10 @@ Visualization Manager:
                   link5:
                     link6:
                       link7:
-                        camera_link:
-                          {}
                         ee_link1:
                           {}
                         ee_link2:
                           {}
-          oil_filler_link:
-            {}
-          oil_filler_link2:
-            {}
       Update Interval: 0
       Value: true
     - Acceleration_Scaling_Factor: 0.8
@@ -131,17 +115,7 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
-          background_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
           base_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          camera_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -187,16 +161,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           link7:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          oil_filler_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          oil_filler_link2:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -221,7 +185,7 @@ Visualization Manager:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 1
         Goal State Color: 250; 128; 0
-        Interactive Marker Size: 0.30000001192092896
+        Interactive Marker Size: 0.20000000298023224
         Joint Violation Color: 255; 0; 255
         Planning Group: arm
         Query Goal State: true
@@ -246,17 +210,7 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
-          background_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
           base_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          camera_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -302,16 +256,6 @@ Visualization Manager:
             Show Trail: false
             Value: true
           link7:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          oil_filler_link:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
-          oil_filler_link2:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -367,7 +311,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.8760976791381836
+      Distance: 3.6477162837982178
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -382,10 +326,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5147961974143982
+      Pitch: 0.1247965395450592
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 4.628051280975342
+      Yaw: 3.9930315017700195
     Saved: ~
 Window Geometry:
   Displays:
