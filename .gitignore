@@ -21,6 +21,7 @@ mantra_application/reconstruction/data/
 *.zip
 *.tar
 *.weights
+*.bag
 
 # Executables
 *.swf

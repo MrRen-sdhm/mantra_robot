@@ -17,6 +17,7 @@ import numpy as np
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo
 
 import os
 path = os.path.dirname(os.path.dirname(__file__)) # 获取文件所在目录的上级目录
@@ -31,10 +32,22 @@ cv_image_depth = None
 
 class ImageReceiver:
     def __init__(self):
+        self.info_save_cnt = 0
         # 创建cv_bridge，声明图像的订阅者
         self.bridge = CvBridge()
+        self.camera_info_sub = rospy.Subscriber("/camera/color/camera_info", CameraInfo, self.info_callback)
         self.color_image_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.color_callback)
         self.depth_image_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback)
+
+    def info_callback(self,data):
+        if self.info_save_cnt == 0:
+            matrix = np.zeros((3, 3))
+            matrix[0,:3] = data.K[0:3]
+            matrix[1,:3] = data.K[3:6]
+            matrix[2,:3] = data.K[6:9]
+            print "[INFO] Camera intrinsis matrix:\n", matrix
+            np.savetxt(path + "/config/camera-intrinsics.txt", matrix)
+            self.info_save_cnt = 1
 
     def color_callback(self,data):
         global cv_image_color
@@ -161,7 +174,7 @@ if __name__ == "__main__":
     # pose_image_saver.goto_pose_named("test_2")
     # pose_image_saver.save_pose_image()
 
-    for i in range(2):
+    for i in range(50):
         pose_image_saver.save_pose_image()
 
     # 调用Python脚本进行三维重建

@@ -36,7 +36,7 @@ for i in range(n_imgs):
 
 # Initialize voxel volume
 print("Initializing voxel volume...")
-tsdf_vol = fusion.TSDFVolume(vol_bnds,voxel_size=0.02)
+tsdf_vol = fusion.TSDFVolume(vol_bnds,voxel_size=0.0025)
 
 # Loop through RGB-D images and fuse them together
 t0_elapse = time.time()
@@ -58,4 +58,6 @@ print("Average FPS: %.2f"%(fps))
 # Get mesh from voxel volume and save to disk (can be viewed with Meshlab)
 print("Saving to mesh.ply...")
 verts,faces,norms,colors = tsdf_vol.get_mesh()
-fusion.meshwrite(path + "/data/mesh.ply",verts,faces,norms,colors)
+fusion.meshwrite(path + "/data/mesh.ply",verts,faces,norms)
+fusion.meshwrite_color(path + "/data/mesh_color.ply",verts,faces,norms,colors)
+
