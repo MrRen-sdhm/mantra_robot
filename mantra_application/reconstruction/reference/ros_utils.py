@@ -245,10 +245,10 @@ def setup_tf_transformer_from_ros_bag(bag, cache_time_secs=3600, verbose=False):
     timestamps = []
     tf_set = set()
 
-    print "\n\n\ntf_static:"
+    # print "\n\n\ntf_static:"
     for topic, msg, t in bag.read_messages(topics=['/tf_static']):
         for msg_tf in msg.transforms:
-            print msg_tf.header.stamp
+            # print msg_tf.header.stamp
             child_frame_id = msg_tf.child_frame_id
             parent_frame_id = msg_tf.header.frame_id
             key = (child_frame_id, parent_frame_id)
@@ -261,7 +261,6 @@ def setup_tf_transformer_from_ros_bag(bag, cache_time_secs=3600, verbose=False):
 
         timestamps.append(t)
 
-    # raise ValueError("donezos")
     def addStaticMessagesToTransformer(stamp):
         if verbose:
             print "len(tf_static_msgs): ", len(tf_static_msgs)
@@ -270,18 +269,17 @@ def setup_tf_transformer_from_ros_bag(bag, cache_time_secs=3600, verbose=False):
             msg.header.stamp = stamp
             tf_t.setTransform(msg)
 
-    print "\n\n\ntf:"
+    # print "\n\n\ntf:"
     counter = 0
     for topic, msg, t in bag.read_messages(topics=['/tf']):
         # print "transform msg: \n", msg
-        # print "type(msg)", type(msg)
         stamp = None
         counter += 1
         if verbose:
             print "processing tf message %d" % counter
 
         for msg_tf in msg.transforms:
-            print msg_tf.header.stamp
+            # print msg_tf.header.stamp
             # if ("base" == msg_tf.child_frame_id) or ("base" == msg_tf.header.frame_id):
             #     print "timestamp = ", msg_tf.header.stamp.to_sec()
             #     print msg_tf

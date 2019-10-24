@@ -43,3 +43,19 @@ def get_current_YYYY_MM_DD_hh_mm_ss():
     now = datetime.datetime.now()
     string =  "%0.4d-%0.2d-%0.2d-%0.2d-%0.2d-%0.2d" % (now.year, now.month, now.day, now.hour, now.minute, now.second)
     return string
+
+
+def dictFromPosQuat(pos, quat):
+    d = dict()
+    d['translation'] = dict()
+    d['translation']['x'] = pos[0]
+    d['translation']['y'] = pos[1]
+    d['translation']['z'] = pos[2]
+
+    d['quaternion'] = dict()
+    d['quaternion']['w'] = quat[0]
+    d['quaternion']['x'] = quat[1]
+    d['quaternion']['y'] = quat[2]
+    d['quaternion']['z'] = quat[3]
+
+    return d

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 # system
-import rospy
+# import rospy
 import os
-import sys
+# import sys
 import time
 import subprocess
 import copy
@@ -12,10 +12,10 @@ import cv2
 import shutil
 
 # ply reader
-from plyfile import PlyData, PlyElement
+# from plyfile import PlyData, PlyElement
 
 # ROS
-import tf
+# import tf
 import tf2_ros
 import rospy
 import rosbag
@@ -23,11 +23,11 @@ import sensor_msgs
 from cv_bridge import CvBridge
 
 # spartan
-# import spartan.utils.utils as Utils
-# import spartan.utils.ros_utils as rosUtils
+# import spartan.utils.utils as utils
+# import spartan.utils.ros_utils as ros_utils
 
-import utils as Utils
-import ros_utils as rosUtils
+import utils as utils
+import ros_utils as ros_utils
 
 # ros srv
 # import fusion_server.srv
@@ -104,15 +104,13 @@ class ImageCapture(object):
             try:
                 rgbOpticalFrameToWorld = self.tfBuffer.lookup_transform(self.world_frame, self.camera_frame, ros_time)
                 return rgbOpticalFrameToWorld
-                break
             except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
                 continue
 
     def setupSubscribers(self):
-        self.subscribers = {}
-        self.subscribers['rgb'] = rospy.Subscriber(self.topics_dict['rgb'], sensor_msgs.msg.Image, self.onRgbImage)
-        self.subscribers['depth'] = rospy.Subscriber(self.topics_dict['depth'], sensor_msgs.msg.Image,
-                                                     self.onDepthImage)
+        self.subscribers = {'rgb': rospy.Subscriber(self.topics_dict['rgb'], sensor_msgs.msg.Image, self.onRgbImage),
+                            'depth': rospy.Subscriber(self.topics_dict['depth'], sensor_msgs.msg.Image,
+                                                      self.onDepthImage)}
 
     def onRgbImage(self, msg):
         print "get rgb"
@@ -164,17 +162,18 @@ class ImageCapture(object):
         print "image_topics: ", image_topics
 
         # extract TF information
-        tf_t = rosUtils.setup_tf_transformer_from_ros_bag(bag, cache_time_secs=3600, verbose=False)
+        tf_t = ros_utils.setup_tf_transformer_from_ros_bag(bag, cache_time_secs=3600, verbose=False)
 
-        print "\n\n\n\nimage:"
-        for topic, msg, t in bag.read_messages(topics=image_topics[0]):
-            print msg.header.stamp
+        # print "\n\n\n\nimage:"
+        # for topic, msg, t in bag.read_messages(topics=image_topics[0]):
+        #     print msg.header.stamp
 
+        # ###############################   Extract images and tf   #################################
         log_rate = 100
         counter = 0
         for topic, msg, t in bag.read_messages(topics=image_topics):
             counter += 1
-            print "\n\n", counter, topic, t, msg.header
+            # print "\n\n", counter, topic, t, msg.header
 
             # skip the first 30 images due to transform errors . . . 
             # if counter < 30:
@@ -184,14 +183,15 @@ class ImageCapture(object):
                 print "processing image message %d" % counter
 
             data = None
+            cv_img = None
             if "color" in topic and "depth" not in topic:
                 cv_img = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding=self.rgb_encoding)
                 data = rgb_data
             elif "depth" in topic:
-                cv_img = rosUtils.depth_image_to_cv2_uint16(msg, bridge=self.cv_bridge)
+                cv_img = ros_utils.depth_image_to_cv2_uint16(msg, bridge=self.cv_bridge)
                 data = depth_data
 
-                # look up transform between world_frame and camera_frame
+                # look up stamped transform between world_frame and camera_frame
                 try:
                     (trans, rot) = tf_t.lookupTransform(self.world_frame, self.camera_frame, msg.header.stamp)
                 except tf2_ros.ExtrapolationException, e:
@@ -213,9 +213,9 @@ class ImageCapture(object):
         print "Extracted %d rgb images" % (len(rgb_data['msgs']))
         print "Extracted %d depth images" % (len(depth_data['msgs']))
 
+        # ###############################   Get synchronized images   #################################
         rgb_data['timestamps'] = np.array(rgb_data['timestamps'])
 
-        # synchronize the images
         synchronized_rgb_imgs = []
         for idx, stamp in enumerate(depth_data['timestamps']):
             rgb_idx = ImageCapture.lookup_synchronized_image(stamp, rgb_data['timestamps'])
@@ -223,12 +223,13 @@ class ImageCapture(object):
             if idx % log_rate == 0:
                 print "depth image %d matched to rgb image %d" % (idx, rgb_idx)
 
-        # save to a file
+        print "synchronized rgb imgs num:", len(synchronized_rgb_imgs)
+
+        # ######################   Save synchronized images and camera pose  #########################
         if not os.path.isdir(output_dir):
             os.makedirs(output_dir)
 
         pose_data = dict()
-
         for idx, depth_img in enumerate(depth_data['cv_img']):
             rgb_img = synchronized_rgb_imgs[idx]
 
@@ -249,13 +250,13 @@ class ImageCapture(object):
             d = pose_data[idx]
             trans, rot = depth_data['camera_to_world'][idx]
             quat_wxyz = [rot[3], rot[0], rot[1], rot[2]]
-            transform_dict = Utils.dictFromPosQuat(trans, quat_wxyz)
+            transform_dict = utils.dictFromPosQuat(trans, quat_wxyz)
             d['camera_to_world'] = transform_dict
             d['timestamp'] = depth_data['timestamps'][idx]
             d['rgb_image_filename'] = rgb_filename
             d['depth_image_filename'] = depth_filename
 
-        Utils.saveToYaml(pose_data, os.path.join(output_dir, 'pose_data.yaml'))
+        utils.saveToYaml(pose_data, os.path.join(output_dir, 'pose_data.yaml'))
 
         # extract the camera info msg
 
@@ -264,13 +265,13 @@ class ImageCapture(object):
             camera_info_msg = msg
             break
 
-        camera_info_dict = rosUtils.camera_info_dict_from_camera_info_msg(camera_info_msg)
+        camera_info_dict = ros_utils.camera_info_dict_from_camera_info_msg(camera_info_msg)
 
         # NOTE: currently the batch_extract_and_fuse_all_scenes.py
         # script checks for the existence of this file (camera_info.yaml) 
         # to determine if the extraction process was completed.
 
-        Utils.saveToYaml(camera_info_dict, os.path.join(output_dir, 'camera_info.yaml'))
+        utils.saveToYaml(camera_info_dict, os.path.join(output_dir, 'camera_info.yaml'))
 
     @staticmethod
     def lookup_synchronized_image(query_time, timestamps):
@@ -278,8 +279,6 @@ class ImageCapture(object):
         Parameters:
             query_time: int
                 the time you want to find closest match to
-            
-
         """
         idx = np.searchsorted(timestamps, query_time)
         return min(idx, np.size(timestamps) - 1)
@@ -291,9 +290,9 @@ class FusionServer(object):
         self.bagging = False
         self.rosbag_proc = None
         self.tfBuffer = None
-        # storedPosesFile = os.path.join(Utils.get_curr_dir(), 'src', 'catkin_projects', 'station_config','RLG_iiwa_1','stored_poses.yaml')
-        # self.storedPoses = Utils.getDictFromYamlFilename(storedPosesFile)
-        # self.robotService = rosUtils.RobotService(self.storedPoses['header']['joint_names'])
+        # storedPosesFile = os.path.join(utils.get_curr_dir(), 'src', 'catkin_projects', 'station_config','RLG_iiwa_1','stored_poses.yaml')
+        # self.storedPoses = utils.getDictFromYamlFilename(storedPosesFile)
+        # self.robotService = ros_utils.RobotService(self.storedPoses['header']['joint_names'])
         self.setupConfig()
         self.setupPublishers()
         self.setupTF()
@@ -465,9 +464,9 @@ class FusionServer(object):
         self.flushCache()
 
         if full_path_to_bag_file is None:
-            print "Curr dir:", Utils.get_curr_dir()
-            base_path = os.path.join(Utils.get_curr_dir(), bag_folder)
-            log_id_name = Utils.get_current_YYYY_MM_DD_hh_mm_ss()
+            print "Curr dir:", utils.get_curr_dir()
+            base_path = os.path.join(utils.get_curr_dir(), bag_folder)
+            log_id_name = utils.get_current_YYYY_MM_DD_hh_mm_ss()
             log_subdir = "raw"
             bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
             bagfile_name = "fusion_" + log_id_name
@@ -551,7 +550,7 @@ class FusionServer(object):
 
     @staticmethod
     def get_quaternion_from_pose(pose):
-        quat = Utils.getQuaternionFromDict(pose["camera_to_world"])
+        quat = utils.getQuaternionFromDict(pose["camera_to_world"])
         x = quat["x"]
         y = quat["y"]
         z = quat["z"]
@@ -633,9 +632,9 @@ class FusionServer(object):
         print "moved to home"
 
         # Start bagging for far out data collection
-        # base_path = os.path.join(Utils.get_curr_dir(), 'data_volume', 'pdc', 'logs_proto')
-        base_path = os.path.join(Utils.get_curr_dir(), 'pdc', 'logs_test')
-        log_id_name = Utils.get_current_YYYY_MM_DD_hh_mm_ss()
+        # base_path = os.path.join(utils.get_curr_dir(), 'data_volume', 'pdc', 'logs_proto')
+        base_path = os.path.join(utils.get_curr_dir(), 'pdc', 'logs_test')
+        log_id_name = utils.get_current_YYYY_MM_DD_hh_mm_ss()
         log_subdir = "raw"
         bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
         bagfile_name = "fusion_" + log_id_name + ".bag"
@@ -703,13 +702,13 @@ class FusionServer(object):
             processed_dir = os.path.join(log_dir, 'processed')
             images_dir = os.path.join(processed_dir, 'images')
 
-        print "Using images_dir %s" % (images_dir)
+        print "Using images_dir %s" % images_dir
         image_capture = ImageCapture(rgb_topic, depth_topic, camera_info_topic,
                                      self.config['camera_frame'], self.config['world_frame'], rgb_encoding='bgr8')
         image_capture.load_ros_bag(bag_filepath)
         image_capture.process_ros_bag(image_capture.ros_bag, images_dir, rgb_only=rgb_only)
 
-        rospy.loginfo("Finished writing images to disk")
+        rospy.loginfo("Finished writing extracted images to disk")
 
         return images_dir
 
@@ -823,7 +822,7 @@ class FusionServer(object):
         :rtype:
         """
         pose_yaml = os.path.join(images_dir_full_path, "pose_data.yaml")
-        pose_dict = Utils.getDictFromYamlFilename(pose_yaml)
+        pose_dict = utils.getDictFromYamlFilename(pose_yaml)
 
         images_dir_temp_path = os.path.join(os.path.dirname(images_dir_full_path), 'images_temp')
         if not os.path.isdir(images_dir_temp_path):
@@ -850,7 +849,7 @@ class FusionServer(object):
 
             linear_distance = np.linalg.norm(this_pose_pos - previous_pose_pos)
 
-            rotation_distance = Utils.compute_angle_between_quaternions(this_pose_quat,
+            rotation_distance = utils.compute_angle_between_quaternions(this_pose_quat,
                                                                         previous_pose_quat)
 
             if i == 0:
@@ -880,7 +879,7 @@ class FusionServer(object):
             # num_deleted_images += 1
 
         # write downsamples pose_data.yaml (forward kinematics)
-        Utils.saveToYaml(pose_dict_downsampled, os.path.join(images_dir_temp_path, 'pose_data.yaml'))
+        utils.saveToYaml(pose_dict_downsampled, os.path.join(images_dir_temp_path, 'pose_data.yaml'))
 
         # remove old images
         shutil.move(os.path.join(images_dir_full_path, 'camera_info.yaml'),
@@ -902,9 +901,11 @@ if __name__ == "__main__":
 
     # # fs.run_fusion_data_server()
     # fs.start_bagging()
-    # rospy.sleep(30)
+    # rospy.sleep(2)
     # fs._stop_bagging()
 
-    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-19-15-14/raw/fusion_2019-10-24-19-15-14.bag"
-    bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-19-26-21/raw/fusion_2019-10-24-19-26-21.bag"
-    processed_dir, images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
+    # 30s
+    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-19-26-21/raw/fusion_2019-10-24-19-26-21.bag"
+    # 2s
+    bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-20-09-02/raw/fusion_2019-10-24-20-09-02.bag"
+    images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
