@@ -12,6 +12,7 @@ build/
 .vscode/
 .idea/
 mantra_application/reconstruction/data/
+mantra_application/reconstruction/reference/data/
 
 *.pwf
 *.git
@@ -22,6 +23,7 @@ mantra_application/reconstruction/data/
 *.tar
 *.weights
 *.bag
+*.ply
 
 # Executables
 *.swf

@@ -10,6 +10,7 @@ import copy
 import numpy as np
 import cv2
 import shutil
+import yaml
 
 # ply reader
 # from plyfile import PlyData, PlyElement
@@ -22,18 +23,11 @@ import rosbag
 import sensor_msgs
 from cv_bridge import CvBridge
 
-# spartan
-# import spartan.utils.utils as utils
-# import spartan.utils.ros_utils as ros_utils
 
 import utils as utils
 import ros_utils as ros_utils
 
-# ros srv
-# import fusion_server.srv
-# from fusion_server.srv import *
-# from fusion_server.numpy_pc2 import array_to_xyz_pointcloud2f
-# import fusion_server.tsdf_fusion as tsdf_fusion
+from transforms3d import quaternions
 
 
 ROS_BAGGING_NODE_NAME = "rosbag_node"
@@ -63,13 +57,12 @@ class ImageCapture(object):
     """
 
     def __init__(self, rgb_topic, depth_topic, camera_info_topic,
-                 camera_frame, world_frame, rgb_encoding='bgr8'):
+                 camera_frame, world_frame):
 
         self.camera_frame = camera_frame
         self.world_frame = world_frame
         self.tfBuffer = None
 
-        self.rgb_encoding = rgb_encoding
         self.topics_dict = dict()
         self.topics_dict['rgb'] = rgb_topic
         self.topics_dict['depth'] = depth_topic
@@ -185,10 +178,10 @@ class ImageCapture(object):
             data = None
             cv_img = None
             if "color" in topic and "depth" not in topic:
-                cv_img = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding=self.rgb_encoding)
+                cv_img = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
                 data = rgb_data
             elif "depth" in topic:
-                cv_img = ros_utils.depth_image_to_cv2_uint16(msg, bridge=self.cv_bridge)
+                cv_img = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='16UC1')
                 data = depth_data
 
                 # look up stamped transform between world_frame and camera_frame
@@ -233,18 +226,18 @@ class ImageCapture(object):
         for idx, depth_img in enumerate(depth_data['cv_img']):
             rgb_img = synchronized_rgb_imgs[idx]
 
-            rgb_filename = "%06i_%s.png" % (idx, "rgb")
+            rgb_filename = "frame-%06i.%s.jpg" % (idx, "color")
             rgb_filename_full = os.path.join(output_dir, rgb_filename)
 
-            depth_filename = "%06i_%s.png" % (idx, "depth")
+            depth_filename = "frame-%06i.%s.png" % (idx, "depth")
             depth_filename_full = os.path.join(output_dir, depth_filename)
 
             if idx % log_rate == 0:
                 print "writing image %d to file %s" % (idx, rgb_filename)
 
-            cv2.imwrite(rgb_filename_full, rgb_img)
+            cv2.imwrite(rgb_filename_full, rgb_img, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
             if not rgb_only:
-                cv2.imwrite(depth_filename_full, depth_img)
+                cv2.imwrite(depth_filename_full, depth_img, [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
 
             pose_data[idx] = dict()
             d = pose_data[idx]
@@ -437,20 +430,6 @@ class FusionServer(object):
     def flushCache(self):
         self.setupCache()
 
-    """
-    Get transform from rgb_optical_frame to world
-    """
-
-    def getRGBOpticalFrameToWorldTransform(self):
-        while not rospy.is_shutdown():
-            try:
-                rgbOpticalFrameToWorld = self.tfBuffer.lookup_transform(self.config['world_frame'],
-                                                                        self.config['camera_frame'], rospy.Time(0))
-                return rgbOpticalFrameToWorld
-                break
-            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                continue
-
     def start_bagging(self, bag_folder='data', full_path_to_bag_file=None):
         """
 
@@ -486,10 +465,6 @@ class FusionServer(object):
         # sleep to allow for xtion driver compression issues to be resolved        
         rospy.sleep(self.config['sleep_time_before_bagging'])
 
-        # get camera to world transform
-        self.cache['point_cloud_to_world_stamped'] = self.getRGBOpticalFrameToWorldTransform()
-        transform_stamped = self.cache['point_cloud_to_world_stamped']
-
         # build up command string
         rosbag_cmd = "rosbag record __name:=" + ROS_BAGGING_NODE_NAME
         rosbag_cmd += " -O " + full_path_to_bag_file
@@ -519,27 +494,6 @@ class FusionServer(object):
 
         self.bagging = False
         self.stopImageSubscribers()
-
-    def handle_start_bagging_fusion_data(self, req):
-        ## check if bagging already
-        if self.bagging:
-            return StartBaggingFusionDataResponse("ERROR: Already bagging!")
-
-        ## start bagging
-        filepath, self.rosbag_proc = self.start_bagging()
-        self.bagging = True
-
-        ## return the full path string to the data
-        print "Returning filepath"
-        return StartBaggingFusionDataResponse(filepath)
-
-    def handle_stop_bagging_fusion_data(self, req):
-        ## check if bagging already
-        if not self.bagging:
-            return StopBaggingFusionDataResponse("ERROR: Not currently bagging! Nothing to stop...")
-
-        self._stop_bagging()
-        return StopBaggingFusionDataResponse("success")
 
     @staticmethod
     def get_numpy_position_from_pose(pose):
@@ -623,61 +577,65 @@ class FusionServer(object):
 
         """
 
-        # first move home
-        home_pose_joint_positions = self.storedPoses["Elastic Fusion"][self.config['home_pose_name']]
-        print home_pose_joint_positions
-        self.robotService.moveToJointPosition(home_pose_joint_positions,
-                                              maxJointDegreesPerSecond=self.config['speed']['fast'])
+        # TODO: Step1: move robot to home
+        # home_pose_joint_positions = self.storedPoses["Elastic Fusion"][self.config['home_pose_name']]
+        # print home_pose_joint_positions
+        # self.robotService.moveToJointPosition(home_pose_joint_positions,
+        #                                       maxJointDegreesPerSecond=self.config['speed']['fast'])
 
-        print "moved to home"
+        print "move robot to home"
 
-        # Start bagging for far out data collection
-        # base_path = os.path.join(utils.get_curr_dir(), 'data_volume', 'pdc', 'logs_proto')
-        base_path = os.path.join(utils.get_curr_dir(), 'pdc', 'logs_test')
+        # Step2: start bagging for far out data collection
+        base_path = os.path.join(utils.get_curr_dir(), 'data')
         log_id_name = utils.get_current_YYYY_MM_DD_hh_mm_ss()
         log_subdir = "raw"
         bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
         bagfile_name = "fusion_" + log_id_name + ".bag"
         full_path_to_bagfile = os.path.join(bagfile_directory, bagfile_name)
-
-        print "moving robot through regular scan poses"
         self.start_bagging(full_path_to_bag_file=full_path_to_bagfile)
-        # pose_list = self.config['scan']['pose_list']
-        pose_list = self.config['scan']['left_table']
-        joint_positions = self.get_joint_positions_for_pose(pose_list[0])
-        self.robotService.moveToJointPosition(joint_positions,
-                                              maxJointDegreesPerSecond=self.config['speed']['scan'])
-        # rospy.sleep(3.0)
-        self._move_robot_through_pose_list(pose_list, randomize_wrist=True, hit_original_poses=True)
 
+        # FIXME
+        rospy.sleep(2)
+
+        # TODO: Step3: moving robot through regular scan poses
+        print "moving robot through regular scan poses"
+        # pose_list = self.config['scan']['left_table']
+        # joint_positions = self.get_joint_positions_for_pose(pose_list[0])
+        # self.robotService.moveToJointPosition(joint_positions,
+        #                                       maxJointDegreesPerSecond=self.config['speed']['scan'])
+        # # rospy.sleep(3.0)
+        # self._move_robot_through_pose_list(pose_list, randomize_wrist=True, hit_original_poses=True)
+
+        # Step4: stop bagging
         self._stop_bagging()
 
-        # # move robot through close up scan poses
-        if use_close_up_poses:
-            log_subdir = "raw_close_up"
-            bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
-            bagfile_name = "fusion_" + log_id_name + ".bag"
-            full_path_to_bagfile = os.path.join(bagfile_directory, bagfile_name)
-            #
-            print "moving robot through close up scan poses"
-            pose_list = self.config['scan']['close_up']
+        # FIXME: move robot through close up scan poses
+        # if use_close_up_poses:
+        #     log_subdir = "raw_close_up"
+        #     bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
+        #     bagfile_name = "fusion_" + log_id_name + ".bag"
+        #     full_path_to_bagfile = os.path.join(bagfile_directory, bagfile_name)
+        #
+        #     # move to first pose before we start bagging
+        #     print "moving robot through close up scan poses"
+        #     # pose_list = self.config['scan']['close_up']
+        #     # joint_positions = self.get_joint_positions_for_pose(pose_list[0])
+        #     # self.robotService.moveToJointPosition(joint_positions,
+        #     #                                       maxJointDegreesPerSecond=self.config['speed']['scan'])
+        #
+        #     # now start bagging and move the robot through the poses
+        #     self.start_bagging(full_path_to_bag_file=full_path_to_bagfile)
+        #     # self._move_robot_through_pose_list(pose_list, randomize_wrist=True, hit_original_poses=True)
+        #     # rospy.sleep(3.0)
+        #     self._stop_bagging()
+        #     rospy.sleep(1.0)
 
-            # move to first pose before we start bagging
-            joint_positions = self.get_joint_positions_for_pose(pose_list[0])
-            self.robotService.moveToJointPosition(joint_positions,
-                                                  maxJointDegreesPerSecond=self.config['speed']['scan'])
+        # TODO: Step5: move back home
+        # self.robotService.moveToJointPosition(home_pose_joint_positions,
+        #                                       maxJointDegreesPerSecond=self.config['speed']['fast'])
 
-            # now start bagging and move the robot through the poses
-            self.start_bagging(full_path_to_bag_file=full_path_to_bagfile)
-            self._move_robot_through_pose_list(pose_list, randomize_wrist=True, hit_original_poses=True)
-            # rospy.sleep(3.0)
-            self._stop_bagging()
-            rospy.sleep(1.0)
-
-        # move back home
-        self.robotService.moveToJointPosition(home_pose_joint_positions,
-                                              maxJointDegreesPerSecond=self.config['speed']['fast'])
-
+        # wait for bagfile saving
+        rospy.sleep(1.0)
         return full_path_to_bagfile
 
     def extract_data_from_rosbag(self, bag_filepath, images_dir=None, rgb_only=False):
@@ -704,7 +662,7 @@ class FusionServer(object):
 
         print "Using images_dir %s" % images_dir
         image_capture = ImageCapture(rgb_topic, depth_topic, camera_info_topic,
-                                     self.config['camera_frame'], self.config['world_frame'], rgb_encoding='bgr8')
+                                     self.config['camera_frame'], self.config['world_frame'])
         image_capture.load_ros_bag(bag_filepath)
         image_capture.process_ros_bag(image_capture.ros_bag, images_dir, rgb_only=rgb_only)
 
@@ -712,100 +670,100 @@ class FusionServer(object):
 
         return images_dir
 
-    def handle_capture_scene(self, req):
-        print "handling capture_scene"
+    @staticmethod
+    def format_data_for_tsdf(image_folder):
+        """
+        Processes the data into the format needed for tsdf-fusion algorithm
+        """
 
-        # Capture scene
+        def cal_camera_matrix(k_matrix):
+            matrix = np.zeros((3, 3))
+            matrix[0, :3] = k_matrix[0:3]
+            matrix[1, :3] = k_matrix[3:6]
+            matrix[2, :3] = K_matrix[6:9]
+            # print "[INFO] Camera intrinsis matrix:\n", matrix
+            return matrix
+
+        def cal_camera_pose(pose_data):
+            trans = pose_data['translation']
+            quat = pose_data['quaternion']
+
+            trans_xyz = (trans['x'], trans['y'], trans['z'])
+            quat_wxyz = (quat['w'], quat['x'], quat['y'], quat['z'])
+
+            # print trans_xyz
+            # print quat_wxyz
+
+            # quaternions to rotation matrix
+            rotation_matrix = quaternions.quat2mat(quat_wxyz)
+            # print rotation_matrix
+
+            # generate homogenous matrix
+            matrix = np.zeros((4, 4))
+            matrix[:3, :3] = rotation_matrix
+            matrix[:3, 3] = np.array(trans_xyz).T
+            matrix[3][3] = 1.0
+            # print "Camera pose matrix:\n", matrix
+            return matrix
+
+        # generate camera matrix file
+        camera_info_yaml = os.path.join(image_folder, "camera_info.yaml")
+        camera_info = utils.getDictFromYamlFilename(camera_info_yaml)
+        K_matrix = camera_info['camera_matrix']['data']
+        matrix = cal_camera_matrix(K_matrix)
+        camera_info_file_full_path = os.path.join(image_folder, "camera-intrinsics.txt")
+        np.savetxt(camera_info_file_full_path, matrix)
+
+        # generate camera pose file
+        pose_data_yaml = os.path.join(image_folder, "pose_data.yaml")
+        with open(pose_data_yaml, 'r') as stream:
+            try:
+                pose_data_dict = yaml.load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+
+        for i in pose_data_dict:
+            matrix = cal_camera_pose(pose_data_dict[i]['camera_to_world'])
+
+            depth_image_filename = pose_data_dict[i]['depth_image_filename']
+            prefix = depth_image_filename.split("depth")[0]
+            pose_file_name = prefix + "pose.txt"
+            pose_file_full_path = os.path.join(image_folder, pose_file_name)
+            np.savetxt(pose_file_full_path, matrix)
+
+        return len(pose_data_dict)
+
+    def handle_capture_scene_and_fuse(self):
+        """
+        NOTE: The coordinate of tsdf is camera's world frame, we describe camera's pose use base_link->camera
+        so the tsdf's coordinate is robot's "base_link"
+        """
+
+        print "\n[INFO] Handling capture_scene_and_fuse"
+
+        print "\n[INFO] Capture scene"
         bag_filepath = self.capture_scene()
 
-        response = CaptureSceneResponse()
-        response.bag_filepath = bag_filepath
+        print "\n[INFO] Extract images from bag"
+        images_dir = self.extract_data_from_rosbag(bag_filepath)
 
-        rospy.loginfo("handle_capture_scene finished!")
-        return response
+        print "\n[INFO] Formatting data for tsdf fusion"
+        self.format_data_for_tsdf(images_dir)
 
-    def handle_capture_scene_and_fuse(self, req):
-        print "handling capture_scene_and_fuse"
+        print "\n[INFO] Running tsdf fusion"
+        fusion_exe_path = os.path.join(os.path.dirname(utils.get_curr_dir()), 'scripts', 'fusion.py')
+        command = "python " + fusion_exe_path
+        os.system("%s %s" % (command, images_dir))
 
-        # Capture scene
-        bag_filepath = self.capture_scene()
+        # TODO: downsample data (this should be specifiable by an arg)
+        print "\n[INFO] Downsampling image folder"
+        # linear_distance_threshold = 0.03
+        # angle_distance_threshold = 10  # in degrees
+        # FusionServer.downsample_by_pose_difference_threshold(images_dir, linear_distance_threshold,
+        #                                                      angle_distance_threshold)
 
-        # Extract images from bag
-        processed_dir, images_dir = self.extract_data_from_rosbag(bag_filepath)
-
-        # tsdf fusion
-        print "formatting data for tsdf fusion"
-        tsdf_fusion.format_data_for_tsdf(images_dir)
-
-        print "running tsdf fusion"
-        tsdf_fusion.run_tsdf_fusion_cuda(images_dir)
-
-        print "converting tsdf to ply"
-        tsdf_bin_filename = os.path.join(processed_dir, 'tsdf.bin')
-        tsdf_mesh_filename = os.path.join(processed_dir, 'fusion_mesh.ply')
-        tsdf_fusion.convert_tsdf_to_ply(tsdf_bin_filename, tsdf_mesh_filename)
-
-        # the response is not meaningful right now
-        response = CaptureSceneAndFuseResponse()
-
-        # downsample data (this should be specifiable by an arg)
-        print "downsampling image folder"
-        linear_distance_threshold = 0.03
-        angle_distance_threshold = 10  # in degrees
-        FusionServer.downsample_by_pose_difference_threshold(images_dir, linear_distance_threshold,
-                                                             angle_distance_threshold)
-
-        rospy.loginfo("handle_capture_scene_and_fuse finished!")
-        response.fusion_output.data_folder = processed_dir
-        return response
-
-    def run_fusion_data_server(self):
-        s = rospy.Service('start_bagging_fusion_data', StartBaggingFusionData, self.handle_start_bagging_fusion_data)
-        s = rospy.Service('stop_bagging_fusion_data', StopBaggingFusionData, self.handle_stop_bagging_fusion_data)
-        s = rospy.Service('capture_scene', CaptureScene, self.handle_capture_scene)
-        s = rospy.Service('capture_scene_and_fuse', CaptureSceneAndFuse, self.handle_capture_scene_and_fuse)
-        print "Ready to capture fusion data."
-
-        rate = rospy.Rate(self.config['spin_rate'])
-        while not rospy.is_shutdown():
-            if 'fusion_output' in self.cache:
-                fusion_output = self.cache['fusion_output']
-                self.publish_pointcloud_to_rviz(fusion_output.point_cloud, self.cache['point_cloud_to_world_stamped'])
-
-            # self.publish_reconstruction_to_world_transform()
-            rate.sleep()
-
-    def publish_pointcloud_to_rviz(self, point_cloud_2_msg, point_cloud_to_world_stamped):
-        """
-        Publishes out the reconstruction to rviz
-        """
-
-        rospy.loginfo("publishing pointcloud to rviz")
-        header = point_cloud_2_msg.header
-        header.stamp = rospy.Time.now()
-
-        reconstruction_frame_id = self.config['reconstruction_frame_id']
-        header.frame_id = reconstruction_frame_id
-
-        self.pointcloud_publisher.publish(point_cloud_2_msg)
-        self.publish_reconstruction_to_world_transform(point_cloud_to_world_stamped)
-
-    def publish_reconstruction_to_world_transform(self, point_cloud_to_world_stamped=None):
-        """
-        Publish transform from reconstruction to world frame
-        """
-        if point_cloud_to_world_stamped is None:
-            if 'point_cloud_to_world_stamped' in self.cache:
-                point_cloud_to_world_stamped = self.cache['point_cloud_to_world_stamped']
-            else:
-                return
-
-        reconstruction_frame_id = self.config['reconstruction_frame_id']
-
-        reconstruction_to_world_stamped = copy.deepcopy(point_cloud_to_world_stamped)
-        reconstruction_to_world_stamped.header.stamp = rospy.Time.now()
-        reconstruction_to_world_stamped.child_frame_id = reconstruction_frame_id
-        self.tf_broadcaster.sendTransform(reconstruction_to_world_stamped)
+        print "\n[INFO] Handle_capture_scene_and_fuse finished!"
+        print "\n[INFO] Data saved to dir: %s" % os.path.dirname(os.path.dirname(images_dir))
 
     @staticmethod
     def downsample_by_pose_difference_threshold(images_dir_full_path, linear_distance_threshold,
@@ -891,21 +849,34 @@ class FusionServer(object):
         # rename temp images to images
         os.rename(images_dir_temp_path, images_dir_full_path)
 
-        print "Previously: %d images" % (num_original_images)
-        print "After: %d images" % (num_kept_images)
+        print "Previously: %d images" % num_original_images
+        print "After: %d images" % num_kept_images
 
 
 if __name__ == "__main__":
     rospy.init_node("fusion_server")
     fs = FusionServer()
 
-    # # fs.run_fusion_data_server()
+    # ###############    test bagging    ###############
     # fs.start_bagging()
     # rospy.sleep(2)
     # fs._stop_bagging()
 
+    # #############    test extract data    ############
     # 30s
     # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-19-26-21/raw/fusion_2019-10-24-19-26-21.bag"
     # 2s
-    bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-20-09-02/raw/fusion_2019-10-24-20-09-02.bag"
-    images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
+    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-20-09-02/raw/fusion_2019-10-24-20-09-02.bag"
+    # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
+
+    # ############    test format data    ##############
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-20-09-02/processed/images"
+    # data_cnt = fs.format_data_for_tsdf(images_dir)
+
+    # #############    test tsdf fusion    ##############
+    # fusion_exe_path = os.path.join(os.path.dirname(utils.get_curr_dir()), 'scripts', 'fusion.py')
+    # command = "python " + fusion_exe_path
+    # os.system("%s %s" % (command, images_dir))
+
+    # #################    test all    ##################
+    fs.handle_capture_scene_and_fuse()

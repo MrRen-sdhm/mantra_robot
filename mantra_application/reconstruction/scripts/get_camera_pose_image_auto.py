@@ -46,7 +46,7 @@ class ImageReceiver:
             matrix[1,:3] = data.K[3:6]
             matrix[2,:3] = data.K[6:9]
             print "[INFO] Camera intrinsis matrix:\n", matrix
-            np.savetxt(path + "/config/camera-intrinsics.txt", matrix)
+            np.savetxt(path + "/data/camera-intrinsics.txt", matrix)
             self.info_save_cnt = 1
 
     def color_callback(self,data):
@@ -80,13 +80,13 @@ class PoseImageSaver:
     def __init__(self):
         # 初始化move_group的API
         moveit_commander.roscpp_initialize(sys.argv)
-        
+
         # 初始化ROS节点
         rospy.init_node('get_camera_pose_image_auto')
-                        
+
         # 初始化需要使用move group控制的机械臂中的arm group
         arm = MoveGroupCommander('arm')
-        
+
         # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
         arm.set_goal_position_tolerance(0.001)
         arm.set_goal_orientation_tolerance(0.001)
@@ -94,11 +94,11 @@ class PoseImageSaver:
         arm.set_max_acceleration_scaling_factor(0.5)
         arm.set_planning_time(0.5) # 规划时间限制为2秒
         arm.allow_replanning(False) # 当运动规划失败后，是否允许重新规划
-        
+
         # 设置目标位置所使用的参考坐标系
         reference_frame = 'base_link'
         arm.set_pose_reference_frame(reference_frame)
-        
+
         # 获取终端link的名称
         eef_link = arm.get_end_effector_link()
 
@@ -117,12 +117,12 @@ class PoseImageSaver:
         group = self.group
         group.set_named_target(pose_name)
         group.go()
-    
+
     def camera_pose_get(self):
         while not rospy.is_shutdown():
             try:
                 (position, orientation) = self.listener.lookupTransform('/base_link', '/camera_color_optical_frame', rospy.Time(0))
-                rospy.loginfo("Camera pose reference to base_link:\nposition:\n %s\norientation:\n %s\n", 
+                rospy.loginfo("Camera pose reference to base_link:\nposition:\n %s\norientation:\n %s\n",
                     str(position), str(orientation))
                 return position, orientation
                 break
@@ -180,5 +180,7 @@ if __name__ == "__main__":
     # 调用Python脚本进行三维重建
     print "\n\n[INFO] Run python script to reconstruct the mesh."
     data_cnt = pose_image_saver.save_cnt
-    command = "python " + os.path.dirname(__file__) + "/fusion_main.py"
-    os.system("%s %s" % (command, str(data_cnt)))
+    fusion_exe_path = os.path.join(os.path.dirname(__file__), 'fusion.py')
+    command = "python " + fusion_exe_path
+    images_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+    os.system("%s %s %s" % (command, images_dir, str(data_cnt)))

@@ -35,6 +35,7 @@ def ROSPoseMsgFromPose(d):
 
     return msg
 
+
 def ROSTransformMsgFromPose(d):
     msg = geometry_msgs.msg.Transform()
     msg.translation.x = d['translation']['x']
@@ -50,6 +51,7 @@ def ROSTransformMsgFromPose(d):
 
     return msg
 
+
 def dictToPointMsg(d):
     msg = geometry_msgs.msg.Point()
     msg.x = d['x']
@@ -57,6 +59,7 @@ def dictToPointMsg(d):
     msg.z = d['z']
 
     return msg
+
 
 def listToPointMsg(l):
     msg = geometry_msgs.msg.Point()
@@ -67,6 +70,7 @@ def listToPointMsg(l):
 
     return msg
 
+
 def arrayToPointMsgs(pts):
     # Takes 3xN array of points,
     # and produces list of Point messages
@@ -75,22 +79,24 @@ def arrayToPointMsgs(pts):
         pts[0, i], pts[1, i], pts[2, i])
         for i in range(pts.shape[1])]
 
-"""
-@param msg: geometry_msgs.msg.Point
-@return list of [x,y,z] position
-"""
+
 def pointMsgToList(msg):
+    """
+    @param msg: geometry_msgs.msg.Point
+    @return list of [x,y,z] position
+    """
     l = []
     l.append(msg.x)
     l.append(msg.y)
     l.append(msg.z)
     return l
 
-"""
-@param msg: geometry_msgs.msg.Quaternion
-@return list: [w,x,y,z]
-"""
+
 def quatMsgToList(msg):
+    """
+    @param msg: geometry_msgs.msg.Quaternion
+    @return list: [w,x,y,z]
+    """
     quat = []
     quat.append(msg.w)
     quat.append(msg.x)
@@ -98,6 +104,7 @@ def quatMsgToList(msg):
     quat.append(msg.z)
 
     return quat
+
 
 def poseFromROSPoseMsg(msg):
     """
@@ -109,6 +116,7 @@ def poseFromROSPoseMsg(msg):
     quat = [msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z]
     return pos, quat
 
+
 def poseFromROSTransformMsg(msg):
     """
     :param msg: A populated ROS Transform message.
@@ -118,6 +126,7 @@ def poseFromROSTransformMsg(msg):
     pos = [msg.translation.x, msg.translation.y, msg.translation.z]
     quat = [msg.rotation.w, msg.rotation.x, msg.rotation.y, msg.rotation.z]
     return pos, quat
+
 
 def camera_info_dict_from_camera_info_msg(msg):
     d = dict()
@@ -205,33 +214,33 @@ def depth_image_to_cv2_uint16(depth_image_msg, bridge=None, encoding="32FC1"):
 
     return cv_img
 
-"""
-Saves a single image to a filename using an external executable
-"""
 
 def saveSingleImage(topic, filename, encoding=None):
-        rosImageLoggerExecutable = os.path.join(Utils.getSpartanSourceDir(), 'modules',"spartan",
-                                                'calibration','ros_image_logger.py')
-        cmd = "%s -t %s -f %s" % (rosImageLoggerExecutable, topic, filename)
-        if encoding is not None:
-            cmd += " -e " + encoding
+    """
+    Saves a single image to a filename using an external executable
+    """
+    rosImageLoggerExecutable = os.path.join(Utils.getSpartanSourceDir(), 'modules',"spartan",
+                                            'calibration','ros_image_logger.py')
+    cmd = "%s -t %s -f %s" % (rosImageLoggerExecutable, topic, filename)
+    if encoding is not None:
+        cmd += " -e " + encoding
 
-        os.system(cmd)
+    os.system(cmd)
 
-"""
-Saves a single image to a filename using an external executable
-"""
 
 def saveSingleDepthImage(topic, filename, encoding=None):
-        rosImageLoggerExecutable = os.path.join(Utils.getSpartanSourceDir(), 'modules',"spartan",
-                                                'calibration','ros_image_logger.py')
-        cmd = "%s -t %s -f %s" % (rosImageLoggerExecutable, topic, filename)
-        if encoding is not None:
-            cmd += " -e " + encoding
+    """
+    Saves a single image to a filename using an external executable
+    """
+    rosImageLoggerExecutable = os.path.join(Utils.getSpartanSourceDir(), 'modules',"spartan",
+                                            'calibration','ros_image_logger.py')
+    cmd = "%s -t %s -f %s" % (rosImageLoggerExecutable, topic, filename)
+    if encoding is not None:
+        cmd += " -e " + encoding
 
-        cmd += " -fs"
+    cmd += " -fs"
 
-        os.system(cmd)
+    os.system(cmd)
 
 
 def setup_tf_transformer_from_ros_bag(bag, cache_time_secs=3600, verbose=False):
