@@ -4,11 +4,11 @@
 import os
 import time
 import subprocess
-import copy
 import numpy as np
 import cv2
 import shutil
 import yaml
+import glob
 
 # ROS
 import tf2_ros
@@ -22,7 +22,6 @@ import ros_utils as ros_utils
 
 from transforms3d import quaternions
 from mantra_application.srv import *
-
 
 ROS_BAGGING_NODE_NAME = "rosbag_node"
 
@@ -77,7 +76,6 @@ class ImageCapture(object):
         self.topics_dict = dict()
         self.topics_dict['rgb'] = rgb_topic
         self.topics_dict['depth'] = depth_topic
-        print "topics_dict:", self.topics_dict
         self.camera_info_topic = camera_info_topic
 
         self.cv_bridge = CvBridge()
@@ -165,21 +163,16 @@ class ImageCapture(object):
 
         print "image_topics: ", image_topics
 
-        # extract TF information
+        # setup transformer to extract TF information
         tf_t = ros_utils.setup_tf_transformer_from_ros_bag(bag, cache_time_secs=3600, verbose=False)
 
-        # print "\n\n\n\nimage:"
-        # for topic, msg, t in bag.read_messages(topics=image_topics[0]):
-        #     print msg.header.stamp
-
         # ###############################   Extract images and tf   #################################
-        log_rate = 100
+        log_rate = 10
         counter = 0
         for topic, msg, t in bag.read_messages(topics=image_topics):
             counter += 1
-            # print "\n\n", counter, topic, t, msg.header
 
-            # skip the first 30 images due to transform errors . . . 
+            # skip the first 30 images due to transform errors . . .
             # if counter < 30:
             #     continue
 
@@ -296,107 +289,19 @@ class FusionServer(object):
         self.tfBuffer = None
         self.robot_move = RobotMove()
         self.setupConfig()
-        self.setupPublishers()
         self.setupTF()
-        self.setupCache()
 
     def setupConfig(self):
         self.config = dict()
-        self.config['scan'] = dict()
-        # self.config['scan']['pose_list'] = ['scan_back', 'scan_left', 'scan_top', 'scan_right', 'scan_back']
-        # with the Grasping group
-        # self.config['scan']['pose_group'] = 'Grasping'
-        # self.config['scan']['pose_list'] = ['scan_left_close', 'scan_left', 'scan_left_center', 'scan_above_table_far', 'scan_right_center', 'scan_right', 'scan_right_close']
-
-        # regular far out scanning poses
-        pose_list = []
-        pose_list.append(["Elastic Fusion", 'home'])
-        pose_list.append(["Elastic Fusion", 'home_closer'])
-        pose_list.append(["Elastic Fusion", 'center_right'])
-        pose_list.append(["Elastic Fusion", 'right'])
-        pose_list.append(["Elastic Fusion", 'right_low'])
-        pose_list.append(["Elastic Fusion", 'right_low_closer'])
-        pose_list.append(["Elastic Fusion", 'center_right'])
-        pose_list.append(["Elastic Fusion", 'home_closer'])
-        pose_list.append(["Elastic Fusion", 'center_left_closer'])
-        pose_list.append(["Elastic Fusion", 'center_left_low_closer'])
-        pose_list.append(["Elastic Fusion", 'left_low'])
-        pose_list.append(["Elastic Fusion", 'left_mid'])
-        pose_list.append(["Elastic Fusion", 'center_left_low'])
-        pose_list.append(["Elastic Fusion", 'center_left_low_closer'])
-        pose_list.append(["Elastic Fusion", 'center_left_closer'])
-        pose_list.append(["Elastic Fusion", 'home_closer'])
-        pose_list.append(["Elastic Fusion", 'top_down'])
-        pose_list.append(["Elastic Fusion", 'top_down_right'])
-        pose_list.append(["Elastic Fusion", 'top_down_left'])
-
-        self.config['scan']['pose_list'] = pose_list
-
-        # quick scan for testing purposes
-        pose_list = []
-        pose_list.append(["Elastic Fusion", 'home'])
-        pose_list.append(["Elastic Fusion", 'home_closer'])
-        pose_list.append(["Elastic Fusion", 'top_down'])
-        pose_list.append(["Elastic Fusion", 'top_down_right'])
-        pose_list.append(["Elastic Fusion", 'top_down_left'])
-        pose_list.append(["Elastic Fusion", 'home'])
-        self.config['scan']['pose_list_quick'] = pose_list
-
-        # close up scanning
-        pose_list = []
-        pose_list.append(["close_up_scan", "center"])
-        pose_list.append(["close_up_scan", "center_2"])
-        pose_list.append(["close_up_scan", "center_3"])
-        pose_list.append(["close_up_scan", "center_back_1"])
-        pose_list.append(["close_up_scan", "center_back_2"])
-        pose_list.append(["close_up_scan", "center_back_3"])
-        pose_list.append(["close_up_scan", "center"])
-        pose_list.append(["close_up_scan", "right_1"])
-        pose_list.append(["close_up_scan", "right_2"])
-        pose_list.append(["close_up_scan", "right_3"])
-        pose_list.append(["close_up_scan", "right_4"])
-        pose_list.append(["close_up_scan", "far_right_1"])
-        # pose_list.append(["close_up_scan", "far_right_2"])
-        # pose_list.append(["close_up_scan", "far_right_1"])
-        pose_list.append(["close_up_scan", "right_1"])
-        pose_list.append(["close_up_scan", "center"])
-        pose_list.append(["close_up_scan", "left_1"])
-        pose_list.append(["close_up_scan", "left_2"])
-        pose_list.append(["close_up_scan", "left_3"])
-        pose_list.append(["close_up_scan", "far_left_1"])
-        pose_list.append(["close_up_scan", "far_left_2"])
-        pose_list.append(["close_up_scan", "extreme_left_1"])
-        pose_list.append(["close_up_scan", "extreme_left_2"])
-        pose_list.append(["close_up_scan", "extreme_left_3"])
-        pose_list.append(["close_up_scan", "left_1"])
-        pose_list.append(["close_up_scan", "center"])
-
-        self.config['scan']['close_up'] = pose_list
-
-        pose_list = []
-        pose_list.append(["left_table", "center_back"])
-        pose_list.append(["left_table", "top_down"])
-        pose_list.append(["left_table", "scan_left"])
-        pose_list.append(["left_table", "top_down"])
-        pose_list.append(["left_table", "scan_right"])
-        pose_list.append(["left_table", "center_back"])
-        self.config['scan']['left_table'] = pose_list
-
-        self.config['speed'] = dict()
-        self.config['speed']['scan'] = 25
-        self.config['speed']['fast'] = 30
-        self.config['speed']['wrist_rotation'] = 45
-
-        self.config['spin_rate'] = 1
-
-        self.config['home_pose_name'] = 'home'
-        self.config['sleep_time_before_bagging'] = 3.0
-        self.config['world_frame'] = 'base_link'
+        self.config['world_frame'] = "base_link"
         self.config['camera_frame'] = "camera_color_optical_frame"
+        self.config['sleep_time_before_bagging'] = 3.0
+        self.config['bag_folder'] = "data"
+        self.config['use_close_up_poses'] = False
 
-        self.config['sleep_time_at_each_pose'] = 0.01
-
-        self.config["reconstruction_frame_id"] = "fusion_reconstruction"
+        self.config['fusion_voxel_size'] = 0.004
+        self.config['fusion_max_depth'] = 1.2
+        self.config['fusion_exe_path'] = os.path.join(utils.get_curr_dir(), 'fusion.py')
 
         self.topics_to_bag = [
             "/tf",
@@ -420,10 +325,6 @@ class FusionServer(object):
 
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
 
-    def setupPublishers(self):
-        topic_name = "fusion_reconstruction"
-        self.pointcloud_publisher = rospy.Publisher(topic_name, sensor_msgs.msg.PointCloud2, queue_size=1)
-
     def startImageSubscribers(self):
         self.subscribers = {}
         self.subscribers['rgb'] = rospy.Subscriber(self.topics_dict['rgb'], sensor_msgs.msg.Image)
@@ -433,38 +334,23 @@ class FusionServer(object):
         self.subscribers['rgb'].unregister()
         self.subscribers['depth'].unregister()
 
-    def setupCache(self):
-        self.cache = dict()
+    def get_bag_folder(self, log_subdir="raw"):
+        """ get the folder name to store bag files"""
+        base_path = os.path.join(os.path.dirname(utils.get_curr_dir()), self.config['bag_folder'])
+        log_id_name = utils.get_current_YYYY_MM_DD_hh_mm_ss()
+        bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
+        bagfile_name = "fusion_" + log_id_name + ".bag"
 
-    def flushCache(self):
-        self.setupCache()
+        path_to_bag_file = os.path.join(bagfile_directory, bagfile_name)
 
-    def start_bagging(self, bag_folder='data', full_path_to_bag_file=None):
-        """
+        # make bagfile directory with name
+        os.system("mkdir -p " + bagfile_directory)
 
-        :param bag_folder:
-        :type bag_folder:
-        :param full_path_to_bag_file: (optional) full path to where we save bag
-        :type full_path_to_bag_file:
-        :return:
-        :rtype:
-        """
-        self.flushCache()
+        return path_to_bag_file
 
-        if full_path_to_bag_file is None:
-            print "Curr dir:", utils.get_curr_dir()
-            base_path = os.path.join(utils.get_curr_dir(), bag_folder)
-            log_id_name = utils.get_current_YYYY_MM_DD_hh_mm_ss()
-            log_subdir = "raw"
-            bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
-            bagfile_name = "fusion_" + log_id_name
-
-            full_path_to_bag_file = os.path.join(bagfile_directory, bagfile_name)
-            # make bagfile directory with name
-            os.system("mkdir -p " + bagfile_directory)
-
+    def start_bagging(self, path_to_bag_file):
         # create parent folder if it doesn't exist
-        parent_folder = os.path.dirname(full_path_to_bag_file)
+        parent_folder = os.path.dirname(path_to_bag_file)
         if not os.path.exists(parent_folder):
             os.makedirs(parent_folder)
 
@@ -476,12 +362,10 @@ class FusionServer(object):
 
         # build up command string
         rosbag_cmd = "rosbag record __name:=" + ROS_BAGGING_NODE_NAME
-        rosbag_cmd += " -O " + full_path_to_bag_file
+        rosbag_cmd += " -O " + path_to_bag_file
         for i in self.topics_to_bag:
             rosbag_cmd += " " + i
-
-        # add some visibility
-        print rosbag_cmd
+        print "[INFO] Rosbag cmd:", rosbag_cmd
 
         # start bagging
         self.bagging = True
@@ -489,7 +373,7 @@ class FusionServer(object):
 
         rospy.loginfo("started image subscribers, sleeping for %d seconds", self.config['sleep_time_before_bagging'])
 
-        return os.path.join(full_path_to_bag_file), rosbag_proc
+        return path_to_bag_file
 
     def stop_bagging(self):
         """
@@ -542,16 +426,13 @@ class FusionServer(object):
         self.robot_move.move_to_pose_named("home")
 
         # Step2: start bagging for far out data collection
-        base_path = os.path.join(utils.get_curr_dir(), 'data')
-        log_id_name = utils.get_current_YYYY_MM_DD_hh_mm_ss()
-        log_subdir = "raw"
-        bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
-        bagfile_name = "fusion_" + log_id_name + ".bag"
-        full_path_to_bagfile = os.path.join(bagfile_directory, bagfile_name)
-        self.start_bagging(full_path_to_bag_file=full_path_to_bagfile)
+        print "[INFO] Start bagging"
+        path_to_bagfile = self.get_bag_folder()
+        print "[INFO] Path to bag file: %s" % path_to_bagfile
+        self.start_bagging(path_to_bagfile)
 
         # Step3: moving robot through regular scan poses
-        print "[INFO] Moving robot through regular scan poses"
+        print "[INFO] Moving robot through poses"
         # pose_list = ["test_1", "test_2", "test_3", "test_4", "pick_1", "pick_2", "pick_3", "pick_4"]
         pose_list = ["pick_1", "pick_2", "pick_3", "pick_4"]
         for pose in pose_list:
@@ -560,34 +441,31 @@ class FusionServer(object):
         # Step4: stop bagging
         self.stop_bagging()
 
-        # FIXME: move robot through close up scan poses
-        # if use_close_up_poses:
-        #     log_subdir = "raw_close_up"
-        #     bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
-        #     bagfile_name = "fusion_" + log_id_name + ".bag"
-        #     full_path_to_bagfile = os.path.join(bagfile_directory, bagfile_name)
-        #
-        #     # move to first pose before we start bagging
-        #     print "moving robot through close up scan poses"
-        #     # pose_list = self.config['scan']['close_up']
-        #     # joint_positions = self.get_joint_positions_for_pose(pose_list[0])
-        #     # self.robotService.moveToJointPosition(joint_positions,
-        #     #                                       maxJointDegreesPerSecond=self.config['speed']['scan'])
-        #
-        #     # now start bagging and move the robot through the poses
-        #     self.start_bagging(full_path_to_bag_file=full_path_to_bagfile)
-        #     # self._move_robot_through_pose_list(pose_list, randomize_wrist=True, hit_original_poses=True)
-        #     # rospy.sleep(3.0)
-        #     self.stop_bagging()
-        #     rospy.sleep(1.0)
+        # Optional step: move robot through close up poses
+        if use_close_up_poses:
+            # move to first pose before we start bagging
+            print "[INFO] Moving robot through close up scan poses"
+            self.robot_move.move_to_pose_named("home")
 
-        # TODO: Step5: move back home
+            # start bagging
+            path_to_bagfile = self.get_bag_folder("raw_close_up")
+            print "[INFO] Path to close up poses bag file: %s" % path_to_bagfile
+            self.start_bagging(path_to_bagfile)
+
+            # move the robot through close up poses
+            pose_list = ["test_1", "test_2", "test_3", "test_4"]
+            for pose in pose_list:
+                self.robot_move.move_to_pose_named(pose)
+
+            self.stop_bagging()
+
+        # Step5: move back home
         print "[INFO] Move robot back to home"
         self.robot_move.move_to_pose_named("home")
 
         # wait for bagfile saving
         rospy.sleep(1.0)
-        return full_path_to_bagfile
+        return path_to_bagfile
 
     def extract_data_from_rosbag(self, bag_filepath, images_dir=None, rgb_only=False):
         """
@@ -687,17 +565,6 @@ class FusionServer(object):
     @staticmethod
     def downsample_by_pose_difference_threshold(images_dir_full_path, linear_distance_threshold=0.03,
                                                 rotation_angle_threshold=10, keep_raw=True):
-        """
-        Downsamples poses and keeps only those that are sufficiently apart
-        :param images_dir_full_path:
-        :type images_dir_full_path:
-        :param linear_distance_threshold: threshold on the translation, in meters
-        :type linear_distance_threshold:
-        :param rotation_angle_threshold: threshold on the angle between the rotations, in degrees
-        :type rotation_angle_threshold:
-        :return:
-        :rtype:
-        """
         pose_yaml = os.path.join(images_dir_full_path, "pose_data.yaml")
         pose_dict = utils.getDictFromYamlFilename(pose_yaml)
 
@@ -777,25 +644,33 @@ class FusionServer(object):
 
         print "\n[INFO] Handling capture_scene_and_fuse"
 
-        print "\n[INFO] Capture scene"
-        bag_filepath = self.capture_scene()
+        print "\n[INFO] Start capture scene"
+        bag_filepath = self.capture_scene(self.config['use_close_up_poses'])
 
         print "\n[INFO] Extract images from bag"
         images_dir = self.extract_data_from_rosbag(bag_filepath)
+        data_dir = os.path.dirname(os.path.dirname(images_dir))
 
         print "\n[INFO] Formatting data for tsdf fusion"
         self.format_data_for_tsdf(images_dir)
 
         print "\n[INFO] Running tsdf fusion"
-        fusion_exe_path = os.path.join(os.path.dirname(utils.get_curr_dir()), 'scripts', 'fusion.py')
-        command = "python " + fusion_exe_path
-        os.system("%s %s" % (command, images_dir))
+        fusion_exe_path = self.config['fusion_exe_path']
+        fusion_cmd = "python " + fusion_exe_path
+        os.system("%s %s %s %s" % (fusion_cmd, images_dir, str(self.config['fusion_voxel_size']),
+                                   str(self.config['fusion_max_depth'])))
+        print "[INFO] Fusion cmd:", fusion_cmd
 
         print "\n[INFO] Downsampling image folder"
         self.downsample_by_pose_difference_threshold(images_dir, 0.03, 10)
 
-        print "\n[INFO] Handle_capture_scene_and_fuse finished!"
-        print "\n[INFO] Data saved to dir: %s" % os.path.dirname(os.path.dirname(images_dir))
+        print "\n[INFO] Handle capture scene and fuse finished!"
+        print "\n[INFO] Data saved to dir: %s" % data_dir
+
+        # check the result of fusion
+        plyls = glob.glob(os.path.join(data_dir, 'processed', '*.ply'))
+        if len(plyls) == 0:
+            raise Exception("Tsdf fusion failed, please check the problem!")
 
 
 if __name__ == "__main__":

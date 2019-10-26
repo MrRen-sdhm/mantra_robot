@@ -11,7 +11,7 @@ def mantra_move_client(pose_name):
         resp = move_to_pose_named(pose_name)
         return resp.success
     except rospy.ServiceException, e:
-        print "Service call failed: %s" % e
+        print "[SRVICE] Service call failed: %s" % e
 
 
 def usage():
@@ -24,6 +24,6 @@ if __name__ == "__main__":
     else:
         print usage()
         sys.exit(1)
-    print "Requesting %s" % pose_name
-    print "Move result1 = %s" % mantra_move_client(pose_name)
-    print "Move result2 = %s" % mantra_move_client("home")
+    print "[SRVICE] Requesting %s" % pose_name
+    print "[SRVICE] Move result1 = %s" % mantra_move_client(pose_name)
+    print "[SRVICE] Move result2 = %s" % mantra_move_client("home")

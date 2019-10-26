@@ -458,8 +458,15 @@ def meshwrite_color_binary(filename, verts, faces, norms, colors):
 
 if __name__ == "__main__":
     path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data')
+    voxel_size = 0.005  # voxel size
+    max_depth = 1.2  # max depth
+
     if sys.argv.__len__() > 1:
         path = sys.argv[1]  # get data path
+    if sys.argv.__len__() > 2:
+        voxel_size = float(sys.argv[2])  # get voxel size
+    if sys.argv.__len__() > 3:
+        max_depth = float(sys.argv[3])  # get max depth
 
     # get file prefix in data folder
     imagels = sorted(glob.glob(os.path.join(path, '*.png')))
@@ -471,10 +478,9 @@ if __name__ == "__main__":
     # print prefixls
 
     # prepare for fusion
-    max_depth = 1.2  # max depth
-    voxel_size = 0.005  # voxel size
     print "Image path to run fusion:", path
     print "Have %d images to fusion..." % n_imgs
+    print "Voxel size: %.4f, Max depth: %.4f" % (voxel_size, max_depth)
 
     # (Optional) sample code to compute 3D bounds (in world coordinates) around convex hull of all camera view frustums in dataset
     print("Estimating voxel volume bounds...")
@@ -501,7 +507,8 @@ if __name__ == "__main__":
     fusion_cnt = 0
     for prefix in prefixls:
         fusion_cnt += 1
-        print("Fusing frame %d/%d" % (fusion_cnt, n_imgs))
+        if fusion_cnt % 10 == 0:
+            print("Fusing frame %d/%d" % (fusion_cnt, n_imgs))
 
         # Read RGB-D image and camera pose
         color_image = cv2.cvtColor(cv2.imread(prefix + ".color.jpg"), cv2.COLOR_BGR2RGB)
@@ -514,7 +521,7 @@ if __name__ == "__main__":
         tsdf_vol.integrate(color_image, depth_im, cam_intr, cam_pose, obs_weight=1.)
 
     fps = n_imgs / (time.time() - t0_elapse)
-    print("Average FPS: %.2f" % fps)
+    print("Fusion done, average fps: %.2f" % fps)
 
     # Get mesh from voxel volume and save to disk (can be viewed with Meshlab)
     print("Saving to ply file...")

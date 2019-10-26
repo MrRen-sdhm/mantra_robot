@@ -12,7 +12,11 @@
         <arg name="hmi" value="false" />
     </include>
 
+    <!-- publish tf between camera and robot -->
     <include file="$(find mantra_application)/calibration/launch/publish_static_tf.launch" />
+
+    <!-- run the robot move server -->
+    <node name="robot_move_server" pkg="mantra_application" type="mantra_move_server.py" output="screen" />
 
     <!-- start the rviz -->
     <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false" 

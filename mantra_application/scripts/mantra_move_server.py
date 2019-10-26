@@ -18,7 +18,7 @@ class MoveGroup(object):
 
         rospy.init_node('mantra_move_server')
         srv = rospy.Service('move_to_pose_named', MoveToPoseNamed, self.handle_move_to_pose_named)
-        print "[Srv] Mantra move server init done."
+        print "[SRVICE] Mantra move server init done."
 
         moveit_commander.roscpp_initialize(sys.argv)
         robot = moveit_commander.RobotCommander()
@@ -38,7 +38,7 @@ class MoveGroup(object):
 
     def handle_move_to_pose_named(self, req):
         self.go_to_pose_named(req.pose_name)
-        print "[Srv] Go to pose named: %s" % str(req.pose_name)
+        print "[SRVICE] Go to pose named: %s" % str(req.pose_name)
         return MoveToPoseNamedResponse(True)
 
     def go_to_joint_state(self):
@@ -116,7 +116,7 @@ class MoveGroup(object):
 
 
 def handle_move_to_pose_named(req):
-    print "[Srv] Go to pose named: %s" % str(req.pose_name)
+    print "[SRVICE] Go to pose named: %s" % str(req.pose_name)
     return MoveToPoseNamedResponse(True)
 
 
