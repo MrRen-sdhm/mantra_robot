@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 # system
-# import rospy
 import os
-# import sys
 import time
 import subprocess
 import copy
@@ -12,25 +10,38 @@ import cv2
 import shutil
 import yaml
 
-# ply reader
-# from plyfile import PlyData, PlyElement
-
 # ROS
-# import tf
 import tf2_ros
 import rospy
 import rosbag
 import sensor_msgs
 from cv_bridge import CvBridge
 
-
 import utils as utils
 import ros_utils as ros_utils
 
 from transforms3d import quaternions
+from mantra_application.srv import *
 
 
 ROS_BAGGING_NODE_NAME = "rosbag_node"
+
+
+class RobotMove(object):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def move_to_pose_named(pose_name):
+        rospy.wait_for_service('move_to_pose_named')
+        try:
+            move_to_pose_named = rospy.ServiceProxy('move_to_pose_named', MoveToPoseNamed)
+            resp = move_to_pose_named(pose_name)
+            if resp.success:
+                print "[INFO] Robot move to pose named %s success." % pose_name
+                return True
+        except rospy.ServiceException, e:
+            print "Robot move service call failed: %s" % e
 
 
 class TFWrapper(object):
@@ -283,9 +294,7 @@ class FusionServer(object):
         self.bagging = False
         self.rosbag_proc = None
         self.tfBuffer = None
-        # storedPosesFile = os.path.join(utils.get_curr_dir(), 'src', 'catkin_projects', 'station_config','RLG_iiwa_1','stored_poses.yaml')
-        # self.storedPoses = utils.getDictFromYamlFilename(storedPosesFile)
-        # self.robotService = ros_utils.RobotService(self.storedPoses['header']['joint_names'])
+        self.robot_move = RobotMove()
         self.setupConfig()
         self.setupPublishers()
         self.setupTF()
@@ -482,7 +491,7 @@ class FusionServer(object):
 
         return os.path.join(full_path_to_bag_file), rosbag_proc
 
-    def _stop_bagging(self):
+    def stop_bagging(self):
         """
         Stops ROS bagging
         :return:
@@ -511,55 +520,6 @@ class FusionServer(object):
         w = quat["w"]
         return np.asarray([w, x, y, z])
 
-    def get_joint_positions_for_pose(self, pose_data):
-        """
-        Looks up the joint positions for a given pose
-        :param pose_data: list of strings [group_name, pose_name]. e.g.
-        ["General", "q_nom"]
-        :return: list[double] of joint angles
-        """
-        return copy.copy(self.storedPoses[pose_data[0]][pose_data[1]])
-
-    def _move_robot_through_pose_list(self, pose_list, randomize_wrist=False, hit_original_poses=True):
-        """
-        Moves robot through the given list of poses
-        :param pose_list: list of list of strings of form [pose_group, pose_name]
-        :type pose_list:
-        :param with_randomize_wrist: boolean flag on whether to randomizde wrist or not
-        :type with_randomize_write:
-        :return:
-        :rtype:
-        """
-
-        joint_limit_safety_factor = 0.9
-        wrist_joint_limit_degrees = 175.0
-        safe_wrist_joint_limit_radians = (wrist_joint_limit_degrees * np.pi / 180.0) * joint_limit_safety_factor
-
-        for pose_data in pose_list:
-            print "moving to", pose_data[1]
-            joint_positions = self.get_joint_positions_for_pose(pose_data)
-
-            if randomize_wrist:
-                print "before randomize wrist", joint_positions
-                joint_positions_random_wrist = copy.copy(joint_positions)
-                joint_positions_random_wrist[-1] = np.random.uniform(-safe_wrist_joint_limit_radians,
-                                                                     safe_wrist_joint_limit_radians)
-                print "after randomize wrist", joint_positions
-                self.robotService.moveToJointPosition(joint_positions_random_wrist,
-                                                      maxJointDegreesPerSecond=self.config['speed']['scan'])
-
-                if hit_original_poses:
-                    self.robotService.moveToJointPosition(joint_positions,
-                                                          maxJointDegreesPerSecond=self.config['speed'][
-                                                              'wrist_rotation'])
-
-
-            else:
-                self.robotService.moveToJointPosition(joint_positions,
-                                                      maxJointDegreesPerSecond=self.config['speed']['scan'])
-
-            rospy.sleep(self.config['sleep_time_at_each_pose'])
-
     def capture_scene(self, use_close_up_poses=False):
         """
         This "moves around and captures all of the data needed for fusion". I.e., it:
@@ -577,13 +537,9 @@ class FusionServer(object):
 
         """
 
-        # TODO: Step1: move robot to home
-        # home_pose_joint_positions = self.storedPoses["Elastic Fusion"][self.config['home_pose_name']]
-        # print home_pose_joint_positions
-        # self.robotService.moveToJointPosition(home_pose_joint_positions,
-        #                                       maxJointDegreesPerSecond=self.config['speed']['fast'])
-
-        print "move robot to home"
+        # Step1: move robot to home
+        print "[INFO] Move robot to home"
+        self.robot_move.move_to_pose_named("home")
 
         # Step2: start bagging for far out data collection
         base_path = os.path.join(utils.get_curr_dir(), 'data')
@@ -594,20 +550,15 @@ class FusionServer(object):
         full_path_to_bagfile = os.path.join(bagfile_directory, bagfile_name)
         self.start_bagging(full_path_to_bag_file=full_path_to_bagfile)
 
-        # FIXME
-        rospy.sleep(2)
-
-        # TODO: Step3: moving robot through regular scan poses
-        print "moving robot through regular scan poses"
-        # pose_list = self.config['scan']['left_table']
-        # joint_positions = self.get_joint_positions_for_pose(pose_list[0])
-        # self.robotService.moveToJointPosition(joint_positions,
-        #                                       maxJointDegreesPerSecond=self.config['speed']['scan'])
-        # # rospy.sleep(3.0)
-        # self._move_robot_through_pose_list(pose_list, randomize_wrist=True, hit_original_poses=True)
+        # Step3: moving robot through regular scan poses
+        print "[INFO] Moving robot through regular scan poses"
+        # pose_list = ["test_1", "test_2", "test_3", "test_4", "pick_1", "pick_2", "pick_3", "pick_4"]
+        pose_list = ["pick_1", "pick_2", "pick_3", "pick_4"]
+        for pose in pose_list:
+            self.robot_move.move_to_pose_named(pose)
 
         # Step4: stop bagging
-        self._stop_bagging()
+        self.stop_bagging()
 
         # FIXME: move robot through close up scan poses
         # if use_close_up_poses:
@@ -627,12 +578,12 @@ class FusionServer(object):
         #     self.start_bagging(full_path_to_bag_file=full_path_to_bagfile)
         #     # self._move_robot_through_pose_list(pose_list, randomize_wrist=True, hit_original_poses=True)
         #     # rospy.sleep(3.0)
-        #     self._stop_bagging()
+        #     self.stop_bagging()
         #     rospy.sleep(1.0)
 
         # TODO: Step5: move back home
-        # self.robotService.moveToJointPosition(home_pose_joint_positions,
-        #                                       maxJointDegreesPerSecond=self.config['speed']['fast'])
+        print "[INFO] Move robot back to home"
+        self.robot_move.move_to_pose_named("home")
 
         # wait for bagfile saving
         rospy.sleep(1.0)
@@ -733,41 +684,9 @@ class FusionServer(object):
 
         return len(pose_data_dict)
 
-    def handle_capture_scene_and_fuse(self):
-        """
-        NOTE: The coordinate of tsdf is camera's world frame, we describe camera's pose use base_link->camera
-        so the tsdf's coordinate is robot's "base_link"
-        """
-
-        print "\n[INFO] Handling capture_scene_and_fuse"
-
-        print "\n[INFO] Capture scene"
-        bag_filepath = self.capture_scene()
-
-        print "\n[INFO] Extract images from bag"
-        images_dir = self.extract_data_from_rosbag(bag_filepath)
-
-        print "\n[INFO] Formatting data for tsdf fusion"
-        self.format_data_for_tsdf(images_dir)
-
-        print "\n[INFO] Running tsdf fusion"
-        fusion_exe_path = os.path.join(os.path.dirname(utils.get_curr_dir()), 'scripts', 'fusion.py')
-        command = "python " + fusion_exe_path
-        os.system("%s %s" % (command, images_dir))
-
-        # TODO: downsample data (this should be specifiable by an arg)
-        print "\n[INFO] Downsampling image folder"
-        # linear_distance_threshold = 0.03
-        # angle_distance_threshold = 10  # in degrees
-        # FusionServer.downsample_by_pose_difference_threshold(images_dir, linear_distance_threshold,
-        #                                                      angle_distance_threshold)
-
-        print "\n[INFO] Handle_capture_scene_and_fuse finished!"
-        print "\n[INFO] Data saved to dir: %s" % os.path.dirname(os.path.dirname(images_dir))
-
     @staticmethod
-    def downsample_by_pose_difference_threshold(images_dir_full_path, linear_distance_threshold,
-                                                rotation_angle_threshold):
+    def downsample_by_pose_difference_threshold(images_dir_full_path, linear_distance_threshold=0.03,
+                                                rotation_angle_threshold=10, keep_raw=True):
         """
         Downsamples poses and keeps only those that are sufficiently apart
         :param images_dir_full_path:
@@ -782,14 +701,12 @@ class FusionServer(object):
         pose_yaml = os.path.join(images_dir_full_path, "pose_data.yaml")
         pose_dict = utils.getDictFromYamlFilename(pose_yaml)
 
-        images_dir_temp_path = os.path.join(os.path.dirname(images_dir_full_path), 'images_temp')
+        images_dir_temp_path = os.path.join(os.path.dirname(images_dir_full_path), 'images_downsampled')
         if not os.path.isdir(images_dir_temp_path):
             os.makedirs(images_dir_temp_path)
 
         previous_pose_pos = FusionServer.get_numpy_position_from_pose(pose_dict[0])
         previous_pose_quat = FusionServer.get_quaternion_from_pose(pose_dict[0])
-
-        print "Using downsampling by pose difference threshold... "
 
         num_kept_images = 0
         num_deleted_images = 0
@@ -807,8 +724,7 @@ class FusionServer(object):
 
             linear_distance = np.linalg.norm(this_pose_pos - previous_pose_pos)
 
-            rotation_distance = utils.compute_angle_between_quaternions(this_pose_quat,
-                                                                        previous_pose_quat)
+            rotation_distance = utils.compute_angle_between_quaternions(this_pose_quat, previous_pose_quat)
 
             if i == 0:
                 keep_image = True
@@ -839,18 +755,47 @@ class FusionServer(object):
         # write downsamples pose_data.yaml (forward kinematics)
         utils.saveToYaml(pose_dict_downsampled, os.path.join(images_dir_temp_path, 'pose_data.yaml'))
 
-        # remove old images
-        shutil.move(os.path.join(images_dir_full_path, 'camera_info.yaml'),
-                    os.path.join(images_dir_temp_path, 'camera_info.yaml'))
-        shutil.rmtree(images_dir_full_path)
+        if not keep_raw:
+            # remove old images
+            shutil.move(os.path.join(images_dir_full_path, 'camera_info.yaml'),
+                        os.path.join(images_dir_temp_path, 'camera_info.yaml'))
+            shutil.rmtree(images_dir_full_path)
 
-        print "renaming %s to %s " % (images_dir_temp_path, images_dir_full_path)
+            # print "renaming %s to %s " % (images_dir_temp_path, images_dir_full_path)
 
-        # rename temp images to images
-        os.rename(images_dir_temp_path, images_dir_full_path)
+            # rename temp images to images
+            os.rename(images_dir_temp_path, images_dir_full_path)
 
         print "Previously: %d images" % num_original_images
         print "After: %d images" % num_kept_images
+
+    def handle_capture_scene_and_fuse(self):
+        """
+        NOTE: The coordinate of tsdf is camera's world frame, we describe camera's pose use base_link->camera
+        so the tsdf's coordinate is robot's "base_link"
+        """
+
+        print "\n[INFO] Handling capture_scene_and_fuse"
+
+        print "\n[INFO] Capture scene"
+        bag_filepath = self.capture_scene()
+
+        print "\n[INFO] Extract images from bag"
+        images_dir = self.extract_data_from_rosbag(bag_filepath)
+
+        print "\n[INFO] Formatting data for tsdf fusion"
+        self.format_data_for_tsdf(images_dir)
+
+        print "\n[INFO] Running tsdf fusion"
+        fusion_exe_path = os.path.join(os.path.dirname(utils.get_curr_dir()), 'scripts', 'fusion.py')
+        command = "python " + fusion_exe_path
+        os.system("%s %s" % (command, images_dir))
+
+        print "\n[INFO] Downsampling image folder"
+        self.downsample_by_pose_difference_threshold(images_dir, 0.03, 10)
+
+        print "\n[INFO] Handle_capture_scene_and_fuse finished!"
+        print "\n[INFO] Data saved to dir: %s" % os.path.dirname(os.path.dirname(images_dir))
 
 
 if __name__ == "__main__":
@@ -860,23 +805,23 @@ if __name__ == "__main__":
     # ###############    test bagging    ###############
     # fs.start_bagging()
     # rospy.sleep(2)
-    # fs._stop_bagging()
+    # fs.stop_bagging()
 
     # #############    test extract data    ############
-    # 30s
-    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-19-26-21/raw/fusion_2019-10-24-19-26-21.bag"
-    # 2s
     # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-20-09-02/raw/fusion_2019-10-24-20-09-02.bag"
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-20-09-02/processed/images"
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-25-22-03-45/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
     # fusion_exe_path = os.path.join(os.path.dirname(utils.get_curr_dir()), 'scripts', 'fusion.py')
     # command = "python " + fusion_exe_path
     # os.system("%s %s" % (command, images_dir))
+
+    # #############    test downsample    ###############
+    # fs.downsample_by_pose_difference_threshold(images_dir)
 
     # #################    test all    ##################
     fs.handle_capture_scene_and_fuse()

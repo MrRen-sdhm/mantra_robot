@@ -2,6 +2,7 @@ import yaml
 from yaml import CLoader
 import os
 import datetime
+import numpy as np
 
 
 def get_curr_dir():
@@ -72,3 +73,22 @@ def getQuaternionFromDict(d):
         raise ValueError("Error when trying to extract quaternion from dict, your dict doesn't contain a key in ['orientation', 'rotation', 'quaternion']")
 
     return quat
+
+
+def compute_angle_between_quaternions(q, r):
+    """
+    Computes the angle between two quaternions.
+
+    theta = arccos(2 * <q1, q2>^2 - 1)
+
+    See https://math.stackexchange.com/questions/90081/quaternion-distance
+    :param q: numpy array in form [w,x,y,z]. As long as both q,r are consistent it doesn't matter
+    :type q:
+    :param r:
+    :type r:
+    :return: angle between the quaternions, in radians
+    :rtype:
+    """
+
+    theta = 2*np.arccos(2 * np.dot(q,r)**2 - 1)
+    return theta

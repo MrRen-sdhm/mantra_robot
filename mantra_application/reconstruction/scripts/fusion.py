@@ -472,7 +472,7 @@ if __name__ == "__main__":
 
     # prepare for fusion
     max_depth = 1.2  # max depth
-    voxel_size = 0.002  # voxel size
+    voxel_size = 0.005  # voxel size
     print "Image path to run fusion:", path
     print "Have %d images to fusion..." % n_imgs
 

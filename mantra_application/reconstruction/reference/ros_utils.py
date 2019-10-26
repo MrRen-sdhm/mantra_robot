@@ -195,6 +195,7 @@ def convert32FCto16UC(img_in, maxRange=5):
     img_int[nan_idx] = iinfo.max - 1
     return img_int
 
+
 def depth_image_to_cv2_uint16(depth_image_msg, bridge=None, encoding="32FC1"):
     if bridge is None:
         bridge = CvBridge()
@@ -380,102 +381,3 @@ class JointStateSubscriber(object):
             e[i] = self.joint_efforts[name]
         return e
 
-
-'''
-Simple wrapper around the robot_control/MoveToJointPosition service
-'''
-class RobotService(object):
-
-    DEBUG_SPEED = 10
-
-    def __init__(self, jointNames, use_debug_speed=False):
-        self.jointNames = jointNames
-        self.numJoints = len(jointNames)
-        self._setup_ROS_actions()
-        self._use_debug_speed = use_debug_speed
-        self._debug_speed = RobotService.DEBUG_SPEED
-
-    def _setup_ROS_actions(self):
-        """
-        Initializes the ROS actions
-        :return:
-        """
-        self._cartesian_trajectory_action_client = actionlib.SimpleActionClient("plan_runner/CartesianTrajectory", robot_msgs.msg.CartesianTrajectoryAction)
-
-    def moveToJointPosition(self, q, maxJointDegreesPerSecond=30, timeout=10):
-        assert len(q) == self.numJoints
-
-        if self._use_debug_speed:
-            maxJointDegreesPerSecond = min(maxJointDegreesPerSecond, self._debug_speed)
-
-        jointState = RobotService.jointPositionToJointStateMsg(self.jointNames, q)
-
-        rospy.wait_for_service('robot_control/MoveToJointPosition', timeout=timeout)
-        s = rospy.ServiceProxy('robot_control/MoveToJointPosition', robot_msgs.srv.MoveToJointPosition)
-        response = s(jointState, maxJointDegreesPerSecond)
-        
-        return response
-
-    def moveToCartesianPosition(self, poseStamped, maxJointDegreesPerSecond=30, timeout=10):
-
-        ikServiceName = 'robot_control/IkService'
-        rospy.wait_for_service(ikServiceName, timeout=timeout)
-        s = rospy.ServiceProxy(ikServiceName, robot_msgs.srv.RunIK)
-        response = s(poseStamped)
-
-        joint_state = response.joint_state
-
-        rospy.loginfo("ik was successful = %s", response.success)
-
-        if not response.success:
-            rospy.loginfo("ik was not successful, returning without moving robot")
-            return response.success
-
-        rospy.loginfo("ik was successful, moving to joint position")
-        return self.moveToJointPosition(joint_state.position, maxJointDegreesPerSecond=maxJointDegreesPerSecond)
-
-    def runIK(self, poseStamped, seedPose=None, nominalPose=None, timeout=10):
-
-        req = robot_msgs.srv.RunIKRequest()
-        req.pose_stamped = poseStamped
-
-        if seedPose is not None:
-            req.seed_pose.append(RobotService.jointPositionToJointStateMsg(self.jointNames, seedPose))
-
-        if nominalPose is not None:
-            req.nominal_pose.append(RobotService.jointPositionToJointStateMsg(self.jointNames, nominalPose))
-
-        ikServiceName = 'robot_control/IkService'
-        rospy.wait_for_service(ikServiceName, timeout=timeout)
-        s = rospy.ServiceProxy(ikServiceName, robot_msgs.srv.RunIK)
-        response = s(req)
-
-        joint_state = response.joint_state
-
-        rospy.loginfo("ik was successful = %s", response.success)
-        return response
-
-    @property
-    def cartesian_trajectory_action_client(self):
-        return self._cartesian_trajectory_action_client
-
-    @staticmethod
-    def jointPositionToJointStateMsg(jointNames, jointPositions):
-        assert len(jointNames) == len(jointPositions)
-
-        numJoints = len(jointNames)
-
-        jointState = sensor_msgs.msg.JointState()
-        jointState.header.stamp = rospy.Time.now()
-
-        jointState.position = jointPositions
-        jointState.name = jointNames
-
-        jointState.velocity = [0] * numJoints
-        jointState.effort = [0] * numJoints
-
-        return jointState
-
-    @staticmethod
-    def makeKukaRobotService():
-        return RobotService(Utils.get_kuka_joint_names())
