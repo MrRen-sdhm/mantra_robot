@@ -20,6 +20,7 @@ public:
     ~YinShiDriver();
 
     void Move(HandCMD _CMD, int _Speed, int _Cur);
+    void MovePose(int _Pose);
     void ClearError();
 
 private:

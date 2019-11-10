@@ -11,6 +11,7 @@
 #define CMD_MC_PARA_ID_SET 0x04
 #define CMD_MC_MOVE_CATCH_XG 0x18
 #define CMD_MC_MOVE_RELEASE 0x11
+#define CMD_MC_SEEKPOS 0x54
 #define CMD_MC_MOVE_STOPHERE 0x16
 #define CMD_MC_SET_EG_PARA 0x12
 #define CMD_MC_READ_EG_PARA 0x13
@@ -39,12 +40,24 @@ YinShiDriver::~YinShiDriver() {
 
 bool YinShiDriver::HandControl(yinshi_driver::HandControl::Request  &req, yinshi_driver::HandControl::Response &res) {
     if(req.command == "Open") {
+        printf("Yinshi hand open.\n");
         Move(YinShiDriver::HandCMD::OpenHand, 1000, 1000);
         res.success = true;
     }
     else if(req.command == "Close") {
+        printf("Yinshi hand close.\n");
         Move(YinShiDriver::HandCMD::CloseHand, 1000, 1000);
         res.success = true;
+    }
+    else if(req.command == "Move") {
+        if (req.pose > 0 && req.pose <=1000) {
+            printf("Yinshi hand move to pose: %d.\n", req.pose);
+            MovePose(req.pose);
+            res.success = true;
+        } else {
+            printf("Yinshi hand support pose: 1-1000.\n");
+            res.success = false;
+        }
     }
     else {
         printf("Supported command: Open/Close\n");
@@ -55,6 +68,7 @@ bool YinShiDriver::HandControl(yinshi_driver::HandControl::Request  &req, yinshi
 }
 
 void YinShiDriver::Move(HandCMD _CMD, int _Speed, int _Cur) {
+    // Speed: 1-1000  Cur: 50-1000
 
     std::vector<unsigned char> _Data;
     if(_CMD == CloseHand) {
@@ -80,6 +94,23 @@ void YinShiDriver::Move(HandCMD _CMD, int _Speed, int _Cur) {
         char _CheckSum = FrameCheck(_Data);
         _Data.push_back(_CheckSum);
     }
+
+//    serialport_->Write(_Data.data(), _Data.size());
+    serialdriver_->Write(_Data.data(), _Data.size());
+}
+
+void YinShiDriver::MovePose(int _Pose) {
+    // Pose: 1-1000
+    std::vector<unsigned char> _Data;
+    _Data.push_back(FRAME_HEAD_H);
+    _Data.push_back(FRAME_HEAD_L);
+    _Data.push_back((HandID & 0xff));
+    _Data.push_back(3);
+    _Data.push_back(CMD_MC_SEEKPOS);
+    _Data.push_back((_Pose % 256) & 0xff);
+    _Data.push_back((_Pose / 256) & 0xff);
+    char _CheckSum = FrameCheck(_Data);
+    _Data.push_back(_CheckSum);
 
 //    serialport_->Write(_Data.data(), _Data.size());
     serialdriver_->Write(_Data.data(), _Data.size());
