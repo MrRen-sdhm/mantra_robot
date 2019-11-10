@@ -32,6 +32,7 @@ class RobotMove(object):
 
     @staticmethod
     def move_to_pose_named(pose_name):
+        print "[INFO] Wait for service..."
         rospy.wait_for_service('move_to_pose_named')
         try:
             move_to_pose_named = rospy.ServiceProxy('move_to_pose_named', MoveToPoseNamed)
@@ -40,7 +41,7 @@ class RobotMove(object):
                 print "[INFO] Robot move to pose named %s success." % pose_name
                 return True
         except rospy.ServiceException, e:
-            print "Robot move service call failed: %s" % e
+            print "[ERROR] Robot move service call failed: %s" % e
 
 
 class TFWrapper(object):
@@ -195,10 +196,11 @@ class ImageCapture(object):
                     print "[Exception] tf2_ros.ExtrapolationException:\n", e
                     print "wasn't able to get transform for image message %d, skipping" % counter
                     continue
-                except tf2_ros.LookupException, e:
-                    print "[Exception] tf2_ros.LookupException:\n", e
-                    print "wasn't able to get transform for image message %d, skipping" % counter
-                    continue
+                # except tf2_ros.LookupException, e:
+                #     print "[Exception] tf2_ros.LookupException:\n", e
+                #     print "wasn't able to get transform for image message %d, skipping" % counter
+                #     # continue
+                #     return False
 
                 depth_data['camera_to_world'].append((trans, rot))
 

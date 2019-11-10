@@ -11,7 +11,7 @@
         xyz="5.69641035035705E-08 -7.52429850161379E-09 0.0534781808387783"
         rpy="0 0 0" />
       <mass value="500" />
-      <inertia  
+      <inertia
         ixx="1.0"
         ixy="0.0"
         ixz="0.0"
@@ -146,7 +146,7 @@
     type="revolute">
     <origin
       xyz="0 0 0.17"
-      rpy="1.5708 0 0" />
+      rpy="1.5707963267949 0 0" />
     <parent
       link="link1" />
     <child
@@ -204,7 +204,7 @@
     type="revolute">
     <origin
       xyz="0 0.17 0"
-      rpy="-1.5708 0 0" />
+      rpy="-1.5707963267949 0 0" />
     <parent
       link="link2" />
     <child
@@ -262,7 +262,7 @@
     type="revolute">
     <origin
       xyz="0 0 0.16"
-      rpy="1.5708 0 0" />
+      rpy="1.5707963267949 0 0" />
     <parent
       link="link3" />
     <child
@@ -320,7 +320,7 @@
     type="revolute">
     <origin
       xyz="0 0.16 0"
-      rpy="-1.5708 0 0" />
+      rpy="-1.5707963267949 0 0" />
     <parent
       link="link4" />
     <child
@@ -378,7 +378,7 @@
     type="revolute">
     <origin
       xyz="0 0 0.16"
-      rpy="1.5708 0 0" />
+      rpy="1.5707963267949 0 0" />
     <parent
       link="link5" />
     <child
@@ -436,7 +436,7 @@
     type="revolute">
     <origin
       xyz="0 0.2255 0"
-      rpy="-1.5708 0 0" />
+      rpy="-1.5707963267949 0 0" />
     <parent
       link="link6" />
     <child

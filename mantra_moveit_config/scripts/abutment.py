@@ -55,8 +55,8 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## Instantiate a `MoveGroupCommander`_ object.
     group_name = "arm"
     group = moveit_commander.MoveGroupCommander(group_name)
-    # group.set_max_velocity_scaling_factor(0.25)
-    # group.set_max_acceleration_scaling_factor(0.5)
+    group.set_max_velocity_scaling_factor(0.5)
+    group.set_max_acceleration_scaling_factor(0.2)
 
     # 当运动规划失败后，允许重新规划
     # group.allow_replanning(True)
@@ -175,61 +175,16 @@ class MoveGroupPythonIntefaceTutorial(object):
     return False
 
 
-  def go_to_joint_state_0(self):
+  def change_ee_joint_state(self, angle):
     group = self.group
 
     # Planning to a Joint Goal
     joint_goal = group.get_current_joint_values()
-    # joint_goal[0] = pi/4
-    # joint_goal[1] = pi/8
-    # joint_goal[2] = pi/8
-    # joint_goal[3] = pi/16
-    # joint_goal[4] = pi/32
-    # joint_goal[5] = pi/64
-    # joint_goal[6] = pi/64
-    joint_goal[0] = 0
-    joint_goal[1] = 0
-    joint_goal[2] = 0
-    joint_goal[3] = 0
-    joint_goal[4] = 0
-    joint_goal[5] = 0
-    joint_goal[6] = pi/4
+    joint_goal[6] = angle
 
     group.go(joint_goal, wait=True)
 
     group.stop()
-
-    current_joints = self.group.get_current_joint_values()
-    return all_close(joint_goal, current_joints, 0.01)
-
-  def go_to_joint_state_1(self):
-    group = self.group
-
-    # Planning to a Joint Goal
-    joint_goal = group.get_current_joint_values()
-    # joint_goal[0] = -pi/4
-    # joint_goal[1] = -pi/8
-    # joint_goal[2] = -pi/8
-    # joint_goal[3] = -pi/16
-    # joint_goal[4] = -pi/32
-    # joint_goal[5] = -pi/64
-    # joint_goal[6] = -pi/64
-
-    joint_goal[0] = 0
-    joint_goal[1] = 0
-    joint_goal[2] = 0
-    joint_goal[3] = 0
-    joint_goal[4] = 0
-    joint_goal[5] = 0
-    joint_goal[6] = -pi/4
-
-
-    group.go(joint_goal, wait=True)
-
-    group.stop()
-
-    current_joints = self.group.get_current_joint_values()
-    return all_close(joint_goal, current_joints, 0.01)
 
 
   def go_to_pose_named(self, pose_name):
@@ -289,10 +244,12 @@ def main():
 
     # tutorial.go_to_pose_named("point_1")
     # tutorial.go_to_pose_named("point_2")
-    tutorial.go_to_pose_named("point_3")
+    # tutorial.go_to_pose_named("point_3")
     tutorial.go_to_pose_named("point_4")
-    tutorial.go_to_pose_named("point_5")
+    # tutorial.go_to_pose_named("point_5")
     tutorial.go_to_pose_named("point_6")
+    tutorial.change_ee_joint_state(pi/2)
+    tutorial.change_ee_joint_state(0)
     rospy.sleep(1)
     tutorial.go_to_pose_named("point_5")
     tutorial.go_to_pose_named("point_1")

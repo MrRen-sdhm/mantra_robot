@@ -341,7 +341,7 @@
         rpy="0 0 0" />
       <mass
         value="0.367226253239117" />
-      <<inertia  
+      <inertia  
         ixx="1.0"
         ixy="0.0"
         ixz="0.0"

@@ -9,11 +9,11 @@
         <!-- <parent link="base_link"/> -->
         <origin xyz="-0.1 0.0 0.0" rpy="0 ${-M_PI/2} 0"/>
         <parent link="link7"/>
-        <child link="camera_link"/>
+        <child link="camera_color_optical_frame"/>
    </joint>
   
    <!-- Camera -->
-   <link name="camera_link">
+   <link name="camera_color_optical_frame">
        <collision>
            <origin xyz="0 0 0" rpy="${-M_PI} 0 ${M_PI/2}"/>
            <geometry>

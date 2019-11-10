@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com)
      Commit Version: 1.5.0-0-g9aa0fdb  Build Version: 1.5.7004.21443
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
 <robot
@@ -305,7 +305,7 @@
     type="revolute">
     <origin
       xyz="0 0 0.17"
-      rpy="1.5708 0 0" />
+      rpy="1.5707963267949 0 0" />
     <parent
       link="link1" />
     <child
@@ -363,7 +363,7 @@
     type="revolute">
     <origin
       xyz="0 0.17 0"
-      rpy="-1.5708 0 0" />
+      rpy="-1.5707963267949 0 0" />
     <parent
       link="link2" />
     <child
@@ -421,7 +421,7 @@
     type="revolute">
     <origin
       xyz="0 0 0.16"
-      rpy="1.5708 0 0" />
+      rpy="1.5707963267949 0 0" />
     <parent
       link="link3" />
     <child
@@ -479,7 +479,7 @@
     type="revolute">
     <origin
       xyz="0 0.16 0"
-      rpy="-1.5708 0 0" />
+      rpy="-1.5707963267949 0 0" />
     <parent
       link="link4" />
     <child
@@ -537,7 +537,7 @@
     type="revolute">
     <origin
       xyz="0 0 0.16"
-      rpy="1.5708 0 0" />
+      rpy="1.5707963267949 0 0" />
     <parent
       link="link5" />
     <child
@@ -595,7 +595,7 @@
     type="revolute">
     <origin
       xyz="0 0.16 0"
-      rpy="-1.5708 0 0" />
+      rpy="-1.5707963267949 0 0" />
     <parent
       link="link6" />
     <child

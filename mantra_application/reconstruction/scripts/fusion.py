@@ -24,12 +24,13 @@ except Exception as err:
 
 class TSDFVolume(object):
 
-    def __init__(self, vol_bnds, voxel_size):
+    def __init__(self, vol_bnds, voxel_size, work_space=np.array([-2, 2, -2, 2, -2, 2])):
 
         # Define voxel volume parameters
         self._vol_bnds = vol_bnds  # rows: x,y,z columns: min,max in world coordinates in meters
         self._voxel_size = voxel_size  # in meters (determines volume discretization and resolution)
         self._trunc_margin = self._voxel_size * 5  # truncation on SDF
+        self._work_space = work_space
 
         # Adjust volume bounds
         self._vol_dim = np.ceil((self._vol_bnds[:, 1] - self._vol_bnds[:, 0]) / self._voxel_size).copy(
@@ -60,6 +61,7 @@ class TSDFVolume(object):
                                         float * color_vol,
                                         float * vol_dim,
                                         float * vol_origin,
+                                        float * work_space,
                                         float * cam_intr,
                                         float * cam_pose,
                                         float * other_params,
@@ -89,6 +91,10 @@ class TSDFVolume(object):
                 float pt_x = vol_origin[0]+voxel_x*voxel_size;
                 float pt_y = vol_origin[1]+voxel_y*voxel_size;
                 float pt_z = vol_origin[2]+voxel_z*voxel_size;
+
+                // Work space filter
+                if (pt_x < work_space[0] || pt_x > work_space[1] || pt_y < work_space[2] || pt_y > work_space[3] || pt_z < work_space[4] || pt_z > work_space[5])
+                    return;
 
                 // World coordinates to camera coordinates
                 float tmp_pt_x = pt_x-cam_pose[0*4+3];
@@ -195,6 +201,7 @@ class TSDFVolume(object):
                                      self._color_vol_gpu,
                                      cuda.InOut(self._vol_dim.astype(np.float32)),
                                      cuda.InOut(self._vol_origin.astype(np.float32)),
+                                     cuda.InOut(self._work_space.astype(np.float32)),
                                      cuda.InOut(cam_intr.reshape(-1).astype(np.float32)),
                                      cuda.InOut(cam_pose.reshape(-1).astype(np.float32)),
                                      cuda.InOut(np.asarray(
@@ -211,7 +218,9 @@ class TSDFVolume(object):
             # Get voxel grid coordinates
             xv, yv, zv = np.meshgrid(range(self._vol_dim[0]), range(self._vol_dim[1]), range(self._vol_dim[2]),
                                      indexing='ij')
+            # print "xv, yv, zv", xv, yv, zv
             vox_coords = np.concatenate((xv.reshape(1, -1), yv.reshape(1, -1), zv.reshape(1, -1)), axis=0).astype(int)
+            # print "vox_coords", vox_coords
 
             # Voxel coordinates to world coordinates
             world_pts = self._vol_origin.reshape(-1, 1) + vox_coords.astype(float) * self._voxel_size
@@ -287,6 +296,27 @@ class TSDFVolume(object):
         colors = colors.astype(np.uint8)
         return verts, faces, norms, colors
 
+    def get_surface(self):
+        if FUSION_GPU_MODE:
+            cuda.memcpy_dtoh(self._tsdf_vol_cpu, self._tsdf_vol_gpu)
+            cuda.memcpy_dtoh(self._color_vol_cpu, self._color_vol_gpu)
+            cuda.memcpy_dtoh(self._weight_vol_cpu, self._weight_vol_gpu)
+
+        # Count total number of points in point cloud
+        num_pts = 0
+        print self._vol_dim
+        print self._weight_vol_cpu[0], self._weight_vol_cpu.shape, type(self._weight_vol_cpu)
+        print self._tsdf_vol_cpu[0], self._tsdf_vol_cpu.shape, type(self._tsdf_vol_cpu.dtype)
+
+        # too slow!
+        for x in range(self._vol_dim[0]):
+            for y in range(self._vol_dim[1]):
+                for z in range(self._vol_dim[2]):
+                    if abs(self._tsdf_vol_cpu[x][y][z]) < 0.2 and self._weight_vol_cpu[x][y][z] > 0.0:
+                        num_pts += 1
+
+        print num_pts
+
 
 # -------------------------------------------------------------------------------
 # Additional helper functions
@@ -321,7 +351,7 @@ def meshwrite_ascii(filename, verts, faces, norms):
     ply_file.write("property float ny\n")
     ply_file.write("property float nz\n")
     ply_file.write("element face %d\n" % (faces.shape[0]))
-    ply_file.write("property list uchar int vertex_index\n")
+    ply_file.write("property list uchar int vertex_indices\n")
     ply_file.write("end_header\n")
 
     # Write vertex list
@@ -352,7 +382,7 @@ def meshwrite_color_ascii(filename, verts, faces, norms, colors):
     ply_file.write("property uchar green\n")
     ply_file.write("property uchar blue\n")
     ply_file.write("element face %d\n" % (faces.shape[0]))
-    ply_file.write("property list uchar int vertex_index\n")
+    ply_file.write("property list uchar int vertex_indices\n")
     ply_file.write("end_header\n")
 
     # Write vertex list
@@ -500,7 +530,7 @@ if __name__ == "__main__":
 
     # Initialize voxel volume
     print("Initializing voxel volume...")
-    tsdf_vol = TSDFVolume(vol_bnds, voxel_size=voxel_size)
+    tsdf_vol = TSDFVolume(vol_bnds, voxel_size=voxel_size, work_space=np.array([-2, 2, -2, 2, -2, 2]))
 
     # Loop through RGB-D images and fuse them together
     t0_elapse = time.time()
