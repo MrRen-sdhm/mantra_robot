@@ -301,9 +301,18 @@ class FusionServer(object):
         self.config['bag_folder'] = "data"
         self.config['use_close_up_poses'] = False
 
-        self.config['fusion_voxel_size'] = 0.004
+        self.config['fusion_voxel_size'] = 0.002
+        self.config['voxel_grid_dim_x'] = 240
+        self.config['voxel_grid_dim_y'] = 320
+        self.config['voxel_grid_dim_z'] = 280
+        self.config['voxel_grid_origin_x'] = 0.4
+        self.config['voxel_grid_origin_y'] = -0.3
+        self.config['voxel_grid_origin_z'] = -0.2
+
         self.config['fusion_max_depth'] = 1.2
-        self.config['fusion_exe_path'] = os.path.join(utils.get_curr_dir(), 'fusion.py')
+        self.config['fusion_script_path'] = os.path.join(utils.get_curr_dir(), 'fusion.py')
+        self.config['fusion_exe_path'] = os.path.join(os.path.dirname(utils.get_curr_dir()), 'tsdf_fusion')
+        self.config['extract_exe_path'] = os.path.join(os.path.dirname(utils.get_curr_dir()), 'extract_normals/build')
 
         self.topics_to_bag = [
             "/tf",
@@ -638,6 +647,42 @@ class FusionServer(object):
         print "Previously: %d images" % num_original_images
         print "After: %d images" % num_kept_images
 
+    def tsdf_fusion_py(self, images_dir):
+        fusion_exe_path = self.config['fusion_script_path']
+        fusion_cmd = "python " + fusion_exe_path
+        os.system("%s %s %s %s" % (fusion_cmd, images_dir, str(self.config['fusion_voxel_size']),
+                                   str(self.config['fusion_max_depth'])))
+        print "[INFO] Fusion cmd:", fusion_cmd
+
+    def tsdf_fusion_cpp(self, images_dir):
+        start = time.time()
+        fusion_exe_path = self.config['fusion_exe_path'] + '/fusion'  # fusion
+        convert_script_path = self.config['fusion_exe_path'] + '/tsdf_bin_to_ply.py'
+        extract_exe_path = self.config['extract_exe_path'] + '/extract_normals'
+
+        save_dir = os.path.dirname(images_dir)
+
+        # run tsdf fusion
+        fusion_cmd = "%s %s %s %s %s %s %s %s %s %s" % \
+                     (fusion_exe_path, images_dir, save_dir, str(self.config['fusion_voxel_size']),
+                      str(self.config['voxel_grid_dim_x']), str(self.config['voxel_grid_dim_y']),
+                      str(self.config['voxel_grid_dim_z']), str(self.config['voxel_grid_origin_x']),
+                      str(self.config['voxel_grid_origin_y']), str(self.config['voxel_grid_origin_z']))
+        print "[INFO] Fusion cmd:", fusion_cmd
+        os.system(fusion_cmd)
+
+        # convert tsdf.bin to mesh and cumpute normals
+        covert_cmd = "python %s %s %s" % (convert_script_path, save_dir, save_dir)
+        print "[INFO] Covert cmd:", covert_cmd
+        os.system(covert_cmd)
+
+        # extract surface normals from mesh
+        extract_cmd = "%s %s %s" % (extract_exe_path, save_dir, save_dir)
+        print "[INFO] Extract cmd:", extract_cmd
+        os.system(extract_cmd)
+
+        print "[INFO] Tsdf fusion and post processing took: %.3fs" % (time.time()-start)
+
     def handle_capture_scene_and_fuse(self):
         """
         NOTE: The coordinate of tsdf is camera's world frame, we describe camera's pose use base_link->camera
@@ -657,11 +702,7 @@ class FusionServer(object):
         self.format_data_for_tsdf(images_dir)
 
         print "\n[INFO] Running tsdf fusion"
-        fusion_exe_path = self.config['fusion_exe_path']
-        fusion_cmd = "python " + fusion_exe_path
-        os.system("%s %s %s %s" % (fusion_cmd, images_dir, str(self.config['fusion_voxel_size']),
-                                   str(self.config['fusion_max_depth'])))
-        print "[INFO] Fusion cmd:", fusion_cmd
+        self.tsdf_fusion_cpp(images_dir)
 
         print "\n[INFO] Downsampling image folder"
         self.downsample_by_pose_difference_threshold(images_dir, 0.03, 10)
@@ -685,20 +726,19 @@ if __name__ == "__main__":
     # fs.stop_bagging()
 
     # #############    test extract data    ############
-    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-24-20-09-02/raw/fusion_2019-10-24-20-09-02.bag"
+    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-10-27-15-57-08/raw/fusion_2019-10-27-15-57-08.bag"
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/reference/data/2019-10-25-22-03-45/processed/images"
-    # data_cnt = fs.format_data_for_tsdf(images_dir)
+    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-05-11-17-00-57/processed/images"
+    data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
-    # fusion_exe_path = os.path.join(os.path.dirname(utils.get_curr_dir()), 'scripts', 'fusion.py')
-    # command = "python " + fusion_exe_path
-    # os.system("%s %s" % (command, images_dir))
+    fs.tsdf_fusion_cpp(images_dir)
+    print(images_dir)
 
     # #############    test downsample    ###############
     # fs.downsample_by_pose_difference_threshold(images_dir)
 
     # #################    test all    ##################
-    fs.handle_capture_scene_and_fuse()
+    # fs.handle_capture_scene_and_fuse()
