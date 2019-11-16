@@ -300,6 +300,7 @@ class FusionServer(object):
         self.config['sleep_time_before_bagging'] = 3.0
         self.config['bag_folder'] = "data"
         self.config['use_close_up_poses'] = False
+        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
 
         self.config['fusion_voxel_size'] = 0.002
         self.config['voxel_grid_dim_x'] = 240
@@ -312,7 +313,7 @@ class FusionServer(object):
         self.config['fusion_max_depth'] = 1.2
         self.config['fusion_script_path'] = os.path.join(utils.get_curr_dir(), 'fusion.py')
         self.config['fusion_exe_path'] = os.path.join(os.path.dirname(utils.get_curr_dir()), 'tsdf_fusion')
-        self.config['extract_exe_path'] = os.path.join(os.path.dirname(utils.get_curr_dir()), 'extract_normals/build')
+        self.config['post_process_exe_path'] = os.path.join(os.path.dirname(utils.get_curr_dir()), 'post_process/build')
 
         self.topics_to_bag = [
             "/tf",
@@ -658,11 +659,16 @@ class FusionServer(object):
         start = time.time()
         fusion_exe_path = self.config['fusion_exe_path'] + '/fusion'  # fusion
         convert_script_path = self.config['fusion_exe_path'] + '/tsdf_bin_to_ply.py'
-        extract_exe_path = self.config['extract_exe_path'] + '/extract_normals'
+        extract_exe_path = self.config['post_process_exe_path'] + '/extract_normals'
+        creat_cloud_exe_path = self.config['post_process_exe_path'] + '/create_point_cloud'
 
         save_dir = os.path.dirname(images_dir)
+        pcd_save_dir = os.path.dirname(images_dir) + '/clouds'
+        if not os.path.exists(pcd_save_dir):
+            os.mkdir(pcd_save_dir)
 
         # run tsdf fusion
+        # fusion_cmd: exe_path images_dir save_dir voxel_size dim_x dim_y dim_z origin_x origin_y origin_z
         fusion_cmd = "%s %s %s %s %s %s %s %s %s %s" % \
                      (fusion_exe_path, images_dir, save_dir, str(self.config['fusion_voxel_size']),
                       str(self.config['voxel_grid_dim_x']), str(self.config['voxel_grid_dim_y']),
@@ -672,14 +678,38 @@ class FusionServer(object):
         os.system(fusion_cmd)
 
         # convert tsdf.bin to mesh and cumpute normals
+        # covert_cmd: script_path input_dir output_dir
         covert_cmd = "python %s %s %s" % (convert_script_path, save_dir, save_dir)
         print "[INFO] Covert cmd:", covert_cmd
         os.system(covert_cmd)
 
         # extract surface normals from mesh
+        # extract_cmd: exe_path input_dir output_dir
         extract_cmd = "%s %s %s" % (extract_exe_path, save_dir, save_dir)
         print "[INFO] Extract cmd:", extract_cmd
         os.system(extract_cmd)
+
+        # create point cloud from rgb and depth image
+        imagels = sorted(glob.glob(os.path.join(images_dir, '*depth.png')))
+        print imagels
+        for image in imagels:
+            dirname = os.path.dirname(image)
+            basename = os.path.basename(image)
+            prefix = basename.split("_")[0]
+
+            color_img = os.path.join(dirname, prefix + '_rgb.png')
+            depth_img = os.path.join(dirname, prefix + '_depth.png')
+            camera_pose = os.path.join(dirname, prefix + '_pose.txt')
+            cloud_pcd = os.path.join(pcd_save_dir, prefix + '_cloud.pcd')
+
+            # creat_cloud_cmd: exe_path color_path depth_path cam_K_dir camera_pose_file save_path -x x -y y -z z
+            creat_cloud_cmd = "%s %s %s %s %s %s %s %s %s %s %s %s" % \
+                              (creat_cloud_exe_path, color_img, depth_img, images_dir, camera_pose, cloud_pcd,
+                               self.config['work_space'][0], self.config['work_space'][1],
+                               self.config['work_space'][2], self.config['work_space'][3],
+                               self.config['work_space'][4], self.config['work_space'][5])
+            print "[INFO] Creat cloud:", cloud_pcd
+            os.system(creat_cloud_cmd)
 
         print "[INFO] Tsdf fusion and post processing took: %.3fs" % (time.time()-start)
 
@@ -731,11 +761,25 @@ if __name__ == "__main__":
 
     # ############    test format data    ##############
     images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-05-11-17-00-57/processed/images"
-    data_cnt = fs.format_data_for_tsdf(images_dir)
+    # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
     fs.tsdf_fusion_cpp(images_dir)
-    print(images_dir)
+    # print(images_dir)
+
+    # #############    test images read    ##############
+    # imagels = sorted(glob.glob(os.path.join(images_dir, '*depth.png')))
+    # print imagels
+    # for image in imagels:
+    #     dirname = os.path.dirname(image)
+    #     basename = os.path.basename(image)
+    #     prefix = basename.split("_")[0]
+    #
+    #     color_img = os.path.join(dirname, prefix + '_rgb.png')
+    #     depth_img = os.path.join(dirname, prefix + '_depth.png')
+    #     cloud_pcd = os.path.join(dirname, prefix + '_cloud.pcd')
+    #
+    #     print color_img
 
     # #############    test downsample    ###############
     # fs.downsample_by_pose_difference_threshold(images_dir)
