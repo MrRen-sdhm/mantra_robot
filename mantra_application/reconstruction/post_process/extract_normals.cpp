@@ -81,6 +81,11 @@ int main(int argc, char * argv[]) {
         save_path = "..";
     }
 
+    float min_z = -0.1;
+    if (argc > 3) {
+        min_z = atof(argv[3]);
+    }
+
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr surface_cloud_no_normal (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_with_normal (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
 
@@ -102,19 +107,19 @@ int main(int argc, char * argv[]) {
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_workspace_voxel(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
     pcl::VoxelGrid<pcl::PointXYZRGBNormal> sor;
     sor.setInputCloud (cloud_workspace_filter);
-    sor.setLeafSize (0.005f, 0.005f, 0.005f);
+    sor.setLeafSize (0.008f, 0.008f, 0.008f);
     sor.filter (*cloud_workspace_voxel);
 
     // 滤除桌面点云
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_plane_filter(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
     for (int i = 0; i < cloud_workspace_filter->size(); i++) {
         const pcl::PointXYZRGBNormal &p = cloud_workspace_filter->points[i];
-        if (p.z > 0.0) cloud_plane_filter->push_back(p);
+        if (p.z > min_z) cloud_plane_filter->push_back(p);
     }
 
     // 创建表面有法线点云指针
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr surface_cloud_with_normal (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-    pcl::copyPointCloud(*cloud_plane_filter,*surface_cloud_with_normal); // 获取点云
+    pcl::copyPointCloud(*cloud_plane_filter, *surface_cloud_with_normal); // 获取点云
 
     // kdtree对象
     pcl::KdTreeFLANN<pcl::PointXYZRGBNormal> kdtree;
@@ -201,7 +206,7 @@ int main(int argc, char * argv[]) {
 
     // 保存处理后的点云及法线
     pcl::PCDWriter writer;
-    writer.writeASCII(save_path + "/surface_cloud.pcd", *cloud_plane_filter); // 保存桌面以上，计算过法线的点云
+    // writer.writeASCII(save_path + "/surface_cloud.pcd", *cloud_plane_filter); // 保存桌面以上，未计算过法线的点云
     writer.writeASCII(save_path + "/surface_cloud_with_normals.pcd", *surface_cloud_with_normal); // 保存桌面以上，计算过法线的点云
     writer.writeASCII(save_path + "/surface_cloud_voxel.pcd", *cloud_workspace_voxel); // 保存未滤除桌面，降采样之后的点云
 //    save_normals(save_path + "/normals_as_xyz.pcd", surface_normals); // 以PointXYZ格式保存法线

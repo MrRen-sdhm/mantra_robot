@@ -300,7 +300,8 @@ class FusionServer(object):
         self.config['sleep_time_before_bagging'] = 3.0
         self.config['bag_folder'] = "data"
         self.config['use_close_up_poses'] = False
-        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
+        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud
+        self.config['min_z'] = -0.01  # min z to remove plane when extract normals
 
         self.config['fusion_voxel_size'] = 0.002
         self.config['voxel_grid_dim_x'] = 240
@@ -685,7 +686,7 @@ class FusionServer(object):
 
         # extract surface normals from mesh
         # extract_cmd: exe_path input_dir output_dir
-        extract_cmd = "%s %s %s" % (extract_exe_path, save_dir, save_dir)
+        extract_cmd = "%s %s %s %s" % (extract_exe_path, save_dir, save_dir, self.config['min_z'])
         print "[INFO] Extract cmd:", extract_cmd
         os.system(extract_cmd)
 
@@ -702,7 +703,7 @@ class FusionServer(object):
             camera_pose = os.path.join(dirname, prefix + '_pose.txt')
             cloud_pcd = os.path.join(pcd_save_dir, prefix + '_cloud.pcd')
 
-            # creat_cloud_cmd: exe_path color_path depth_path cam_K_dir camera_pose_file save_path -x x -y y -z z
+            # creat_cloud_cmd: exe_path color_path depth_path cam_K_dir camera_pose save_path -x x -y y -z z
             creat_cloud_cmd = "%s %s %s %s %s %s %s %s %s %s %s %s" % \
                               (creat_cloud_exe_path, color_img, depth_img, images_dir, camera_pose, cloud_pcd,
                                self.config['work_space'][0], self.config['work_space'][1],
@@ -760,12 +761,19 @@ if __name__ == "__main__":
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-05-11-17-00-57/processed/images"
+    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-24-17-18-39/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
-    fs.tsdf_fusion_cpp(images_dir)
+    # fs.tsdf_fusion_cpp(images_dir)
     # print(images_dir)
+
+    # ###########    test extrac normals    #############
+    save_dir = os.path.dirname(images_dir)
+    extract_exe_path = fs.config['post_process_exe_path'] + '/extract_normals'
+    extract_cmd = "%s %s %s %s" % (extract_exe_path, save_dir, save_dir, fs.config['min_z'])
+    print "[INFO] Extract cmd:", extract_cmd
+    os.system(extract_cmd)
 
     # #############    test images read    ##############
     # imagels = sorted(glob.glob(os.path.join(images_dir, '*depth.png')))
