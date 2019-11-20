@@ -4,6 +4,7 @@
 import os
 import time
 import subprocess
+import multiprocessing
 import numpy as np
 import cv2
 import shutil
@@ -691,6 +692,9 @@ class FusionServer(object):
         os.system(extract_cmd)
 
         # create point cloud from rgb and depth image
+        def worker(creat_cloud_cmd):
+            os.system(creat_cloud_cmd)
+
         imagels = sorted(glob.glob(os.path.join(images_dir, '*depth.png')))
         print imagels
         for image in imagels:
@@ -710,7 +714,10 @@ class FusionServer(object):
                                self.config['work_space'][2], self.config['work_space'][3],
                                self.config['work_space'][4], self.config['work_space'][5])
             print "[INFO] Creat cloud:", cloud_pcd
-            os.system(creat_cloud_cmd)
+            # os.system(creat_cloud_cmd)
+            # print("creat_cloud_cmd", creat_cloud_cmd)
+            p = multiprocessing.Process(target=worker, args=(creat_cloud_cmd,))
+            p.start()
 
         print "[INFO] Tsdf fusion and post processing took: %.3fs" % (time.time()-start)
 
@@ -761,23 +768,31 @@ if __name__ == "__main__":
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-24-17-18-39/processed/images"
+    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-24-17-56-42/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
-    # fs.tsdf_fusion_cpp(images_dir)
+    fs.tsdf_fusion_cpp(images_dir)
     # print(images_dir)
 
     # ###########    test extrac normals    #############
-    save_dir = os.path.dirname(images_dir)
-    extract_exe_path = fs.config['post_process_exe_path'] + '/extract_normals'
-    extract_cmd = "%s %s %s %s" % (extract_exe_path, save_dir, save_dir, fs.config['min_z'])
-    print "[INFO] Extract cmd:", extract_cmd
-    os.system(extract_cmd)
+    # save_dir = os.path.dirname(images_dir)
+    # extract_exe_path = fs.config['post_process_exe_path'] + '/extract_normals'
+    # extract_cmd = "%s %s %s %s" % (extract_exe_path, save_dir, save_dir, fs.config['min_z'])
+    # print "[INFO] Extract cmd:", extract_cmd
+    # os.system(extract_cmd)
 
-    # #############    test images read    ##############
+    # #############    test cloud create    ##############
+    # pcd_save_dir = os.path.dirname(images_dir) + '/clouds'
+    # if not os.path.exists(pcd_save_dir):
+    #     os.mkdir(pcd_save_dir)
+    # creat_cloud_exe_path = fs.config['post_process_exe_path'] + '/create_point_cloud'
     # imagels = sorted(glob.glob(os.path.join(images_dir, '*depth.png')))
     # print imagels
+    #
+    # def worker(creat_cloud_cmd):
+    #     os.system(creat_cloud_cmd)
+    #
     # for image in imagels:
     #     dirname = os.path.dirname(image)
     #     basename = os.path.basename(image)
@@ -785,9 +800,20 @@ if __name__ == "__main__":
     #
     #     color_img = os.path.join(dirname, prefix + '_rgb.png')
     #     depth_img = os.path.join(dirname, prefix + '_depth.png')
-    #     cloud_pcd = os.path.join(dirname, prefix + '_cloud.pcd')
+    #     camera_pose = os.path.join(dirname, prefix + '_pose.txt')
+    #     cloud_pcd = os.path.join(pcd_save_dir, prefix + '_cloud.pcd')
     #
-    #     print color_img
+    #     # creat_cloud_cmd: exe_path color_path depth_path cam_K_dir camera_pose save_path -x x -y y -z z
+    #     creat_cloud_cmd = "%s %s %s %s %s %s %s %s %s %s %s %s" % \
+    #                       (creat_cloud_exe_path, color_img, depth_img, images_dir, camera_pose, cloud_pcd,
+    #                        fs.config['work_space'][0], fs.config['work_space'][1],
+    #                        fs.config['work_space'][2], fs.config['work_space'][3],
+    #                        fs.config['work_space'][4], fs.config['work_space'][5])
+    #     print "[INFO] Creat cloud:", cloud_pcd
+    #     # os.system(creat_cloud_cmd)
+    #     # print("creat_cloud_cmd", creat_cloud_cmd)
+    #     p = multiprocessing.Process(target=worker, args=(creat_cloud_cmd,))
+    #     p.start()
 
     # #############    test downsample    ###############
     # fs.downsample_by_pose_difference_threshold(images_dir)

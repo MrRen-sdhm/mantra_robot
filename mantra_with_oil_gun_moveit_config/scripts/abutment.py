@@ -56,7 +56,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     ## Instantiate a `MoveGroupCommander`_ object.
     group_name = "arm"
     group = moveit_commander.MoveGroupCommander(group_name)
-    group.set_max_velocity_scaling_factor(0.5)
+    group.set_max_velocity_scaling_factor(0.3)
     group.set_max_acceleration_scaling_factor(0.2)
 
     # 当运动规划失败后，允许重新规划
@@ -291,8 +291,8 @@ def main():
     tutorial.go_to_pose_named("home")
 
     tutorial.go_to_pose_named("point_1")
-    tutorial.go_to_pose_named("point_7")
-    tutorial.go_to_pose_named("point_8")
+    # tutorial.go_to_pose_named("point_7")
+    # tutorial.go_to_pose_named("point_8")
     time.sleep(1)
     tutorial.go_to_pose_named("point_4")
     tutorial.go_to_pose_named("point_6")
