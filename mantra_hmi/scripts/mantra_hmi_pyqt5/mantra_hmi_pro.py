@@ -7,15 +7,12 @@
 # File Name  : mantra_gui.py
 
 from __future__ import print_function
-import copy
-from math import pi
 # ROS相关
 from std_msgs.msg import String, Int32MultiArray, Float32MultiArray, Bool
 from sensor_msgs.msg import JointState
 
 # Moveit相关
-# from move_group_pro import *
-from mantra_move_client import *
+from move_group_pro import *
 
 from mantra_hmi_pro_ui import *
 from save_states import create_group_state
@@ -28,15 +25,27 @@ command_arr = Int32MultiArray()
 command_cnt = 4
 command_arr.data = [0]*command_cnt  # 0:使能 1:复位 2:置零 3:急停
 
+# 发送给Moveit移动节点的控制指令
+move_command_arr = Int32MultiArray()
+move_command_cnt = 3
+move_command_arr.data = [0]*move_command_cnt  # 0:移动 1:回零 2:调速
+
+# 发布给Moveit移动节点的目标位置及速度列表
+goal_pose_vel = Float32MultiArray()
+goal_pose_vel.data = [0]*8  # 0-6为目标位置, 7为目标速度
+
+# Moveit移动节点发布的执行状态
+move_group_state = False
+
 joint_ctl_arr = [0]*7
 
 vel_scaling = 0.0  # 速度调整比例
 rad_deg_flag = 1  # 角度显示单为切换标志, 默认为角度
 curr_positions = [0.000000000000]*7  # 当前位置
 goal_positions = [0.000000000000]*7  # 目标位置
+joint_limits = [1.5699, 1.8499, 1.5699, 1.8499, 1.5699, 1.8499, 1.5699]  # 各关节限位
 
-moveJ = False  # 关节运动标志
-moveL = False  # 线性运动标志
+running = False  # 关节运动标志
 back_home = False  # 回零点标志
 change_vel = False  # 调整速度标志
 
@@ -47,7 +56,7 @@ class PubThread(QtCore.QThread):
         self.pub = rospy.Publisher('mantra_hmi', Int32MultiArray, queue_size=1)  # 发布给Mantra_driver的控制指令
 
     def run(self):
-        global moveJ, command_cnt
+        global running, command_cnt
         r = rospy.Rate(50)  # 50hz
         while not rospy.is_shutdown():
             try:
@@ -71,12 +80,19 @@ class SubThread(QtCore.QThread):
     def __init__(self):
         super(SubThread, self).__init__()
         self.sub = rospy.Subscriber("joint_states", JointState, self.callback)
+        self.move_sub = rospy.Subscriber("mantra_move_state", Bool, self.move_state_callback)
 
     # 获取关节当前位置
     @staticmethod
     def callback(joint_states):
         global curr_positions
         curr_positions = joint_states.position[:7]  # 获取新状态
+
+    # 获取Moveit节点执行状态
+    @staticmethod
+    def move_state_callback(state):
+        global move_group_state
+        move_group_state = state.data
 
     def stop(self):
         self.terminate()
@@ -85,25 +101,45 @@ class SubThread(QtCore.QThread):
 class MoveThread(QtCore.QThread):
     def __init__(self):
         super(MoveThread, self).__init__()
+        self.move_pub = rospy.Publisher('mantra_move_command', Int32MultiArray, queue_size=1)  # 发布给Moveit节点的控制指令
+        self.goal_pose_pub = rospy.Publisher('mantra_goal_pose_vel', Float32MultiArray,
+                                             queue_size=1)  # 发布给Moveit节点的目标位置及速度
 
     def run(self):
-        global moveJ, back_home, change_vel
+        global running, back_home, change_vel, move_group_state
         r = rospy.Rate(50)  # 50hz
         # 运动控制指令发送
         while not rospy.is_shutdown():
-            if moveJ:  # 关节运动
-                move_to_joint_states(goal_positions)
-                print("[INFO] Go to joint state...")
-                moveJ = False  # 标志复位
+            if move_group_state is not True:  # Move_group 空闲
+                if running:  # 关节运动
+                    goal_pose_vel.data[0:7] = goal_positions  # 更新目标位置
+                    move_command_arr.data[0] = 1  # 移动指令位置一
+                    print("[INFO] Go to joint state [", end=' ')
+                    for i in range(goal_positions.__len__()):
+                        print("%.3f" % goal_positions[i], end=' ')
+                    print("]rad [", end=' ')
+                    for i in range(goal_positions.__len__()):
+                        print("%.3f" % (goal_positions[i] / pi * 180.0), end=' ')
+                    print("]deg")
+                    running = False  # 标志复位
 
-            if back_home:  # 回零点
-                move_to_pose_named('home')
-                back_home = False  # 标志复位
+                if back_home:  # 回零点
+                    move_command_arr.data[1] = 1  # 回零指令位置一
+                    print ("[INFO] Back home...")
+                    back_home = False  # 标志复位
 
-            if change_vel:  # 调整速度
-                set_vel_scaling(vel_scaling)
-                print ("[INFO] Change speed...")
-                change_vel = False  # 标志复位
+                if change_vel:  # 调整速度
+                    goal_pose_vel.data[7] = vel_scaling  # 更新目标速度
+                    move_command_arr.data[2] = 1  # 调速指令位置一
+                    print ("[INFO] Change speed...")
+                    change_vel = False  # 标志复位
+
+            try:
+                self.goal_pose_pub.publish(goal_pose_vel)  # 实时发布新的目标位置
+                self.move_pub.publish(move_command_arr)  # 实时发布指令
+                move_command_arr.data = [0]*move_command_cnt  # 指令发布后立即清空
+            except rospy.exceptions.ROSException:
+                pass
 
             r.sleep()
 
@@ -346,11 +382,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint1_minus(self):
         index = 0
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] -= self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] < -joint_limits[index]:
+                goal_positions[index] = -joint_limits[index]
 
         joint_ctl_arr[index] = -1
 
@@ -360,12 +401,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint1_plus(self):
         index = 0
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] += self.step  # 操作当前关节目标位置
-            pass
+
+            if goal_positions[index] > joint_limits[index]:
+                goal_positions[index] = joint_limits[index]
 
     @staticmethod
     def joint1_plus_done():
@@ -373,11 +418,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint2_minus(self):
         index = 1
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] -= self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] < -joint_limits[index]:
+                goal_positions[index] = -joint_limits[index]
 
         joint_ctl_arr[index] = -1
 
@@ -387,11 +437,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint2_plus(self):
         index = 1
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] += self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] > joint_limits[index]:
+                goal_positions[index] = joint_limits[index]
 
     @staticmethod
     def joint2_plus_done():
@@ -399,11 +454,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint3_minus(self):
         index = 2
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] -= self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] < -joint_limits[index]:
+                goal_positions[index] = -joint_limits[index]
 
         joint_ctl_arr[index] = -1
 
@@ -413,11 +473,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint3_plus(self):
         index = 2
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] += self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] > joint_limits[index]:
+                goal_positions[index] = joint_limits[index]
 
     @staticmethod
     def joint3_plus_done():
@@ -425,11 +490,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint4_minus(self):
         index = 3
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] -= self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] < -joint_limits[index]:
+                goal_positions[index] = -joint_limits[index]
 
         joint_ctl_arr[index] = -1
 
@@ -439,11 +509,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint4_plus(self):
         index = 3
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] += self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] > joint_limits[index]:
+                goal_positions[index] = joint_limits[index]
 
     @staticmethod
     def joint4_plus_done():
@@ -451,11 +526,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint5_minus(self):
         index = 4
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] -= self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] < -joint_limits[index]:
+                goal_positions[index] = -joint_limits[index]
 
         joint_ctl_arr[index] = -1
 
@@ -465,11 +545,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint5_plus(self):
         index = 4
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] += self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] > joint_limits[index]:
+                goal_positions[index] = joint_limits[index]
 
     @staticmethod
     def joint5_plus_done():
@@ -477,11 +562,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint6_minus(self):
         index = 5
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] -= self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] < -joint_limits[index]:
+                goal_positions[index] = -joint_limits[index]
 
         joint_ctl_arr[index] = -1
 
@@ -491,11 +581,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint6_plus(self):
         index = 5
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] += self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] > joint_limits[index]:
+                goal_positions[index] = joint_limits[index]
 
     @staticmethod
     def joint6_plus_done():
@@ -503,11 +598,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint7_minus(self):
         index = 6
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] -= self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] < -joint_limits[index]:
+                goal_positions[index] = -joint_limits[index]
 
         joint_ctl_arr[index] = -1
 
@@ -517,11 +617,16 @@ class MyWindow(QMainWindow, Ui_Form):
 
     def joint7_plus(self):
         index = 6
-        global moveJ, goal_positions
-        if not moveJ:
-            moveJ = True
-            goal_positions = list(curr_positions)  # copy curr_positions
+        global running, goal_positions
+        if not running:
+            running = True
+            for i in range(curr_positions.__len__()):  # 获取当前位置
+                goal_positions[i] = curr_positions[i]
+
             goal_positions[index] += self.step  # 操作当前关节目标位置
+
+            if goal_positions[index] > joint_limits[index]:
+                goal_positions[index] = joint_limits[index]
 
     @staticmethod
     def joint7_plus_done():

@@ -9,32 +9,38 @@ import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 from math import pi
+from copy import deepcopy
 from std_msgs.msg import String
 from tf.transformations import quaternion_from_euler
 from moveit_commander.conversions import pose_to_list
+from transforms3d import quaternions
 
 
-def all_close(goal, actual, tolerance):
-  """
-  Convenience method for testing if a list of values are within a tolerance of their counterparts in another list
-  @param: goal       A list of floats, a Pose or a PoseStamped
-  @param: actual     A list of floats, a Pose or a PoseStamped
-  @param: tolerance  A float
-  @returns: bool
-  """
-  all_equal = True
-  if type(goal) is list:
-    for index in range(len(goal)):
-      if abs(actual[index] - goal[index]) > tolerance:
-        return False
+# 通过四元数计算方向向量
+def cal_direction_vec(quat):
+    quat_wxyz = (quat.w, quat.x, quat.y, quat.z)
+    rotation_matrix = quaternions.quat2mat(quat_wxyz)
+    direction_x = rotation_matrix[:,0] # 旋转矩阵第一列为x轴方向向量
+    direction_y = rotation_matrix[:,1] # 旋转矩阵第二列为y轴方向向量
+    direction_z = rotation_matrix[:,2] # 旋转矩阵第三列为z轴方向向量
+    print "rotation_matrix:\n", rotation_matrix
+    print "direction vector:\n", direction_x, direction_y, direction_z, "\n"
+    return (direction_x, direction_y, direction_z)
 
-  elif type(goal) is geometry_msgs.msg.PoseStamped:
-    return all_close(goal.pose, actual.pose, tolerance)
+# 通过方向向量及移动距离计算终点位姿, axis：0-x 1-y 2-z
+def cal_pose_by_dir_vec(start_pose, dir_vec, distance, axis):
+    end_pose = deepcopy(start_pose)
+    end_pose.position.x += dir_vec[axis][0]*distance
+    end_pose.position.y += dir_vec[axis][1]*distance
+    end_pose.position.z += dir_vec[axis][2]*distance
+    return end_pose
 
-  elif type(goal) is geometry_msgs.msg.Pose:
-    return all_close(pose_to_list(goal), pose_to_list(actual), tolerance)
+# 通过起点位姿及移动距离计算终点位姿, 为上面两个函数的整合 axis：0-x 1-y 2-z
+def cal_end_pose_by_quat(start_pose, distance, axis):
+    dir_vec = cal_direction_vec(start_pose.orientation)
+    end_pose = cal_pose_by_dir_vec(start_pose, dir_vec, distance, axis)
+    return end_pose
 
-  return True
 
 class MoveGroupPythonIntefaceTutorial(object):
   """MoveGroupPythonIntefaceTutorial"""
@@ -56,7 +62,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     group_name = "arm"
     group = moveit_commander.MoveGroupCommander(group_name)
     group.set_max_velocity_scaling_factor(0.5)
-    group.set_max_acceleration_scaling_factor(0.2)
+    group.set_max_acceleration_scaling_factor(0.5)
 
     # 当运动规划失败后，允许重新规划
     # group.allow_replanning(True)
@@ -237,6 +243,48 @@ class MoveGroupPythonIntefaceTutorial(object):
     current_pose = self.group.get_current_pose().pose
     # return all_close(pose_goal, current_pose, 0.01)
 
+  def move_cartesian(self, waypoints):
+    group = self.group
+    ## 开始笛卡尔空间轨迹规划
+    fraction = 0.0   #路径规划覆盖率
+    maxtries = 10    #最大尝试规划次数
+    attempts = 0     #已经尝试规划次数
+    
+    # 设置机器臂当前的状态作为运动初始状态
+    group.set_start_state_to_current_state()
+
+    # 尝试规划一条笛卡尔空间下的路径，依次通过所有路点
+    while fraction < 1.0 and attempts < maxtries:
+        (plan, fraction) = group.compute_cartesian_path (
+                                waypoints,   # waypoint poses，路点列表
+                                0.01,        # eef_step，终端步进值
+                                0.0,         # jump_threshold，跳跃阈值
+                                True)        # avoid_collisions，避障规划
+        
+        # 尝试次数累加
+        attempts += 1
+        
+        # 打印运动规划进程
+        if attempts % 10 == 0:
+            rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
+                    
+    # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
+    if fraction == 1.0:
+        rospy.loginfo("Path computed successfully. Moving the arm.")
+        group.execute(plan)
+        rospy.loginfo("Path execution complete.")
+    # 如果路径规划失败，则打印失败信息
+    else:
+        rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")
+
+  def move_cart_eez(self, z):
+    waypoints = []
+    start_pose = self.group.get_current_pose(self.eef_link).pose
+    wpose = cal_end_pose_by_quat(start_pose, z, 2)
+    waypoints.append(start_pose)
+    waypoints.append(deepcopy(wpose))
+    self.move_cartesian(waypoints)
+
 
 def main():
   try:
@@ -245,14 +293,15 @@ def main():
     # tutorial.go_to_pose_named("point_1")
     # tutorial.go_to_pose_named("point_2")
     # tutorial.go_to_pose_named("point_3")
-    tutorial.go_to_pose_named("point_4")
+    tutorial.go_to_pose_named("point_2.1")
     # tutorial.go_to_pose_named("point_5")
-    tutorial.go_to_pose_named("point_6")
+    tutorial.go_to_pose_named("point_2.2")
+    tutorial.move_cart_eez(0.08)
     tutorial.change_ee_joint_state(pi/2)
     tutorial.change_ee_joint_state(0)
     rospy.sleep(1)
-    tutorial.go_to_pose_named("point_5")
-    tutorial.go_to_pose_named("point_1")
+    tutorial.go_to_pose_named("point_2.2")
+    tutorial.go_to_pose_named("point_2.1")
 
     print "============ Complete!"
 

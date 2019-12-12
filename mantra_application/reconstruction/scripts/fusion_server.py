@@ -301,7 +301,8 @@ class FusionServer(object):
         self.config['sleep_time_before_bagging'] = 3.0
         self.config['bag_folder'] = "data"
         self.config['use_close_up_poses'] = False
-        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud
+        # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
+        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
         self.config['min_z'] = -0.01  # min z to remove plane when extract normals
 
         self.config['fusion_voxel_size'] = 0.002
@@ -768,7 +769,7 @@ if __name__ == "__main__":
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-24-17-56-42/processed/images"
+    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-10-16-02-59/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############

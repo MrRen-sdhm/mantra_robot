@@ -32,7 +32,7 @@
         <child link="top_link"/>
     </joint>
    <joint name="top_joint" type="fixed">
-        <origin xyz="0.6 0 0.73" rpy="0 0 0" />
+        <origin xyz="0.5 0.5 0.73" rpy="0 0 0" />
         <parent link="top_link"/>
         <child link="plane_link"/>
     </joint>

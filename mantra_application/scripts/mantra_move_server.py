@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 import sys
 import rospy
 import moveit_commander
@@ -8,6 +8,8 @@ import geometry_msgs.msg
 from math import pi
 from tf.transformations import quaternion_from_euler
 from mantra_application.srv import MoveToPoseNamed, MoveToPoseNamedResponse
+from mantra_application.srv import MoveToJointStates, MoveToJointStatesResponse
+from mantra_application.srv import SetVelScaling, SetVelScalingResponse
 
 
 class MoveGroup(object):
@@ -17,16 +19,28 @@ class MoveGroup(object):
         super(MoveGroup, self).__init__()
 
         rospy.init_node('mantra_move_server')
-        srv = rospy.Service('move_to_pose_named', MoveToPoseNamed, self.handle_move_to_pose_named)
-        print "[SRVICE] Mantra move server init done."
+        rospy.Service('move_to_pose_named', MoveToPoseNamed, self.handle_move_to_pose_named)
+        rospy.Service('move_to_joint_states', MoveToJointStates, self.handle_move_to_joint_states)
+        rospy.Service('set_vel_scaling', SetVelScaling, self.handle_set_vel_scaling)
+        print("[SRVICE] Mantra move server init done.")
 
+        group_name = "arm"
         moveit_commander.roscpp_initialize(sys.argv)
         robot = moveit_commander.RobotCommander()
-        group = moveit_commander.MoveGroupCommander("arm")
+        group = moveit_commander.MoveGroupCommander(group_name)
 
-        group.allow_replanning(True)
-        group.set_goal_position_tolerance(0.01)
-        group.set_goal_orientation_tolerance(0.05)
+        # Get joint bounds
+        joint_names = robot.get_joint_names(group=group_name)
+        joint_bounds = []
+        for joint_name in joint_names:
+            joint = robot.get_joint(joint_name)
+            joint_bounds.append(joint.bounds())
+            print("[INFO] " + joint_name + "_bounds:", joint.bounds())
+
+        group.allow_replanning(False)
+        group.set_planning_time(0.5)
+        # group.set_goal_position_tolerance(0.01)
+        # group.set_goal_orientation_tolerance(0.05)
 
         planning_frame = group.get_planning_frame()
         eef_link = group.get_end_effector_link()
@@ -35,30 +49,53 @@ class MoveGroup(object):
         self.group = group
         self.planning_frame = planning_frame
         self.eef_link = eef_link
+        self.joint_bounds = joint_bounds
 
     def handle_move_to_pose_named(self, req):
         self.go_to_pose_named(req.pose_name)
-        print "[SRVICE] Go to pose named: %s" % str(req.pose_name)
+        print("[SRVICE] Go to pose named: %s" % str(req.pose_name))
         return MoveToPoseNamedResponse(True)
 
-    def go_to_joint_state(self):
+    def handle_move_to_joint_states(self, req):
+        self.go_to_joint_state(req.joint_states)
+        print("[SRVICE] Go to joint states:", req.joint_states)
+        return MoveToJointStatesResponse(True)
+
+    def handle_set_vel_scaling(self, req):
+        self.set_vel_scaling(req.scale)
+        print("[SRVICE] Set velocity scaling:", req.scale)
+        return SetVelScalingResponse(True)
+
+    def go_to_joint_state(self, goal_positions):
         group = self.group
 
-        # Planning to a Joint Goal
-        joint_goal = group.get_current_joint_values()
-        joint_goal[0] = 0
-        joint_goal[1] = -pi / 4
-        joint_goal[2] = 0
-        joint_goal[3] = -pi / 2
-        joint_goal[4] = 0
-        joint_goal[5] = pi / 3
-        joint_goal[6] = 0
+        # Check joint bounds
+        goal_positions = list(goal_positions)
+        for i in range(len(goal_positions)):
+            if goal_positions[i] >= self.joint_bounds[i][1]:
+                goal_positions[i] = self.joint_bounds[i][1]
+            if goal_positions[i] <= self.joint_bounds[i][0]:
+                goal_positions[i] = self.joint_bounds[i][0]
 
-        group.go(joint_goal, wait=True)
+        # Print info
+        print("[INFO] Go to joint state [", end=' ')
+        for pos in goal_positions:
+            print("%.3f" % pos, end=' ')
+        print("]rad [", end=' ')
+        for pos in goal_positions:
+            print("%.3f" % (pos / pi * 180.0), end=' ')
+        print("]deg")
+
+        # Planning to a Joint Goal
+        try:
+            plan = group.go(goal_positions, wait=True)
+        except:
+            print("[WARN] target joints state not within bounds!")
+            return False
         group.stop()
         group.clear_pose_targets()
 
-        return True
+        return plan
 
     def go_to_pose_named(self, pose_name):
         group = self.group
@@ -114,10 +151,9 @@ class MoveGroup(object):
         group.clear_pose_targets()
         return plan
 
-
-def handle_move_to_pose_named(req):
-    print "[SRVICE] Go to pose named: %s" % str(req.pose_name)
-    return MoveToPoseNamedResponse(True)
+    def set_vel_scaling(self, scale):
+        group = self.group
+        group.set_max_velocity_scaling_factor(scale)
 
 
 def main():

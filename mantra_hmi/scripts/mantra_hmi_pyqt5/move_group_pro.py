@@ -46,21 +46,12 @@ class MoveGroup(object):
         group.set_max_velocity_scaling_factor(0.5)
         group.set_max_acceleration_scaling_factor(0.5)
 
-        # Get joint bounds
-        joint_names = robot.get_joint_names(group=group_name)
-        joint_bounds = []
-        for joint_name in joint_names:
-            joint = robot.get_joint(joint_name)
-            joint_bounds.append(joint.bounds())
-            print("[INFO] " + joint_name + "_bounds:", joint.bounds())
-
         # 当运动规划失败后，允许重新规划
-        group.allow_replanning(False)
-        group.set_planning_time(0.5)
+        # group.allow_replanning(True)
 
         # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
-        # group.set_goal_position_tolerance(0.05)
-        # group.set_goal_orientation_tolerance(0.05)
+        group.set_goal_position_tolerance(0.05)
+        group.set_goal_orientation_tolerance(0.05)
 
         # We can get the name of the reference frame for this robot:
         planning_frame = group.get_planning_frame()
@@ -79,47 +70,15 @@ class MoveGroup(object):
         self.planning_frame = planning_frame
         self.eef_link = eef_link
         self.group_names = group_names
-        self.joint_bounds = joint_bounds
 
     def set_vel_scaling(self, scale):
         self.group.set_max_velocity_scaling_factor(scale)
 
-    def shift_pose_target(self, axis, value):
-        group = self.group
-        group.shift_pose_target(axis, value, self.eef_link)
-        print("[DEBUG]", group.get_path_constraints())
-        plan = group.go()
-
-        print("plan:", plan)
-
-        return plan
-
     def go_to_joint_state(self, goal_positions):
         group = self.group
 
-        # Check joint bounds
-        goal_positions = list(goal_positions)
-        for i in range(len(goal_positions)):
-            if goal_positions[i] >= self.joint_bounds[i][1]:
-                goal_positions[i] = self.joint_bounds[i][1]
-            if goal_positions[i] <= self.joint_bounds[i][0]:
-                goal_positions[i] = self.joint_bounds[i][0]
-
-        # Print info
-        print("[INFO] Go to joint state [", end=' ')
-        for pos in goal_positions:
-            print("%.3f" % pos, end=' ')
-        print("]rad [", end=' ')
-        for pos in goal_positions:
-            print("%.3f" % (pos / pi * 180.0), end=' ')
-        print("]deg")
-
         # Planning to a Joint Goal
-        try:
-            plan = group.go(goal_positions, wait=True)
-        except:
-            print("[WARN] target joints state not within bounds!")
-            return False
+        plan = group.go(goal_positions, wait=True)
         group.stop()
         group.clear_pose_targets()
 
@@ -190,14 +149,12 @@ def main():
             move_group_state = False  # 状态复位
             if move_command[0] == 1:  # 关节运动
                 move_group_state = True
-                ret = move_group.go_to_joint_state(goal_pose_vel[0:7])
-                if ret:
-                    print("[INFO] Go to joint state done.")
+                move_group.go_to_joint_state(goal_pose_vel[0:7])
+                print("[INFO] Go to joint state done.")
             if move_command[1] == 1:  # 回零
                 move_group_state = True
                 move_group.go_to_pose_named('home')
-                # move_group.shift_pose_target(0, 0.02)
-                print("[INFO] Back home done...")
+                print("[INFO] Back home done.")
             if move_command[2] == 1:  # 调速
                 move_group_state = True
                 move_group.set_vel_scaling(goal_pose_vel[7])
