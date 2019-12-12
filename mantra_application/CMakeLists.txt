@@ -59,6 +59,8 @@ add_service_files(
   FILES
   MoveToPoseNamed.srv
   MoveToJointStates.srv
+  MoveToPoseShift.srv
+  GetCurrentPose.srv
   SetVelScaling.srv
 )
 

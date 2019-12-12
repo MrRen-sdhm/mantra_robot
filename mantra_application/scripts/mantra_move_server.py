@@ -8,7 +8,9 @@ import geometry_msgs.msg
 from math import pi
 from tf.transformations import quaternion_from_euler
 from mantra_application.srv import MoveToPoseNamed, MoveToPoseNamedResponse
+from mantra_application.srv import MoveToPoseShift, MoveToPoseShiftResponse
 from mantra_application.srv import MoveToJointStates, MoveToJointStatesResponse
+from mantra_application.srv import GetCurrentPose, GetCurrentPoseResponse
 from mantra_application.srv import SetVelScaling, SetVelScalingResponse
 
 
@@ -20,8 +22,11 @@ class MoveGroup(object):
 
         rospy.init_node('mantra_move_server')
         rospy.Service('move_to_pose_named', MoveToPoseNamed, self.handle_move_to_pose_named)
+        rospy.Service('move_to_pose_shift', MoveToPoseShift, self.handle_move_to_pose_shift)
         rospy.Service('move_to_joint_states', MoveToJointStates, self.handle_move_to_joint_states)
+        rospy.Service('get_current_pose', GetCurrentPose, self.handle_get_current_pose)
         rospy.Service('set_vel_scaling', SetVelScaling, self.handle_set_vel_scaling)
+
         print("[SRVICE] Mantra move server init done.")
 
         group_name = "arm"
@@ -52,14 +57,24 @@ class MoveGroup(object):
         self.joint_bounds = joint_bounds
 
     def handle_move_to_pose_named(self, req):
-        self.go_to_pose_named(req.pose_name)
-        print("[SRVICE] Go to pose named: %s" % str(req.pose_name))
-        return MoveToPoseNamedResponse(True)
+        ret = self.go_to_pose_named(req.pose_name)
+        print("[SRVICE] Go to pose named: %s result:%s" % (str(req.pose_name), "Succeed" if ret else "Failed"))
+        return MoveToPoseNamedResponse(ret)
+
+    def handle_move_to_pose_shift(self, req):
+        ret = self.go_to_pose_shift(req.axis, req.value)
+        print("[SRVICE] Go to pose shift, axis:%d value:%.3f result:%s" % (req.axis, req.value, "Succeed" if ret else "Failed"))
+        return MoveToPoseShiftResponse(ret)
 
     def handle_move_to_joint_states(self, req):
-        self.go_to_joint_state(req.joint_states)
-        print("[SRVICE] Go to joint states:", req.joint_states)
-        return MoveToJointStatesResponse(True)
+        ret = self.go_to_joint_state(req.joint_states)
+        print("[SRVICE] Go to joint states result:%s" % "Succeed" if ret else "Failed")
+        return MoveToJointStatesResponse(ret)
+
+    def handle_get_current_pose(self, req):
+        pose = self.get_current_pose()
+        print("[SRVICE] Get current pose")
+        return GetCurrentPoseResponse(pose)
 
     def handle_set_vel_scaling(self, req):
         self.set_vel_scaling(req.scale)
@@ -99,31 +114,18 @@ class MoveGroup(object):
 
     def go_to_pose_named(self, pose_name):
         group = self.group
-
         group.set_named_target(pose_name)
-        group.go()
-        group.stop()
-        # It is always good to clear your targets after planning with poses.
-        group.clear_pose_targets()
-        return True
+        plan = group.go()
+        return plan
+
+    def go_to_pose_shift(self, axis, value):
+        group = self.group
+        group.shift_pose_target(axis, value)
+        plan = group.go()
+        return plan
 
     def go_to_pose_goal(self):
         group = self.group
-
-        # We can plan a motion for this group to a desired pose for the end-effector:
-
-        # pose_goal = geometry_msgs.msg.Pose()
-        # pose_goal.position.x = 0.0
-        # pose_goal.position.y = 0.0
-        # pose_goal.position.z = 0.0
-
-        # euler = [0, 0, pi/4]
-        # q = quaternion_from_euler(euler[0], euler[1], euler[2])
-        # pose_goal.orientation.x = q[0]
-        # pose_goal.orientation.y = q[1]
-        # pose_goal.orientation.z = q[2]
-        # pose_goal.orientation.w = q[3]
-        # group.set_pose_target(pose_goal)
 
         pose_goal = geometry_msgs.msg.PoseStamped()
         pose_goal.header.frame_id = 'base_link'
@@ -150,6 +152,14 @@ class MoveGroup(object):
         # It is always good to clear your targets after planning with poses.
         group.clear_pose_targets()
         return plan
+
+    def get_current_pose(self):
+        group = self.group
+        xyz = group.get_current_pose(self.eef_link).pose.position
+        rpy = group.get_current_rpy(self.eef_link)
+        pose = [xyz.x, xyz.y, xyz.z] + rpy
+        print("[INFO] Get current pose:[%.2f %.2f %.2f %.2f %.2f %.2f]" % (pose[0], pose[1], pose[2], pose[3], pose[4], pose[5]))
+        return pose
 
     def set_vel_scaling(self, scale):
         group = self.group
