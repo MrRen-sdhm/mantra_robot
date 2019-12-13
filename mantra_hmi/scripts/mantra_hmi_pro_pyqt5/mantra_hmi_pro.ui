@@ -1182,8 +1182,13 @@
       </rect>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
+     <item>
+      <property name="text">
+       <string>60.0 deg</string>
+      </property>
+     </item>
      <item>
       <property name="text">
        <string>30.0 deg</string>
@@ -1434,7 +1439,7 @@
       </rect>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>3</number>
      </property>
      <item>
       <property name="text">
@@ -1493,7 +1498,7 @@
      </item>
      <item>
       <property name="text">
-       <string>1.00cm</string>
+       <string>1.00 cm</string>
       </property>
      </item>
     </widget>

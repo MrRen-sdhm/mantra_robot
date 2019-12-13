@@ -11,6 +11,7 @@ from mantra_application.srv import MoveToPoseNamed, MoveToPoseNamedResponse
 from mantra_application.srv import MoveToPoseShift, MoveToPoseShiftResponse
 from mantra_application.srv import MoveToJointStates, MoveToJointStatesResponse
 from mantra_application.srv import GetCurrentPose, GetCurrentPoseResponse
+from mantra_application.srv import GetBaseEELink, GetBaseEELinkResponse
 from mantra_application.srv import SetVelScaling, SetVelScalingResponse
 
 
@@ -25,11 +26,13 @@ class MoveGroup(object):
         rospy.Service('move_to_pose_shift', MoveToPoseShift, self.handle_move_to_pose_shift)
         rospy.Service('move_to_joint_states', MoveToJointStates, self.handle_move_to_joint_states)
         rospy.Service('get_current_pose', GetCurrentPose, self.handle_get_current_pose)
+        rospy.Service('get_base_ee_link', GetBaseEELink, self.handle_get_base_ee_link)
         rospy.Service('set_vel_scaling', SetVelScaling, self.handle_set_vel_scaling)
 
         print("[SRVICE] Mantra move server init done.")
 
         group_name = "arm"
+        # group_name = "manipulator"
         moveit_commander.roscpp_initialize(sys.argv)
         robot = moveit_commander.RobotCommander()
         group = moveit_commander.MoveGroupCommander(group_name)
@@ -75,6 +78,12 @@ class MoveGroup(object):
         pose = self.get_current_pose()
         print("[SRVICE] Get current pose")
         return GetCurrentPoseResponse(pose)
+
+    def handle_get_base_ee_link(self, req):
+        print("[SRVICE] Get base and ee link")
+        ee_link = self.eef_link
+        base_link = self.planning_frame
+        return GetBaseEELinkResponse(base_link, ee_link)
 
     def handle_set_vel_scaling(self, req):
         self.set_vel_scaling(req.scale)

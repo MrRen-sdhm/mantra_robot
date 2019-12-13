@@ -7,9 +7,11 @@
 # File Name  : mantra_gui.py
 
 from __future__ import print_function
-import copy
+
 from math import pi
 # ROS相关
+import tf
+from tf.transformations import euler_from_quaternion
 from std_msgs.msg import String, Int32MultiArray, Float32MultiArray, Bool
 from sensor_msgs.msg import JointState
 
@@ -56,7 +58,6 @@ class PubThread(QtCore.QThread):
         while not rospy.is_shutdown():
             try:
                 self.pub.publish(command_arr)
-
             except rospy.exceptions.ROSException:
                 print ("Stop publish.")
                 break
@@ -75,6 +76,22 @@ class SubThread(QtCore.QThread):
     def __init__(self):
         super(SubThread, self).__init__()
         self.sub = rospy.Subscriber("joint_states", JointState, self.callback)
+        self.listener = tf.TransformListener()
+
+    def run(self):
+        global curr_pose
+        r = rospy.Rate(10)  # 10hz
+        base_link, ee_link = get_base_ee_link()  # 获取末端坐标系名称
+        while not rospy.is_shutdown() and ee_link:
+            try:
+                (position, orientation) = self.listener.lookupTransform(base_link, ee_link, rospy.Time(0))
+                xyz = position
+                rpy = list(euler_from_quaternion(orientation))
+                curr_pose = xyz + rpy  # 实时获取当前位置
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+
+        r.sleep()
 
     # 获取关节当前位置
     @staticmethod
@@ -90,7 +107,10 @@ class MoveThread(QtCore.QThread):
     def __init__(self):
         global curr_pose
         super(MoveThread, self).__init__()
-        curr_pose = get_current_pose()  # 获取当前位置
+        if test_all_service():  # 测试运动服务器是否已启动
+            print("[INFO] You can move the robot after press the power on button now!")
+        else:
+            exit("[ERROR] Please start the move service!")
 
     def run(self):
         global moveJ, moveL, back_home, change_vel, curr_pose
@@ -104,7 +124,6 @@ class MoveThread(QtCore.QThread):
 
             if moveL:  # 线性运动
                 move_to_pose_shift(movel_axis, movel_value)
-                curr_pose = get_current_pose()  # 移动后获取当前位置
                 print("[INFO] Go to pose shift...")
                 moveL = False  # 标志复位
 
@@ -323,9 +342,7 @@ class MyWindow(QMainWindow, Ui_Form):
         self.go_to_busy = False
         # 按钮状态标志位
         self.power_flag = False
-        # # 微调启用标志位
-        # self.max_joint_step = 0.1
-        # self.min_joint_step = 0.05
+
         # 获取步长
         mode = self.comboBox.currentText()[5:8]
         if mode == 'rad':
@@ -347,6 +364,7 @@ class MyWindow(QMainWindow, Ui_Form):
         elif mode == 'deg':
             self.rpy_step = float(self.comboBox_rpy.currentText()[0:4]) * (pi / 180.0)
         print("Init rpy_step: %.2frad (%.2fdeg)" % (self.joint_step, self.joint_step * (180.0 / pi)))
+
         # 状态保存相关参数
         self.fp = open('joint_states' + '.xml', 'a+')
         self.fp.write('\n<new joint_states/>\n')
@@ -766,8 +784,6 @@ if __name__ == "__main__":
 
     thread_window = WindowThread(window)
     thread_window.start()  # 启动界面刷新线程
-
-    print("You can move the robot after press the power on button now!")
 
     window.show()  # 界面显示
 

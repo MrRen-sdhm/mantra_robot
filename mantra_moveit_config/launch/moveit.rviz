@@ -8,7 +8,7 @@ Panels:
         - /TF1/Tree1
         - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
-      Splitter Ratio: 0.605654776
+      Splitter Ratio: 0.521229863
     Tree Height: 517
   - Class: rviz/Help
     Name: Help
@@ -25,7 +25,7 @@ Visualization Manager:
     - Alpha: 0.5
       Cell Size: 1
       Class: rviz/Grid
-      Color: 85; 87; 83
+      Color: 160; 160; 164
       Enabled: true
       Line Style:
         Line Width: 0.0299999993
@@ -243,7 +243,7 @@ Visualization Manager:
       Velocity_Scaling_Factor: 1
   Enabled: true
   Global Options:
-    Background Color: 136; 138; 133
+    Background Color: 48; 48; 48
     Default Light: true
     Fixed Frame: base_link
     Frame Rate: 30
@@ -257,7 +257,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.71680784
+      Distance: 3.11546397
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -272,10 +272,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.00979671068
+      Pitch: 0.0997973159
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 4.11437559
+      Yaw: 0.936196327
     Saved: ~
 Window Geometry:
   Displays:
