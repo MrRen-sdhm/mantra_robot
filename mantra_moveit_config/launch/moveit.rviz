@@ -47,6 +47,8 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: true
+        ee_link:
+          Value: true
         link1:
           Value: false
         link2:
@@ -60,7 +62,7 @@ Visualization Manager:
         link6:
           Value: false
         link7:
-          Value: true
+          Value: false
       Marker Scale: 0.800000012
       Name: TF
       Show Arrows: false
@@ -75,10 +77,11 @@ Visualization Manager:
                   link5:
                     link6:
                       link7:
-                        {}
+                        ee_link:
+                          {}
       Update Interval: 0
       Value: true
-    - Acceleration_Scaling_Factor: 1
+    - Acceleration_Scaling_Factor: 0.5
       Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
@@ -116,6 +119,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          ee_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           link1:
             Alpha: 1
             Show Axes: false
@@ -170,7 +177,7 @@ Visualization Manager:
       Planning Request:
         Colliding Link Color: 255; 0; 0
         Goal State Alpha: 1
-        Goal State Color: 250; 128; 0
+        Goal State Color: 0; 170; 255
         Interactive Marker Size: 0.200000003
         Joint Violation Color: 255; 0; 255
         Planning Group: arm
@@ -201,6 +208,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          ee_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           link1:
             Alpha: 1
             Show Axes: false
@@ -240,7 +251,7 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
-      Velocity_Scaling_Factor: 1
+      Velocity_Scaling_Factor: 0.5
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -256,26 +267,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 3.11546397
+      Class: rviz/XYOrbit
+      Distance: 2.75939798
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.0342225656
-        Y: -0.033742331
-        Z: 0.308714032
+        X: -0.000121831894
+        Y: -0.0204208344
+        Z: -1.1920929e-07
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.0997973159
+      Pitch: 0.319797456
       Target Frame: base_link
-      Value: Orbit (rviz)
-      Yaw: 0.936196327
+      Value: XYOrbit (rviz)
+      Yaw: 0.341203481
     Saved: ~
 Window Geometry:
   Displays:
@@ -289,7 +300,7 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000200000000000002ad000003dafc0200000006fb000000100044006900730070006c006100790073010000002800000246000000d700fffffffb0000000800480065006c00700000000342000000bb0000007300fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004a00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006701000002740000018e0000018300ffffff000000010000015800000302fc0200000001fb0000000a00560069006500770073000000002700000302000000ad00ffffff0000048c000003da00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000002ad000003dafc0200000006fb000000100044006900730070006c006100790073010000002800000246000000d700fffffffb0000000800480065006c00700000000342000000bb0000007300fffffffb0000000c00430061006d00650072006100000002ff000001610000000000000000fb0000001e004d006f00740069006f006e00200050006c0061006e006e0069006e00670100000374000001890000000000000000fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004a00fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e006701000002740000018e0000018300ffffff0000000100000158000003dafc0200000001fb0000000a005600690065007700730000000028000003da000000ad00ffffff0000048c000003da00000001000000020000000100000002fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: true
   Width: 1855

@@ -4,54 +4,25 @@
 <launch>
     <!-- NOTE: Realsense rgb camera's tf tree is: camera_link->camera_aligned_depth_to_color_frame->camera_color_optical_frame
     handeye calibration get the tf between flange and camera_color_optical_frame, but we should publish tf between flange and camera_link
-    step1: Get tf from camera_color_optical_frame to camera_link, then publish it
-      "roslaunch realsense2_viewer realsense2_viewer.launch", "rosrun tf tf_echo camera_color_optical_frame camera_link"
-    step2: Publish tf from flange to camera_color_optical_frame, so that we could get a complete tf tree, then get the tf from flange to camera_link
+    step1: Publish tf from flange to camera_color_optical_frame, so that we could get a complete tf tree, then get the tf from flange to camera_link
        "rosrun tf tf_echo link7 camera_link"
-    step3: Just publish the tf from flange to camera_link -->
+    step2: Just publish the tf from flange to camera_link to ensure tf tree legal-->
 
-    <!-- Step1: Publish transform from camera_color_optical_frame to camera_link, aim to get transform from robot to camera_depth_frame
-    get transform: roslaunch realsense2_viewer realsense2_viewer.launch rosrun tf tf_echo camera_color_optical_frame camera_link -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="camera_color_optical2camera_link_broadcaster"
-          args="0.015 0.0 0.01 0.50 -0.501 0.499 0.501 camera_color_optical_frame camera_link 10" /> -->
-
-    <!-- Step2: Publish transform from flange to camera_color_optical_frame -->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="flange2camera_broadcaster"
-          args="0.0450721102191 0.0907130784507 -0.0272199364455 -0.00218497376191 -0.0050858563232 0.999971567325 0.00512098597977 link7 camera_color_optical_frame 10" />  -->
-    
-    <!-- Step3: Publish transform from flange to camera_color_optical_frame -->
+    <!-- Step1: Publish transform from flange to camera_color_optical_frame -->
     <node pkg="tf" type="static_transform_publisher" name="flange2camera_broadcaster"
-          args="0.030, 0.091, -0.017 0.500, 0.496, 0.507, -0.498 link7 camera_link 10" /> 
+          args="-0.0178174223412 -0.0875652925196 -0.0289355253721 -0.00335992414847 -0.0114037802669 -0.00569527348658 0.999913110508 ee_link camera_color_optical_frame 10" /> 
+    
+    <!-- Step2: Publish transform from flange to camera_link -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="flange2camera_broadcaster"
+          args="0.030, 0.091, -0.017 0.500, 0.496, 0.507, -0.498 link7 camera_link 10" />  -->
 </launch>
 
-<!-- args="0.0351178991086 0.0959630630166 0.0744596246251 0.00202513005408 -0.00922970103159 0.999955141476 0.000653071980103 link7 camera_color_optical_frame 100" />  -->
-
-<!-- translation:
-  x: 0.0351178991086
-  y: 0.0959630630166
-  z: 0.0744596246251
-rotation:
-  x: 0.00202513005408
-  y: -0.00922970103159
-  z: 0.999955141476
-  w: 0.000653071980103 -->
-
-  <!-- translation: 
-  x: 0.0316217704511
-  y: 0.0910485630023
-  z: -0.0476332272207
+<!-- translation: 
+  x: -0.0178174223412
+  y: -0.0875652925196
+  z: -0.0289355253721
 rotation: 
-  x: 0.00367071072383
-  y: 0.00386300701787
-  z: -0.999373543902
-  w: 0.0349874664522 -->
-
-  <!-- translation: 
-  x: 0.0450721102191
-  y: 0.0907130784507
-  z: -0.0272199364455
-rotation: 
-  x: -0.00218497376191
-  y: -0.0050858563232
-  z: 0.999971567325
-  w: 0.00512098597977 -->
+  x: -0.00335992414847
+  y: -0.0114037802669
+  z: -0.00569527348658
+  w: 0.999913110508 -->

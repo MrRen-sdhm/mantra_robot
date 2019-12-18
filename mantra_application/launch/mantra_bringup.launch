@@ -16,12 +16,12 @@
     </include>
 
     <!-- robot model -->
-    <include unless="$(arg fake)" file="$(find mantra_with_gripper_moveit_config)/launch/demo.launch">
+    <include unless="$(arg fake)" file="$(find mantra_moveit_config)/launch/demo.launch">
       <arg name="use_rviz" value="$(arg rviz)" />
     </include>
 
     <!-- robot model fake -->
-    <include if="$(arg fake)" file="$(find mantra_with_gripper_moveit_config)/launch/fake.launch">
+    <include if="$(arg fake)" file="$(find mantra_moveit_config)/launch/fake.launch">
       <arg name="use_rviz" value="$(arg rviz)" />
       <arg name="use_publisher" value="true" />
     </include>

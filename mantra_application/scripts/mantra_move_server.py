@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import sys
+import time
 import rospy
 import moveit_commander
 import geometry_msgs.msg
@@ -176,6 +177,7 @@ class MoveGroup(object):
 
 
 def main():
+    time.sleep(2)  # sleep to wait for moveit come up
     move_group = MoveGroup()
     rospy.spin()
 

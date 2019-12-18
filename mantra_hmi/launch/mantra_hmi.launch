@@ -7,7 +7,7 @@
     <!-- mantra hmi -->
     <node name="mantra_hmi_pro" pkg="mantra_hmi" type="mantra_hmi_pro.py" respawn="true" output="screen" />
 
-    <!-- move group -->
-    <node name="mantra_move_group" pkg="mantra_hmi" type="move_group_pro.py" respawn="true" output="screen" />
+    <!-- move server -->
+    <node name="mantra_move_server" pkg="mantra_application" type="mantra_move_server.py" respawn="true" output="screen" />
 
 </launch>

@@ -9,19 +9,10 @@
 
     <!-- start the robot-->
     <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
-        <arg name="fake" value="true" />
+        <arg name="fake" value="false" />
         <arg name="rviz" value="false" />
-        <arg name="hmi" value="false" />
+        <arg name="hmi" value="true" />
     </include>
-
-    <!-- publish tf between camera_color_optical frame and camera_link frame-->
-    <!-- <node pkg="tf" type="static_transform_publisher" name="camera_color_optical2camera_link_broadcaster" 
-          args="0.015 0.0 0.01 0.50 -0.501 0.499 0.501 camera_color_optical_frame camera_link 1000" /> -->
-
-    <!-- publish tf between gripper frame and camera_color_optical frame-->
-    <!-- <include file="$(find mantra_application)/calibration/launch/publish_tf.launch">
-        <arg name="namespace_prefix" value="mantra"/>
-    </include> -->
 
     <include file="$(find mantra_application)/calibration/launch/publish_static_tf.launch" />
 

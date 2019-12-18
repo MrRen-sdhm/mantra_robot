@@ -7,6 +7,10 @@
 # File Name  : mantra_gui.py
 
 from __future__ import print_function
+import os
+import sys
+curr_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(curr_path))
 
 from math import pi
 # ROS相关

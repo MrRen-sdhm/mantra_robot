@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="pub_tf" doc="publish tf from camera_color_optical_frame to camera_link" default="false" />
+
+    <!-- start the Realsense -->
+    <group ns="camera">
+        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
+            <arg name="color_width"       value="1920" />
+            <arg name="color_height"      value="1080" />
+            <arg name="color_fps"         value="15" />
+
+            <arg name="enable_depth"      value="false"/>
+            <arg name="enable_color"      value="true"/>
+            <arg name="enable_infra1"     value="false"/>
+            <arg name="enable_infra2"     value="false"/>
+            <arg name="enable_fisheye"    value="false"/>
+            <arg name="enable_gyro"       value="false"/>
+            <arg name="enable_accel"      value="false"/>
+            <arg name="enable_pointcloud" value="false"/>
+            <arg name="enable_sync"       value="false" />
+            <arg name="tf_prefix"         value="camera" />
+        </include>
+    </group>
+
+    <!-- Get tf from camera_color_optical_frame to camera_link, then publish it
+    "roslaunch realsense2_viewer realsense2_viewer.launch", "rosrun tf tf_echo camera_color_optical_frame camera_link" -->
+    <node if="$(arg pub_tf)" pkg="tf" type="static_transform_publisher" name="camera_color_optical2camera_link_broadcaster"
+          args="0.015 0.000 0.001 0.500 -0.501 0.499 0.501 camera_color_optical_frame camera_link 10" />
+</launch>

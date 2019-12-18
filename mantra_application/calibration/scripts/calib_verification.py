@@ -134,13 +134,19 @@ class MantraPickup:
         pose_goal.pose.orientation.z = quat_out[2]
         pose_goal.pose.orientation.w = quat_out[3]
 
+        # 与纸面距离20cm
+        pose_goal = cal_end_pose_by_quat(pose_goal, 0.2, 2)
+
         print "[INFO] Aim pose:\n", obj_trans
         print pose_goal.pose.orientation
 
         group.set_start_state_to_current_state()
         group.set_pose_target(pose_goal, self.eef_link)
 
-        plan = group.go(wait=True)
+        plan = group.plan()
+        # group.execute(traj)
+
+        # plan = group.go(wait=True)
 
         if plan:
           print "[INFO] Success!"

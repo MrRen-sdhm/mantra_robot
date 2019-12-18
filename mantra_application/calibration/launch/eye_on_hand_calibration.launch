@@ -5,24 +5,9 @@
     <arg name="marker_id" doc="The ID of the ArUco marker used" default="100" />
 
     <!-- start the Realsense -->
-    <group ns="camera">
-        <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
-            <arg name="color_width"       value="640" />
-            <arg name="color_height"      value="480" />
-            <arg name="color_fps"         value="30" />
-
-            <arg name="enable_depth"      value="false"/>
-            <arg name="enable_color"      value="true"/>
-            <arg name="enable_infra1"     value="false"/>
-            <arg name="enable_infra2"     value="false"/>
-            <arg name="enable_fisheye"    value="false"/>
-            <arg name="enable_gyro"       value="false"/>
-            <arg name="enable_accel"      value="false"/>
-            <arg name="enable_pointcloud" value="false"/>
-            <arg name="enable_sync"       value="false" />
-            <arg name="tf_prefix"         value="camera" />
-        </include>
-    </group>
+    <include file="$(find mantra_application)/calibration/launch/realsense_camera.launch">
+        <arg name="pub_tf" value="true" />
+    </include>
 
     <!-- start ArUco -->
     <node name="aruco_tracker" pkg="aruco_ros" type="single">
@@ -37,26 +22,25 @@
     </node>
 
     <!-- start the robot -->
-    <include file="$(find mantra_moveit_config)/launch/demo.launch">
-        <arg name="use_rviz" value="false" />
+    <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
+        <arg name="fake" value="false" />
+        <arg name="rviz" value="false" />
+        <arg name="hmi" value="true" />
     </include>
-
-    <!-- <arg name="rviz_config_file" default="$(find mantra_application)/launch/calibration/config/calibration.rviz" />
-    <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="true" 
-            args="-d $(arg rviz_config_file)" output="screen" /> -->
 
     <!-- start easy_handeye -->
     <include file="$(find easy_handeye)/launch/calibrate.launch" >
         <arg name="namespace_prefix" value="$(arg namespace_prefix)" />
         <arg name="eye_on_hand" value="true" />
+        <arg name="publish_dummy" value="true" />
 
         <arg name="tracking_base_frame" value="camera_color_optical_frame" />
         <arg name="tracking_marker_frame" value="camera_marker" />
         <arg name="robot_base_frame" value="base_link" />
-        <arg name="robot_effector_frame" value="gripper" />
+        <arg name="robot_effector_frame" value="ee_link" />
         <arg name="move_group" value="arm" />
 
-        <arg name="rviz_config_file" value="$(find mantra_application)/config/calibration/calibration.rviz" />
+        <arg name="rviz_config_file" value="$(find mantra_application)/calibration/config/calibration.rviz" />
         <arg name="rqt_perspective_file" value="$(find mantra_application)/calibration/config/calibration.perspective" />
 
         <arg name="freehand_robot_movement" value="true" />
