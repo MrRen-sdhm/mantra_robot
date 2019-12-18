@@ -2,9 +2,12 @@
     <arg name="marker_size" doc="Size of the ArUco marker used, in meters" default="0.1" />
     <arg name="marker_id" doc="The ID of the ArUco marker used" default="100" />
     <arg name="use_rviz" default="true" />
+    <arg name="pub_tf" default="true" />
 
     <!-- start the Realsense -->
-    <include file="$(find realsense2_viewer)/launch/realsense2_viewer.launch" />
+    <include file="$(find mantra_application)/calibration/launch/realsense_camera.launch">
+        <arg name="pub_tf" value="$(arg pub_tf)" />
+    </include>
 
     <!-- start ArUco -->
     <node name="aruco_tracker" pkg="aruco_ros" type="single">

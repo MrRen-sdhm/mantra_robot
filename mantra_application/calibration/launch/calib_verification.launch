@@ -5,6 +5,7 @@
     <!-- start the Realsense and aruco tracker-->
     <include file="$(find mantra_application)/calibration/launch/aruco_tracker.launch" >
         <arg name="use_rviz" value="false" />
+        <arg name="pub_tf" value="True" />
     </include>
 
     <!-- start the robot-->

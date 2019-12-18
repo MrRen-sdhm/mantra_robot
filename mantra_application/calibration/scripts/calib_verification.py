@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import time
 import rospy, sys, tf
 import moveit_commander
 import moveit_msgs.msg
@@ -43,7 +44,7 @@ def cal_end_pose_by_quat(start_pose, distance, axis):
     end_pose = cal_pose_by_dir_vec(start_pose, dir_vec, distance, axis)
     return end_pose
 
-# ros格式四元数绕某轴旋转angle度，输入为[x,y,z,w]格式，输出也为[x,y,z,w]格式
+# ros格式四元数绕某轴旋转angle弧度，输入为[x,y,z,w]格式，输出也为[x,y,z,w]格式
 def rot_around_axis(quat, angle, axis):
   if axis == 0:
     axis_vec = [1, 0, 0]
@@ -73,9 +74,9 @@ class MantraPickup:
         arm = MoveGroupCommander('arm')
         
         # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
-        arm.set_goal_position_tolerance(0.001)
-        arm.set_goal_orientation_tolerance(0.001)
-        arm.set_max_velocity_scaling_factor(0.8)
+        arm.set_goal_position_tolerance(0.00001)
+        arm.set_goal_orientation_tolerance(0.00001)
+        arm.set_max_velocity_scaling_factor(0.5)
         arm.set_max_acceleration_scaling_factor(0.5)
         arm.set_planning_time(0.5) # 规划时间限制为2秒
         arm.allow_replanning(False) # 当运动规划失败后，是否允许重新规划
@@ -104,6 +105,7 @@ class MantraPickup:
     def go_to_pose_goal(self):
       group = self.group
 
+      print "[INFO] Lookup for marker trans..."
       (obj_trans, obj_quat) = self.lookup_trans()
 
       step = 6
@@ -113,12 +115,14 @@ class MantraPickup:
 
         (obj_trans, obj_quat) = self.lookup_trans()
 
-        # 转换标记姿态，使z轴垂直于纸面
+        print "[INFO] Marker loc:", (obj_trans, obj_quat)
+
+        # 转换标记姿态，使z轴垂直于纸面向里
         quat_out = rot_around_axis(obj_quat, np.pi/2, 0)
         # 绕标记z轴旋转，保持机械臂z轴与标记垂直，尝试多种姿态
         quat_out = rot_around_axis(quat_out, angle, 2)
 
-        # 目标为使机械臂穆端坐标系与转换后的标记坐标系重合
+        # 目标为使机械臂末端坐标系与转换后的标记坐标系重合
         print("[INFO] Try to plan a path to the aim pose once...")
 
         pose_goal = geometry_msgs.msg.PoseStamped()
@@ -134,28 +138,127 @@ class MantraPickup:
         pose_goal.pose.orientation.z = quat_out[2]
         pose_goal.pose.orientation.w = quat_out[3]
 
-        # 与纸面距离20cm
-        pose_goal = cal_end_pose_by_quat(pose_goal, 0.2, 2)
+        print "pose_goal before", pose_goal
+        pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.1, 2)
+        group.set_start_state_to_current_state()
+        group.set_pose_target(pose_goal, self.eef_link)
 
-        print "[INFO] Aim pose:\n", obj_trans
-        print pose_goal.pose.orientation
+        plan = group.go(wait=True)
+
+        # 与纸面距离20cm
+        pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, 0.08, 2)
+        group.set_start_state_to_current_state()
+        group.set_pose_target(pose_goal, self.eef_link)
+
+        plan = group.go(wait=True)
+
+        print "[INFO] Aim pose:\n", pose_goal
 
         group.set_start_state_to_current_state()
         group.set_pose_target(pose_goal, self.eef_link)
 
-        plan = group.plan()
-        # group.execute(traj)
-
-        # plan = group.go(wait=True)
-
-        if plan:
+        traj = group.plan()
+        len(traj.joint_trajectory.points)
+        group.execute(traj)
+        if len(traj.joint_trajectory.points) > 0:
           print "[INFO] Success!"
           break
+
+        # plan = group.go(wait=True)
+        # if plan:
+        #   print "[INFO] Success!"
+        #   break
 
       group.stop()
       group.clear_pose_targets()
 
-    def aruco_trans(self):
+    def go_to_pose(self, cartesian=False):
+      group = self.group
+
+      (obj_trans, obj_quat) = self.lookup_trans()
+
+      print "[INFO] Marker loc:", (obj_trans, obj_quat)
+
+      # 转换标记姿态，使z轴垂直于纸面向里
+      quat_out = rot_around_axis(obj_quat, np.pi/2, 0)
+      # 绕标记z轴旋转，保持机械臂z轴与标记垂直，尝试多种姿态
+      quat_out = rot_around_axis(quat_out, np.pi/2, 2)
+
+      # 目标为使机械臂末端坐标系与转换后的标记坐标系重合
+      print("[INFO] Try to plan a path to the aim pose once...")
+
+      pose_goal = geometry_msgs.msg.PoseStamped()
+      pose_goal.header.frame_id = self.reference_frame
+      pose_goal.header.stamp = rospy.Time.now()
+
+      pose_goal.pose.position.x = obj_trans[0]
+      pose_goal.pose.position.y = obj_trans[1]
+      pose_goal.pose.position.z = obj_trans[2]
+
+      pose_goal.pose.orientation.x = quat_out[0]
+      pose_goal.pose.orientation.y = quat_out[1]
+      pose_goal.pose.orientation.z = quat_out[2]
+      pose_goal.pose.orientation.w = quat_out[3]
+
+      # 退回10cm
+      pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.2, 2)
+
+      group.set_start_state_to_current_state()
+      group.set_pose_target(pose_goal)
+      group.go()
+
+      time.sleep(1)
+
+      ##############   笛卡尔轨迹规划    #################
+      # 初始化路点列表
+      waypoints = []
+
+      # 按末端坐标系方向向量平移, 计算终点位姿
+      wpose = cal_end_pose_by_quat(pose_goal.pose, 0.18, 2)
+
+      if cartesian:
+          waypoints.append(deepcopy(wpose))
+      else:
+          group.set_pose_target(wpose)
+          group.go()
+
+      if not cartesian:
+        return
+
+      ## 开始笛卡尔空间轨迹规划
+      fraction = 0.0   #路径规划覆盖率
+      maxtries = 10    #最大尝试规划次数
+      attempts = 0     #已经尝试规划次数
+      
+      # 设置机器臂当前的状态作为运动初始状态
+      group.set_start_state_to_current_state()
+  
+      # 尝试规划一条笛卡尔空间下的路径，依次通过所有路点
+      while fraction < 1.0 and attempts < maxtries:
+          (plan, fraction) = group.compute_cartesian_path (
+                                  waypoints,   # waypoint poses，路点列表
+                                  0.01,        # eef_step，终端步进值
+                                  0.0,         # jump_threshold，跳跃阈值
+                                  True)        # avoid_collisions，避障规划
+          
+          # 尝试次数累加
+          attempts += 1
+          
+          # 打印运动规划进程
+          if attempts % 10 == 0:
+              rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
+                      
+      # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
+      if fraction == 1.0:
+          rospy.loginfo("Path computed successfully. Moving the arm.")
+          group.execute(plan)
+          rospy.loginfo("Path execution complete.")
+      # 如果路径规划失败，则打印失败信息
+      else:
+          rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")  
+
+
+    def aruco_loc_show(self):
       listener = tf.TransformListener()
       broadcaster = tf.TransformBroadcaster()
       while not rospy.is_shutdown():
@@ -165,6 +268,24 @@ class MantraPickup:
 
           # 转换标记姿态，使z轴垂直于纸面
           quat_out = rot_around_axis(obj_quat, np.pi/2, 0)
+
+          # 后退20cm
+          pose_goal = geometry_msgs.msg.PoseStamped()
+          pose_goal.pose.position.x = obj_trans[0]
+          pose_goal.pose.position.y = obj_trans[1]
+          pose_goal.pose.position.z = obj_trans[2]
+
+          pose_goal.pose.orientation.x = quat_out[0]
+          pose_goal.pose.orientation.y = quat_out[1]
+          pose_goal.pose.orientation.z = quat_out[2]
+          pose_goal.pose.orientation.w = quat_out[3]
+
+          # 与纸面距离20cm
+          pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.2, 2)
+
+          obj_trans = [pose_goal.pose.position.x, pose_goal.pose.position.y, pose_goal.pose.position.z]
+          quat_out = [pose_goal.pose.orientation.x, pose_goal.pose.orientation.y, pose_goal.pose.orientation.z, pose_goal.pose.orientation.w]
+          
           # 发布转换后的标记姿态
           broadcaster.sendTransform(obj_trans, # [x,y,z]
                                     quat_out,  # [x,y,z,w]
@@ -182,11 +303,12 @@ if __name__ == "__main__":
     # mantra_pickup.group.set_named_target('test_2')
     # mantra_pickup.group.go()
 
-    # 测试标记坐标转换
-    # mantra_pickup.aruco_trans()
+    # 测试标记坐标转换，显示标记位置
+    # mantra_pickup.aruco_loc_show()
 
     print("Move to top of the object...")
-    mantra_pickup.go_to_pose_goal()
+    # mantra_pickup.go_to_pose_goal()
+    mantra_pickup.go_to_pose(cartesian=True)
     rospy.sleep(1)
 
     # print("Move to the init pose...")

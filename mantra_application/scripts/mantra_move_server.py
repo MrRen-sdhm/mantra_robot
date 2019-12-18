@@ -177,7 +177,7 @@ class MoveGroup(object):
 
 
 def main():
-    time.sleep(2)  # sleep to wait for moveit come up
+    time.sleep(5)  # sleep to wait for moveit come up
     move_group = MoveGroup()
     rospy.spin()
 
