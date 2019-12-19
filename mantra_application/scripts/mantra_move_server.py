@@ -38,6 +38,8 @@ class MoveGroup(object):
         robot = moveit_commander.RobotCommander()
         group = moveit_commander.MoveGroupCommander(group_name)
 
+        group.set_max_velocity_scaling_factor(0.5)
+
         # Get joint bounds
         joint_names = robot.get_joint_names(group=group_name)
         joint_bounds = []

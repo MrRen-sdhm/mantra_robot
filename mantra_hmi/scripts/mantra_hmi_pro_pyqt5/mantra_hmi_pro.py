@@ -9,6 +9,7 @@
 from __future__ import print_function
 import os
 import sys
+import time
 curr_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(curr_path))
 
@@ -770,6 +771,8 @@ class MyWindow(QMainWindow, Ui_Form):
 
 
 if __name__ == "__main__":
+    
+    time.sleep(10)  # sleep to wait for move server come up
 
     app = QApplication(sys.argv)
     ui = Ui_Form()

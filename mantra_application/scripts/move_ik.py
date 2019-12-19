@@ -27,9 +27,11 @@ class MoveItIkDemo:
         # 设置目标位置所使用的参考坐标系
         reference_frame = 'base_link'
         arm.set_pose_reference_frame(reference_frame)
+
+        print "curr pose:", arm.get_current_pose()
                 
         # 当运动规划失败后，允许重新规划
-        arm.allow_replanning(False)
+        arm.allow_replanning(True)
         
         # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
         # arm.set_goal_position_tolerance(0.001)
@@ -54,6 +56,18 @@ class MoveItIkDemo:
         target_pose.pose.orientation.y = q[1]
         target_pose.pose.orientation.z = q[2]
         target_pose.pose.orientation.w = q[3]
+
+        target_pose.pose.position.x = 0.337479248768492
+        target_pose.pose.position.y = -0.026588256361860043
+        target_pose.pose.position.z = 0.9072799847686217
+
+        target_pose.pose.orientation.x = 0.0020640171587622664
+        target_pose.pose.orientation.y = 0.5959883144823206
+        target_pose.pose.orientation.z = -0.014393714061880778
+        target_pose.pose.orientation.w = 0.8028614307438773
+
+        print target_pose
+        print euler_from_quaternion([target_pose.pose.orientation.x, target_pose.pose.orientation.y, target_pose.pose.orientation.z, target_pose.pose.orientation.w])
         
         # 设置机器臂当前的状态作为运动初始状态
         # arm.set_start_state_to_current_state()

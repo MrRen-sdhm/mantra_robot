@@ -44,6 +44,27 @@ class RobotMove(object):
         except rospy.ServiceException, e:
             print "[ERROR] Robot move service call failed: %s" % e
 
+    @staticmethod
+    def set_vel_scaling(scale, test=False):
+        print("[SRVICE] Wait for service ...")
+        try:
+            rospy.wait_for_service('set_vel_scaling', timeout=5)
+            print("[SRVICE] Found set vel scaling service!")
+        except rospy.ROSException:
+            print("[ERROR] Set vel scaling service did not started!")
+            return False
+
+        if test:  # test success
+            return True
+
+        try:
+            set_vel_scaling = rospy.ServiceProxy('set_vel_scaling', SetVelScaling)
+            resp = set_vel_scaling(scale)
+            return resp.success
+        except rospy.ServiceException, e:
+            print("[SRVICE] Set vel scaling service call failed: %s" % e)
+            return False
+
 
 class TFWrapper(object):
 
@@ -302,16 +323,23 @@ class FusionServer(object):
         self.config['bag_folder'] = "data"
         self.config['use_close_up_poses'] = False
         # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
-        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
+        # self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
+        self.config['work_space'] = [0.2, 0.8, -0.4, 0.4, -0.4, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
         self.config['min_z'] = -0.01  # min z to remove plane when extract normals
 
         self.config['fusion_voxel_size'] = 0.002
         self.config['voxel_grid_dim_x'] = 240
         self.config['voxel_grid_dim_y'] = 320
         self.config['voxel_grid_dim_z'] = 280
-        self.config['voxel_grid_origin_x'] = 0.4
+
+        # old
+        # self.config['voxel_grid_origin_x'] = 0.4
+        # self.config['voxel_grid_origin_y'] = -0.3
+        # self.config['voxel_grid_origin_z'] = -0.2
+
+        self.config['voxel_grid_origin_x'] = 0.0
         self.config['voxel_grid_origin_y'] = -0.3
-        self.config['voxel_grid_origin_z'] = -0.2
+        self.config['voxel_grid_origin_z'] = -0.4
 
         self.config['fusion_max_depth'] = 1.2
         self.config['fusion_script_path'] = os.path.join(utils.get_curr_dir(), 'fusion.py')
@@ -438,7 +466,10 @@ class FusionServer(object):
 
         # Step1: move robot to home
         print "[INFO] Move robot to home"
-        self.robot_move.move_to_pose_named("home")
+        # self.robot_move.move_to_pose_named("home")
+        self.robot_move.move_to_pose_named("pick_1")
+
+        self.robot_move.set_vel_scaling(0.3)
 
         # Step2: start bagging for far out data collection
         print "[INFO] Start bagging"
@@ -449,7 +480,7 @@ class FusionServer(object):
         # Step3: moving robot through regular scan poses
         print "[INFO] Moving robot through poses"
         # pose_list = ["test_1", "test_2", "test_3", "test_4", "pick_1", "pick_2", "pick_3", "pick_4"]
-        pose_list = ["pick_1", "pick_2", "pick_3", "pick_4"]
+        pose_list = ["fusion_1", "fusion_2", "fusion_3", "fusion_4", "fusion_5"]
         for pose in pose_list:
             self.robot_move.move_to_pose_named(pose)
 
@@ -769,11 +800,11 @@ if __name__ == "__main__":
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-10-16-02-59/processed/images"
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-10-16-02-59/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
-    fs.tsdf_fusion_cpp(images_dir)
+    # fs.tsdf_fusion_cpp(images_dir)
     # print(images_dir)
 
     # ###########    test extrac normals    #############
@@ -820,4 +851,4 @@ if __name__ == "__main__":
     # fs.downsample_by_pose_difference_threshold(images_dir)
 
     # #################    test all    ##################
-    # fs.handle_capture_scene_and_fuse()
+    fs.handle_capture_scene_and_fuse()

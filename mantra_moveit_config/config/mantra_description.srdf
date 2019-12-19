@@ -121,7 +121,126 @@
         <joint name="joint6" value="-1.563"/>
         <joint name="joint7" value="-1.574"/>
     </group_state>
-    <group_state name="point_1" group="arm">
+    <group_state name="point_5" group="arm">
+        <joint name="joint1" value="0"/>
+        <joint name="joint2" value="0.584"/>
+        <joint name="joint3" value="0"/>
+        <joint name="joint4" value="-1.157"/>
+        <joint name="joint5" value="0"/>
+        <joint name="joint6" value="-0.739"/>
+        <joint name="joint7" value="-1.572"/>
+    </group_state>
+    <group_state name="point_6" group="arm">
+        <joint name="joint1" value="-0.002"/>
+        <joint name="joint2" value="0.733"/>
+        <joint name="joint3" value="0.001"/>
+        <joint name="joint4" value="-1.092"/>
+        <joint name="joint5" value="0.000"/>
+        <joint name="joint6" value="-0.956"/>
+        <joint name="joint7" value="-1.571"/>
+    </group_state>
+    <group_state name="point_7" group="arm">
+        <joint name="joint1" value="-0.000"/>
+        <joint name="joint2" value="0.919"/>
+        <joint name="joint3" value="0.001"/>
+        <joint name="joint4" value="-1.398"/>
+        <joint name="joint5" value="0.000"/>
+        <joint name="joint6" value="-1.012"/>
+        <joint name="joint7" value="0.003"/>
+    </group_state>
+    <group_state name="abut_1" group="arm">
+        <joint name="joint1" value="-0.079"/>
+        <joint name="joint2" value="-0.045"/>
+        <joint name="joint3" value="0.090"/>
+        <joint name="joint4" value="-0.933"/>
+        <joint name="joint5" value="-0.106"/>
+        <joint name="joint6" value="-0.078"/>
+        <joint name="joint7" value="1.741"/>
+    </group_state>
+    <group_state name="abut_2" group="arm">
+        <joint name="joint1" value="0.055"/>
+        <joint name="joint2" value="0.317"/>
+        <joint name="joint3" value="-0.033"/>
+        <joint name="joint4" value="-1.292"/>
+        <joint name="joint5" value="-0.099"/>
+        <joint name="joint6" value="-0.087"/>
+        <joint name="joint7" value="-1.575"/>
+    </group_state>
+    <group_state name="fusion_1" group="arm">
+        <joint name="joint1" value="-0.560"/>
+        <joint name="joint2" value="-1.376"/>
+        <joint name="joint3" value="0.050"/>
+        <joint name="joint4" value="-0.743"/>
+        <joint name="joint5" value="0.190"/>
+        <joint name="joint6" value="-1.157"/>
+        <joint name="joint7" value="-2.020"/>
+    </group_state>
+    <group_state name="fusion_2" group="arm">
+        <joint name="joint1" value="-0.913"/>
+        <joint name="joint2" value="-1.206"/>
+        <joint name="joint3" value="0.460"/>
+        <joint name="joint4" value="-1.797"/>
+        <joint name="joint5" value="0.262"/>
+        <joint name="joint6" value="0.036"/>
+        <joint name="joint7" value="-2.372"/>
+    </group_state>
+    <group_state name="fusion_3" group="arm">
+        <joint name="joint1" value="-1.027"/>
+        <joint name="joint2" value="-1.580"/>
+        <joint name="joint3" value="0.542"/>
+        <joint name="joint4" value="-1.624"/>
+        <joint name="joint5" value="0.106"/>
+        <joint name="joint6" value="0.209"/>
+        <joint name="joint7" value="-2.491"/>
+    </group_state>
+    <group_state name="fusion_4" group="arm">
+        <joint name="joint1" value="-0.201"/>
+        <joint name="joint2" value="-1.311"/>
+        <joint name="joint3" value="0.249"/>
+        <joint name="joint4" value="-1.690"/>
+        <joint name="joint5" value="0.877"/>
+        <joint name="joint6" value="0.529"/>
+        <joint name="joint7" value="-2.523"/>
+    </group_state>
+    <group_state name="fusion_5" group="arm">
+        <joint name="joint1" value="0.061"/>
+        <joint name="joint2" value="-1.339"/>
+        <joint name="joint3" value="0.203"/>
+        <joint name="joint4" value="-1.612"/>
+        <joint name="joint5" value="1.244"/>
+        <joint name="joint6" value="0.666"/>
+        <joint name="joint7" value="-2.701"/>
+    </group_state>
+    <group_state name="fusion_6" group="arm">
+        <joint name="joint1" value="-0.395"/>
+        <joint name="joint2" value="-1.653"/>
+        <joint name="joint3" value="-2.270"/>
+        <joint name="joint4" value="1.278"/>
+        <joint name="joint5" value="0.979"/>
+        <joint name="joint6" value="-0.962"/>
+        <joint name="joint7" value="-0.319"/>
+    </group_state>
+    <group_state name="fusion_7" group="arm">
+        <joint name="joint1" value="-0.287"/>
+        <joint name="joint2" value="-1.740"/>
+        <joint name="joint3" value="-2.162"/>
+        <joint name="joint4" value="0.727"/>
+        <joint name="joint5" value="1.450"/>
+        <joint name="joint6" value="-1.046"/>
+        <joint name="joint7" value="-0.947"/>
+    </group_state>
+
+    <group_state name="noisy" group="arm">
+        <joint name="joint1" value="2.771"/>
+        <joint name="joint2" value="0.903"/>
+        <joint name="joint3" value="-2.299"/>
+        <joint name="joint4" value="-0.818"/>
+        <joint name="joint5" value="-0.627"/>
+        <joint name="joint6" value="1.529"/>
+        <joint name="joint7" value="-0.206"/>
+    </group_state>
+
+    <!-- <group_state name="point_1" group="arm">
         <joint name="joint1" value="-0.000"/>
         <joint name="joint2" value="-0.000"/>
         <joint name="joint3" value="-0.000"/>
@@ -192,7 +311,7 @@
         <joint name="joint5" value="-0.000"/>
         <joint name="joint6" value="0.010"/>
         <joint name="joint7" value="0.000"/>
-    </group_state>
+    </group_state> -->
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="base_link" link2="link1" reason="Adjacent" />
     <disable_collisions link1="base_link" link2="link2" reason="Never" />

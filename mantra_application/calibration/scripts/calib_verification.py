@@ -26,8 +26,8 @@ def cal_direction_vec(quat):
     direction_x = rotation_matrix[:,0] # 旋转矩阵第一列为x轴方向向量
     direction_y = rotation_matrix[:,1] # 旋转矩阵第二列为y轴方向向量
     direction_z = rotation_matrix[:,2] # 旋转矩阵第三列为z轴方向向量
-    print "rotation_matrix:\n", rotation_matrix
-    print "direction vector:\n", direction_x, direction_y, direction_z, "\n"
+    # print "rotation_matrix:\n", rotation_matrix
+    # print "direction vector:\n", direction_x, direction_y, direction_z, "\n"
     return (direction_x, direction_y, direction_z)
 
 # 通过方向向量及移动距离计算终点位姿, axis：0-x 1-y 2-z
@@ -76,8 +76,10 @@ class MantraPickup:
         # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
         arm.set_goal_position_tolerance(0.00001)
         arm.set_goal_orientation_tolerance(0.00001)
+
         arm.set_max_velocity_scaling_factor(0.5)
         arm.set_max_acceleration_scaling_factor(0.5)
+
         arm.set_planning_time(0.5) # 规划时间限制为2秒
         arm.allow_replanning(False) # 当运动规划失败后，是否允许重新规划
         
@@ -182,7 +184,7 @@ class MantraPickup:
       # 转换标记姿态，使z轴垂直于纸面向里
       quat_out = rot_around_axis(obj_quat, np.pi/2, 0)
       # 绕标记z轴旋转，保持机械臂z轴与标记垂直，尝试多种姿态
-      quat_out = rot_around_axis(quat_out, np.pi/2, 2)
+      quat_out = rot_around_axis(quat_out, np.pi*0.93, 2)  # np.pi/2
 
       # 目标为使机械臂末端坐标系与转换后的标记坐标系重合
       print("[INFO] Try to plan a path to the aim pose once...")
@@ -201,29 +203,26 @@ class MantraPickup:
       pose_goal.pose.orientation.w = quat_out[3]
 
       # 退回10cm
-      pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.2, 2)
+      pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.15, 2)
 
       group.set_start_state_to_current_state()
       group.set_pose_target(pose_goal)
       group.go()
 
-      time.sleep(1)
+      print "Step1:", pose_goal.pose
+
+      rospy.loginfo("Step1 success!!!")
+
+      time.sleep(0.5)
 
       ##############   笛卡尔轨迹规划    #################
       # 初始化路点列表
       waypoints = []
 
       # 按末端坐标系方向向量平移, 计算终点位姿
-      wpose = cal_end_pose_by_quat(pose_goal.pose, 0.18, 2)
-
-      if cartesian:
-          waypoints.append(deepcopy(wpose))
-      else:
-          group.set_pose_target(wpose)
-          group.go()
-
-      if not cartesian:
-        return
+      for i in range(11):  # 10*0.01
+        wpose = cal_end_pose_by_quat(pose_goal.pose, 0.01*i, 2)
+        waypoints.append(deepcopy(wpose))
 
       ## 开始笛卡尔空间轨迹规划
       fraction = 0.0   #路径规划覆盖率
@@ -237,7 +236,7 @@ class MantraPickup:
       while fraction < 1.0 and attempts < maxtries:
           (plan, fraction) = group.compute_cartesian_path (
                                   waypoints,   # waypoint poses，路点列表
-                                  0.01,        # eef_step，终端步进值
+                                  0.001,        # eef_step，终端步进值  # 精度控制
                                   0.0,         # jump_threshold，跳跃阈值
                                   True)        # avoid_collisions，避障规划
           
@@ -257,6 +256,16 @@ class MantraPickup:
       else:
           rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")  
 
+    def change_ee_joint_state(self, angle):
+      group = self.group
+
+      # Planning to a Joint Goal
+      joint_goal = group.get_current_joint_values()
+      joint_goal[6] = joint_goal[6] + angle
+
+      group.go(joint_goal, wait=True)
+
+      group.stop()
 
     def aruco_loc_show(self):
       listener = tf.TransformListener()
@@ -310,6 +319,8 @@ if __name__ == "__main__":
     # mantra_pickup.go_to_pose_goal()
     mantra_pickup.go_to_pose(cartesian=True)
     rospy.sleep(1)
+
+    mantra_pickup.change_ee_joint_state(-30 * np.pi/180)
 
     # print("Move to the init pose...")
     # mantra_pickup.group.set_named_target('pick_4')

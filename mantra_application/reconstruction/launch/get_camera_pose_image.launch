@@ -7,9 +7,9 @@
 
     <!-- start the robot-->
     <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
-        <arg name="fake" value="true" />
+        <arg name="fake" value="false" />
         <arg name="rviz" value="false" />
-        <arg name="hmi" value="false" />
+        <arg name="hmi" value="true" />
     </include>
 
     <!-- publish tf between camera and robot -->

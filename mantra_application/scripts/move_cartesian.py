@@ -56,8 +56,10 @@ class MoveItCartesianDemo:
         arm.set_pose_reference_frame('base_link')
                 
         # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
-        arm.set_goal_position_tolerance(0.01)
-        arm.set_goal_orientation_tolerance(0.1)
+        # arm.set_goal_position_tolerance(0.01)
+        # arm.set_goal_orientation_tolerance(0.1)
+
+        arm.set_max_velocity_scaling_factor(0.5)
         
         # 获取终端link的名称
         end_effector_link = arm.get_end_effector_link()
