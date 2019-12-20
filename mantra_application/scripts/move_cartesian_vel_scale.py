@@ -4,7 +4,9 @@
 import rospy, sys
 import moveit_commander
 from moveit_commander import MoveGroupCommander
-from geometry_msgs.msg import Pose
+from moveit_msgs.msg import RobotTrajectory
+from trajectory_msgs.msg import JointTrajectoryPoint
+
 from copy import deepcopy
 from transforms3d import quaternions
 
@@ -67,11 +69,13 @@ class MoveItCartesianDemo:
         arm.set_joint_value_target([0.055, 0.317, -0.033, -1.292, -0.099, -0.087, -1.575])
         arm.go()
 
+        exit()
+
         pose = cal_end_pose_by_quat(arm.get_current_pose().pose, -0.2, 2)
         arm.set_pose_target(pose)
         arm.go()
 
-        raw_input()
+        # raw_input()
         
         # 获取当前位姿数据最为机械臂运动的起始位姿
         start_pose = arm.get_current_pose().pose
@@ -86,7 +90,31 @@ class MoveItCartesianDemo:
         wpose = cal_end_pose_by_quat(start_pose, 0.35, 2)
         waypoints.append(deepcopy(wpose))
 
-        def move_cartesian(waypoints):
+        def scale_trajectory_speed(traj, scale):
+            new_traj = RobotTrajectory()
+            new_traj.joint_trajectory = traj.joint_trajectory
+
+            n_joints = len(traj.joint_trajectory.joint_names)
+            n_points = len(traj.joint_trajectory.points)
+            points = list(traj.joint_trajectory.points)
+
+            for i in range(n_points):
+                point = JointTrajectoryPoint()
+                point.positions = traj.joint_trajectory.points[i].positions
+
+                point.time_from_start = traj.joint_trajectory.points[i].time_from_start / scale
+                point.velocities = list(traj.joint_trajectory.points[i].velocities)
+                point.accelerations = list(traj.joint_trajectory.points[i].accelerations)
+
+                for j in range(n_joints):
+                    point.velocities[j] = point.velocities[j] * scale
+                    point.accelerations[j] = point.accelerations[j] * scale * scale
+                points[i] = point
+
+            new_traj.joint_trajectory.points = points
+            return new_traj
+
+        def move_cartesian(waypoints, scale):
             group = arm
             # 开始笛卡尔空间轨迹规划
             fraction = 0.0  # 路径规划覆盖率
@@ -114,6 +142,7 @@ class MoveItCartesianDemo:
             # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
             if fraction == 1.0:
                 rospy.loginfo("Path computed successfully. Moving the arm.")
+                plan = scale_trajectory_speed(plan, 0.2)
                 group.execute(plan)
                 rospy.loginfo("Path execution complete.")
             # 如果路径规划失败，则打印失败信息
@@ -121,7 +150,7 @@ class MoveItCartesianDemo:
                 rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(
                     maxtries) + " attempts.")
 
-        move_cartesian(waypoints)
+        move_cartesian(waypoints, 0.1)
         
         # 关闭并退出moveit
         moveit_commander.roscpp_shutdown()

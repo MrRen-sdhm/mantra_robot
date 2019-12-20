@@ -6,15 +6,15 @@
     handeye calibration get the tf between flange and camera_color_optical_frame, but we should publish tf between flange and camera_link
     step1: Publish tf from flange to camera_color_optical_frame, so that we could get a complete tf tree
     step2: Get the tf from flange to camera_link, and just publish the tf from flange to camera_link to ensure tf tree legal
-       "rosrun tf tf_echo ee_link camera_link" -->
+       "rosrun tf tf_echo ee_link camera_link" or "rosrun mantra_application get_camera_trans.py"-->
 
     <!-- Step1: Publish transform from flange to camera_color_optical_frame (when need rgb image) -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="ee_link2camera_color_optical_frame_broadcaster"
-          args="-0.0305500465614 -0.0956959462435 0.0321692426558 -0.0114186931926 -0.0144067428291 -0.00804208581971 0.999798671765 ee_link camera_color_optical_frame 10" />  -->
+          args="-0.0325500465614 -0.0956959462435 0.0321692426558 -0.0114186931926 -0.0144067428291 -0.00804208581971 0.999798671765 ee_link camera_color_optical_frame 10" />  -->
     
     <!-- Step2: Publish transform from flange to camera_link (when need depth image) -->
     <node pkg="tf" type="static_transform_publisher" name="ee_link2camera_link_broadcaster"
-          args="-0.016, -0.096, 0.034, 0.483, -0.506, 0.508, 0.503 ee_link camera_link 10" /> 
+          args="-0.0175868374674, -0.0959091605507, 0.0336034369479, 0.4827184982706, -0.5061862389410, 0.5075401213399, 0.5031514366118 ee_link camera_link 10" /> 
 </launch>
 
   <!-- translation: 

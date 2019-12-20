@@ -99,7 +99,7 @@
   <widget class="QPushButton" name="resetButton">
    <property name="geometry">
     <rect>
-     <x>3</x>
+     <x>113</x>
      <y>366</y>
      <width>96</width>
      <height>40</height>
@@ -180,7 +180,7 @@
   <widget class="QPushButton" name="setHomeButton">
    <property name="geometry">
     <rect>
-     <x>113</x>
+     <x>3</x>
      <y>366</y>
      <width>96</width>
      <height>40</height>

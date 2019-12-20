@@ -12,6 +12,8 @@ import numpy as np
 from moveit_commander import MoveGroupCommander
 from moveit_commander.conversions import pose_to_list
 from geometry_msgs.msg import Pose
+from moveit_msgs.msg import RobotTrajectory
+from trajectory_msgs.msg import JointTrajectoryPoint
 from copy import deepcopy
 from math import pi
 from std_msgs.msg import String, Int32MultiArray, Float64MultiArray, Bool
@@ -97,12 +99,86 @@ class MantraPickup:
         self.listener = tf.TransformListener()
 
     def lookup_trans(self):
+      print "[INFO] Lookup trans between base_link and aruco_marker..."
       while not rospy.is_shutdown():
         try:
+          # self.listener.waitForTransform('/base_link', '/aruco_marker', rospy.Time(), rospy.Duration(1.0))
           (obj_trans, obj_quat) = self.listener.lookupTransform('/base_link', '/aruco_marker', rospy.Time(0))
           return (obj_trans, obj_quat)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
           pass
+
+    @staticmethod
+    def scale_trajectory_speed(traj, scale):
+      new_traj = RobotTrajectory()
+      new_traj.joint_trajectory = traj.joint_trajectory
+
+      n_joints = len(traj.joint_trajectory.joint_names)
+      n_points = len(traj.joint_trajectory.points)
+      points = list(traj.joint_trajectory.points)
+
+      for i in range(n_points):
+          point = JointTrajectoryPoint()
+          point.positions = traj.joint_trajectory.points[i].positions
+
+          point.time_from_start = traj.joint_trajectory.points[i].time_from_start / scale
+          point.velocities = list(traj.joint_trajectory.points[i].velocities)
+          point.accelerations = list(traj.joint_trajectory.points[i].accelerations)
+
+          for j in range(n_joints):
+              point.velocities[j] = point.velocities[j] * scale
+              point.accelerations[j] = point.accelerations[j] * scale * scale
+          points[i] = point
+
+      new_traj.joint_trajectory.points = points
+      return new_traj
+
+    def move_cartesian(self, waypoints, scale):
+      group = self.group
+      # 开始笛卡尔空间轨迹规划
+      fraction = 0.0  # 路径规划覆盖率
+      maxtries = 10  # 最大尝试规划次数
+      attempts = 0  # 已经尝试规划次数
+
+      # 设置机器臂当前的状态作为运动初始状态
+      group.set_start_state_to_current_state()
+
+      # 尝试规划一条笛卡尔空间下的路径，依次通过所有路点
+      while fraction < 1.0 and attempts < maxtries:
+          (plan, fraction) = group.compute_cartesian_path(
+              waypoints,  # waypoint poses，路点列表
+              0.01,  # eef_step，终端步进值
+              0.0,  # jump_threshold，跳跃阈值
+              True)  # avoid_collisions，避障规划
+
+          # 尝试次数累加
+          attempts += 1
+
+          # 打印运动规划进程
+          if attempts % 10 == 0:
+              rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
+
+      # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
+      if fraction == 1.0:
+          rospy.loginfo("Path computed successfully. Moving the arm.")
+          plan = self.scale_trajectory_speed(plan, 0.2)
+          group.execute(plan)
+          rospy.loginfo("Path execution complete.")
+      # 如果路径规划失败，则打印失败信息
+      else:
+          rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(
+              maxtries) + " attempts.")
+
+    def change_ee_joint_state(self, angle):
+      group = self.group
+
+      # Planning to a Joint Goal
+      joint_goal = group.get_current_joint_values()
+      joint_goal[6] = joint_goal[6] + angle
+
+      group.go(joint_goal, wait=True)
+
+      group.stop()
 
     def go_to_pose_goal(self):
       group = self.group
@@ -184,7 +260,7 @@ class MantraPickup:
       # 转换标记姿态，使z轴垂直于纸面向里
       quat_out = rot_around_axis(obj_quat, np.pi/2, 0)
       # 绕标记z轴旋转，保持机械臂z轴与标记垂直，尝试多种姿态
-      quat_out = rot_around_axis(quat_out, np.pi*0.93, 2)  # np.pi/2
+      quat_out = rot_around_axis(quat_out, np.pi, 2)  # np.pi/2
 
       # 目标为使机械臂末端坐标系与转换后的标记坐标系重合
       print("[INFO] Try to plan a path to the aim pose once...")
@@ -203,7 +279,8 @@ class MantraPickup:
       pose_goal.pose.orientation.w = quat_out[3]
 
       # 退回10cm
-      pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.15, 2)
+      pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.05, 2)
+      # pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.15, 2)
 
       group.set_start_state_to_current_state()
       group.set_pose_target(pose_goal)
@@ -213,6 +290,7 @@ class MantraPickup:
 
       rospy.loginfo("Step1 success!!!")
 
+      exit()
       time.sleep(0.5)
 
       ##############   笛卡尔轨迹规划    #################
@@ -220,52 +298,10 @@ class MantraPickup:
       waypoints = []
 
       # 按末端坐标系方向向量平移, 计算终点位姿
-      for i in range(11):  # 10*0.01
-        wpose = cal_end_pose_by_quat(pose_goal.pose, 0.01*i, 2)
-        waypoints.append(deepcopy(wpose))
+      wpose = cal_end_pose_by_quat(pose_goal.pose, 0.1, 2)
+      waypoints.append(deepcopy(wpose))
 
-      ## 开始笛卡尔空间轨迹规划
-      fraction = 0.0   #路径规划覆盖率
-      maxtries = 10    #最大尝试规划次数
-      attempts = 0     #已经尝试规划次数
-      
-      # 设置机器臂当前的状态作为运动初始状态
-      group.set_start_state_to_current_state()
-  
-      # 尝试规划一条笛卡尔空间下的路径，依次通过所有路点
-      while fraction < 1.0 and attempts < maxtries:
-          (plan, fraction) = group.compute_cartesian_path (
-                                  waypoints,   # waypoint poses，路点列表
-                                  0.001,        # eef_step，终端步进值  # 精度控制
-                                  0.0,         # jump_threshold，跳跃阈值
-                                  True)        # avoid_collisions，避障规划
-          
-          # 尝试次数累加
-          attempts += 1
-          
-          # 打印运动规划进程
-          if attempts % 10 == 0:
-              rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
-                      
-      # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
-      if fraction == 1.0:
-          rospy.loginfo("Path computed successfully. Moving the arm.")
-          group.execute(plan)
-          rospy.loginfo("Path execution complete.")
-      # 如果路径规划失败，则打印失败信息
-      else:
-          rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(maxtries) + " attempts.")  
-
-    def change_ee_joint_state(self, angle):
-      group = self.group
-
-      # Planning to a Joint Goal
-      joint_goal = group.get_current_joint_values()
-      joint_goal[6] = joint_goal[6] + angle
-
-      group.go(joint_goal, wait=True)
-
-      group.stop()
+      self.move_cartesian(waypoints, 0.5)
 
     def aruco_loc_show(self):
       listener = tf.TransformListener()
@@ -309,18 +345,18 @@ if __name__ == "__main__":
   try:
     mantra_pickup = MantraPickup()
 
-    # mantra_pickup.group.set_named_target('test_2')
-    # mantra_pickup.group.go()
+    mantra_pickup.group.set_named_target('point_5')
+    mantra_pickup.group.go()
 
     # 测试标记坐标转换，显示标记位置
     # mantra_pickup.aruco_loc_show()
 
-    print("Move to top of the object...")
+    print("[INFO] Move to top of the object...")
     # mantra_pickup.go_to_pose_goal()
     mantra_pickup.go_to_pose(cartesian=True)
-    rospy.sleep(1)
 
-    mantra_pickup.change_ee_joint_state(-30 * np.pi/180)
+    # rospy.sleep(1)
+    # mantra_pickup.change_ee_joint_state(-30 * np.pi/180)
 
     # print("Move to the init pose...")
     # mantra_pickup.group.set_named_target('pick_4')

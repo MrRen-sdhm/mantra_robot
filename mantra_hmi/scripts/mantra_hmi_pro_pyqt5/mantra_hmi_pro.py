@@ -113,7 +113,7 @@ class MoveThread(QtCore.QThread):
         global curr_pose
         super(MoveThread, self).__init__()
         if test_all_service():  # 测试运动服务器是否已启动
-            print("[INFO] You can move the robot after press the power on button now!")
+            print("\033[1;32m%s\033[0m" % "[INFO] You can move the robot after press the power on button now!")
         else:
             exit("[ERROR] Please start the move service!")
 
@@ -457,11 +457,15 @@ class MyWindow(QMainWindow, Ui_Form):
         print("[INFO] Arm back home request.")
         back_home = True
 
-    @staticmethod
-    def set_home():
+    def set_home(self):
         global goal_joints
         print("[INFO] Arm set home.")
         command_arr.data[2] = 1  # 置零指令位置一
+        # 保存零位差值
+        create_group_state("home_diff" + str(self.save_cnt), self.group, curr_joints, self.fp)
+        print("[INFO] home difference: [%.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f]" %
+              (curr_joints[0], curr_joints[1], curr_joints[2], curr_joints[3], curr_joints[4], curr_joints[5], curr_joints[6]))
+        print("[INFO] home difference have been saved to joint_states.xml")
         goal_joints = [0.000000] * 7  # 目标位置置零
 
     # 状态保存按钮
@@ -469,6 +473,8 @@ class MyWindow(QMainWindow, Ui_Form):
         global curr_joints
         self.save_cnt += 1
         create_group_state(self.group_state_prefix + str(self.save_cnt), self.group, curr_joints, self.fp)
+        print("[INFO] joint states: [%.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f]" %
+             (curr_joints[0], curr_joints[1], curr_joints[2], curr_joints[3], curr_joints[4], curr_joints[5], curr_joints[6]))
         print("[INFO] joint states have been saved to joint_states.xml")
 
     def slide_moved(self):
@@ -772,7 +778,7 @@ class MyWindow(QMainWindow, Ui_Form):
 
 if __name__ == "__main__":
     
-    time.sleep(10)  # sleep to wait for move server come up
+    time.sleep(8)  # sleep to wait for move server come up
 
     app = QApplication(sys.argv)
     ui = Ui_Form()
