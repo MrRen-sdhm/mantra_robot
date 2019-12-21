@@ -1,7 +1,7 @@
 moveit_setup_assistant_config:
   URDF:
     package: mantra_description
-    relative_path: urdf/mantra_description.urdf
+    relative_path: urdf/mantra.urdf
     xacro_args: "--inorder "
   SRDF:
     relative_path: config/mantra_description.srdf

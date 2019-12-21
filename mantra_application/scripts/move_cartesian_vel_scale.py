@@ -69,7 +69,7 @@ class MoveItCartesianDemo:
         arm.set_joint_value_target([0.055, 0.317, -0.033, -1.292, -0.099, -0.087, -1.575])
         arm.go()
 
-        exit()
+        # exit()
 
         pose = cal_end_pose_by_quat(arm.get_current_pose().pose, -0.2, 2)
         arm.set_pose_target(pose)
@@ -150,7 +150,7 @@ class MoveItCartesianDemo:
                 rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(
                     maxtries) + " attempts.")
 
-        move_cartesian(waypoints, 0.1)
+        move_cartesian(waypoints, 2.1)
         
         # 关闭并退出moveit
         moveit_commander.roscpp_shutdown()

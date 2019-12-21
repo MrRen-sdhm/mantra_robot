@@ -38,8 +38,8 @@ class MoveItIkDemo:
         # arm.set_goal_orientation_tolerance(0.001)
         
         # 控制机械臂先回到初始化位置
-        # arm.set_named_target('test_1')
-        # arm.go()
+        arm.set_named_target('home')
+        arm.go()
                
         # 设置机械臂工作空间中的目标位姿，位置使用x、y、z坐标描述，
         # 姿态使用四元数描述，基于base_link坐标系

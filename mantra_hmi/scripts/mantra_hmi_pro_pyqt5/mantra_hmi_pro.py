@@ -778,7 +778,7 @@ class MyWindow(QMainWindow, Ui_Form):
 
 if __name__ == "__main__":
     
-    time.sleep(8)  # sleep to wait for move server come up
+    # time.sleep(8)  # sleep to wait for move server come up
 
     app = QApplication(sys.argv)
     ui = Ui_Form()
