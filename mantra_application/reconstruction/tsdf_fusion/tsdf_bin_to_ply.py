@@ -129,7 +129,7 @@ def convert_tsdf_to_ply(tsdf_bin_path, tsdf_mesh_path):
 
     # meshwrite_binary(tsdf_mesh_filename, mesh_points, faces)
 
-    print "converting to ply format and writing to file took", time.time() - start_time
+    print "converting to ply format and writing to file took %.4fs" % (time.time() - start_time)
 
 
 if __name__ == '__main__':

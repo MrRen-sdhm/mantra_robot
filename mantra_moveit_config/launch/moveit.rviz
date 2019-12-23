@@ -8,7 +8,6 @@ Panels:
         - /TF1/Tree1
         - /MotionPlanning1
         - /MotionPlanning1/Scene Robot1
-        - /MotionPlanning1/Scene Robot1/Links1/ee_link1
         - /MotionPlanning1/Planning Request1
         - /MotionPlanning1/Planning Metrics1
         - /MotionPlanning1/Planned Path1
@@ -85,7 +84,7 @@ Visualization Manager:
                           {}
       Update Interval: 0
       Value: true
-    - Acceleration_Scaling_Factor: 0.5
+    - Acceleration_Scaling_Factor: 1
       Class: moveit_rviz_plugin/MotionPlanning
       Enabled: true
       Move Group Namespace: ""
@@ -214,8 +213,8 @@ Visualization Manager:
             Value: true
           ee_link:
             Alpha: 1
-            Show Axes: true
-            Show Trail: true
+            Show Axes: false
+            Show Trail: false
           link1:
             Alpha: 1
             Show Axes: false
@@ -272,7 +271,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.8881042
+      Distance: 3.23467684
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -287,10 +286,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.224798709
+      Pitch: 0.449798524
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 0.995401978
+      Yaw: 0.490402192
     Saved: ~
 Window Geometry:
   Displays:

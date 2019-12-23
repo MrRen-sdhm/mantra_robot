@@ -211,6 +211,7 @@ int main(int argc, char * argv[]) {
 
     // Read base frame camera pose
     std::string cam2world_file = data_path + "/" + curr_frame_prefix.str() + "_pose.txt";
+    // std::cout << cam2world_file << std::endl;
 
     // check if file exists, if not return
     std::ifstream ifile(cam2world_file);
@@ -223,8 +224,8 @@ int main(int argc, char * argv[]) {
 
     // // Read current frame depth
     std::string depth_im_file = data_path + "/" + curr_frame_prefix.str() + "_depth.png";
+    // std::cout << depth_im_file << std::endl;
     ReadDepth(depth_im_file, im_height, im_width, depth_im);
-
 
 
     // Compute relative camera pose (camera-to-base frame)

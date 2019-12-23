@@ -254,16 +254,16 @@ class ImageCapture(object):
         for idx, depth_img in enumerate(depth_data['cv_img']):
             rgb_img = synchronized_rgb_imgs[idx]
 
-            rgb_filename = "frame-%06i.%s.jpg" % (idx, "color")
+            rgb_filename = "%06i_%s.png" % (idx, "rgb")
             rgb_filename_full = os.path.join(output_dir, rgb_filename)
 
-            depth_filename = "frame-%06i.%s.png" % (idx, "depth")
+            depth_filename = "%06i_%s.png" % (idx, "depth")
             depth_filename_full = os.path.join(output_dir, depth_filename)
 
             if idx % log_rate == 0:
                 print "writing image %d to file %s" % (idx, rgb_filename)
 
-            cv2.imwrite(rgb_filename_full, rgb_img, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+            cv2.imwrite(rgb_filename_full, rgb_img, [int(cv2.IMWRITE_PNG_COMPRESSION), 100])
             if not rgb_only:
                 cv2.imwrite(depth_filename_full, depth_img, [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
 
@@ -322,24 +322,28 @@ class FusionServer(object):
         self.config['sleep_time_before_bagging'] = 3.0
         self.config['bag_folder'] = "data"
         self.config['use_close_up_poses'] = False
-        # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
-        # self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
-        self.config['work_space'] = [0.2, 0.8, -0.4, 0.4, -0.4, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
-        self.config['min_z'] = -0.01  # min z to remove plane when extract normals
 
         self.config['fusion_voxel_size'] = 0.002
+
+        # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
+        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
+        self.config['min_z'] = -0.01  # min z to remove plane when extract normals
         self.config['voxel_grid_dim_x'] = 240
         self.config['voxel_grid_dim_y'] = 320
         self.config['voxel_grid_dim_z'] = 280
+        self.config['voxel_grid_origin_x'] = 0.4
+        self.config['voxel_grid_origin_y'] = -0.3
+        self.config['voxel_grid_origin_z'] = -0.2
 
-        # old
-        # self.config['voxel_grid_origin_x'] = 0.4
-        # self.config['voxel_grid_origin_y'] = -0.3
-        # self.config['voxel_grid_origin_z'] = -0.2
-
+        # new
+        self.config['work_space'] = [0.0, 0.8, -0.3, 0.3, -0.5, 0.5]  # workspace to create one view cloud
+        self.config['min_z'] = -0.5  # min z to remove plane when extract normals
+        self.config['voxel_grid_dim_x'] = 500
+        self.config['voxel_grid_dim_y'] = 500
+        self.config['voxel_grid_dim_z'] = 500
         self.config['voxel_grid_origin_x'] = 0.0
         self.config['voxel_grid_origin_y'] = -0.3
-        self.config['voxel_grid_origin_z'] = -0.4
+        self.config['voxel_grid_origin_z'] = -0.5
 
         self.config['fusion_max_depth'] = 1.2
         self.config['fusion_script_path'] = os.path.join(utils.get_curr_dir(), 'fusion.py')
@@ -729,6 +733,8 @@ class FusionServer(object):
 
         imagels = sorted(glob.glob(os.path.join(images_dir, '*depth.png')))
         print imagels
+
+        work_num = 0
         for image in imagels:
             dirname = os.path.dirname(image)
             basename = os.path.basename(image)
@@ -745,15 +751,25 @@ class FusionServer(object):
                                self.config['work_space'][0], self.config['work_space'][1],
                                self.config['work_space'][2], self.config['work_space'][3],
                                self.config['work_space'][4], self.config['work_space'][5])
-            print "[INFO] Creat cloud:", cloud_pcd
+
+            print "Creat cloud:", cloud_pcd
+            # print "creat_cloud_cmd", creat_cloud_cmd
             # os.system(creat_cloud_cmd)
-            # print("creat_cloud_cmd", creat_cloud_cmd)
-            p = multiprocessing.Process(target=worker, args=(creat_cloud_cmd,))
-            p.start()
+            if os.path.exists(color_img) and os.path.exists(camera_pose):  # check
+                p = multiprocessing.Process(target=worker, args=(creat_cloud_cmd,))
+                p.start()
+                work_num += 1
+            else:
+                print "[WARN] No image or pose data when create: " + cloud_pcd
+
+        while True:  # wait for all work done
+            cloudls = glob.glob(os.path.join(pcd_save_dir, '*pcd'))
+            if work_num == len(cloudls):
+                break
 
         print "[INFO] Tsdf fusion and post processing took: %.3fs" % (time.time()-start)
 
-    def handle_capture_scene_and_fuse(self):
+    def handle_capture_scene_and_fuse(self, bag_filepath=None):
         """
         NOTE: The coordinate of tsdf is camera's world frame, we describe camera's pose use base_link->camera
         so the tsdf's coordinate is robot's "base_link"
@@ -762,7 +778,8 @@ class FusionServer(object):
         print "\n[INFO] Handling capture_scene_and_fuse"
 
         print "\n[INFO] Start capture scene"
-        bag_filepath = self.capture_scene(self.config['use_close_up_poses'])
+        if bag_filepath is None:
+            bag_filepath = self.capture_scene(self.config['use_close_up_poses'])
 
         print "\n[INFO] Extract images from bag"
         images_dir = self.extract_data_from_rosbag(bag_filepath)
@@ -775,7 +792,7 @@ class FusionServer(object):
         self.tsdf_fusion_cpp(images_dir)
 
         print "\n[INFO] Downsampling image folder"
-        self.downsample_by_pose_difference_threshold(images_dir, 0.03, 10)
+        # self.downsample_by_pose_difference_threshold(images_dir, 0.03, 10)
 
         print "\n[INFO] Handle capture scene and fuse finished!"
         print "\n[INFO] Data saved to dir: %s" % data_dir
@@ -800,12 +817,13 @@ if __name__ == "__main__":
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2018-04-10-16-02-59/processed/images"
+    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-19-19-17-05/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
     # fs.tsdf_fusion_cpp(images_dir)
     # print(images_dir)
+    # exit()
 
     # ###########    test extrac normals    #############
     # save_dir = os.path.dirname(images_dir)
@@ -850,5 +868,9 @@ if __name__ == "__main__":
     # #############    test downsample    ###############
     # fs.downsample_by_pose_difference_threshold(images_dir)
 
+    # ###########    test reload bag file    ############
+    bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-19-19-17-05/raw/fusion_2019-12-19-19-17-05.bag"
+    fs.handle_capture_scene_and_fuse(bag_filepath)
+
     # #################    test all    ##################
-    fs.handle_capture_scene_and_fuse()
+    # fs.handle_capture_scene_and_fuse()

@@ -142,7 +142,7 @@ class MoveItCartesianDemo:
             # 如果路径规划成功（覆盖率100%）,则开始控制机械臂运动
             if fraction == 1.0:
                 rospy.loginfo("Path computed successfully. Moving the arm.")
-                plan = scale_trajectory_speed(plan, 0.2)
+                plan = scale_trajectory_speed(plan, scale)
                 group.execute(plan)
                 rospy.loginfo("Path execution complete.")
             # 如果路径规划失败，则打印失败信息
@@ -150,7 +150,7 @@ class MoveItCartesianDemo:
                 rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(
                     maxtries) + " attempts.")
 
-        move_cartesian(waypoints, 2.1)
+        move_cartesian(waypoints, 0.5)
         
         # 关闭并退出moveit
         moveit_commander.roscpp_shutdown()

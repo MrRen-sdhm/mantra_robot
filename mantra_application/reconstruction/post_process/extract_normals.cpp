@@ -13,7 +13,6 @@ using namespace std;
 
 //#define SHOW
 
-
 pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr loadPointCloud(const std::string &filename) {
     pcl::console::setVerbosityLevel(pcl::console::L_ERROR); // ignore some warning
 
@@ -93,7 +92,7 @@ int main(int argc, char * argv[]) {
     cloud_with_normal = loadPointCloud(data_path + "/mesh.ply");
 
     // 滤除工作空间外点云
-    std::vector<float> workspace = {0.0, 2.0, -0.4, 0.4, -0.1, 1.0};
+    std::vector<float> workspace = {0.0, 2.0, -0.4, 0.4, -0.5, 1.0};
     pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_workspace_filter(new pcl::PointCloud<pcl::PointXYZRGBNormal>);
     for (int i = 0; i < surface_cloud_no_normal->size(); i++) {
         const pcl::PointXYZRGBNormal &p = surface_cloud_no_normal->points[i];
