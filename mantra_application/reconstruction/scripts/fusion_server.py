@@ -45,6 +45,19 @@ class RobotMove(object):
             print "[ERROR] Robot move service call failed: %s" % e
 
     @staticmethod
+    def move_to_poses_named(pose_names):
+        print "[INFO] Wait for service..."
+        rospy.wait_for_service('move_to_poses_named')
+        try:
+            move_to_poses_named = rospy.ServiceProxy('move_to_poses_named', MoveToPosesNamed)
+            resp = move_to_poses_named(pose_names)
+            if resp.success:
+                print "[INFO] Robot move to poses named ", pose_names, "success."
+                return True
+        except rospy.ServiceException, e:
+            print "[ERROR] Robot move service call failed: %s" % e
+
+    @staticmethod
     def set_vel_scaling(scale, test=False):
         print("[SRVICE] Wait for service ...")
         try:
@@ -254,7 +267,8 @@ class ImageCapture(object):
         for idx, depth_img in enumerate(depth_data['cv_img']):
             rgb_img = synchronized_rgb_imgs[idx]
 
-            rgb_filename = "%06i_%s.png" % (idx, "rgb")
+            # rgb_filename = "%06i_%s.png" % (idx, "rgb")
+            rgb_filename = "%06i_%s.jpg" % (idx, "rgb")
             rgb_filename_full = os.path.join(output_dir, rgb_filename)
 
             depth_filename = "%06i_%s.png" % (idx, "depth")
@@ -263,7 +277,9 @@ class ImageCapture(object):
             if idx % log_rate == 0:
                 print "writing image %d to file %s" % (idx, rgb_filename)
 
-            cv2.imwrite(rgb_filename_full, rgb_img, [int(cv2.IMWRITE_PNG_COMPRESSION), 100])
+            # cv2.imwrite(rgb_filename_full, rgb_img, [int(cv2.IMWRITE_PNG_COMPRESSION), 100])
+            cv2.imwrite(rgb_filename_full, rgb_img, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+
             if not rgb_only:
                 cv2.imwrite(depth_filename_full, depth_img, [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
 
@@ -325,27 +341,26 @@ class FusionServer(object):
 
         self.config['fusion_voxel_size'] = 0.002
 
-        # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
-        self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
-        self.config['min_z'] = -0.01  # min z to remove plane when extract normals
-        self.config['voxel_grid_dim_x'] = 240
-        self.config['voxel_grid_dim_y'] = 320
-        self.config['voxel_grid_dim_z'] = 280
-        self.config['voxel_grid_origin_x'] = 0.4
-        self.config['voxel_grid_origin_y'] = -0.3
-        self.config['voxel_grid_origin_z'] = -0.2
+        # # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
+        # self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
+        # self.config['min_z'] = -0.01  # min z to remove plane when extract normals
+        # self.config['voxel_grid_dim_x'] = 240
+        # self.config['voxel_grid_dim_y'] = 320
+        # self.config['voxel_grid_dim_z'] = 280
+        # self.config['voxel_grid_origin_x'] = 0.4
+        # self.config['voxel_grid_origin_y'] = -0.3
+        # self.config['voxel_grid_origin_z'] = -0.2
 
         # new
-        self.config['work_space'] = [0.0, 0.8, -0.3, 0.3, -0.5, 0.5]  # workspace to create one view cloud
+        self.config['work_space'] = [0.1, 1.2, -0.3, 0.3, -0.5, 0.5]  # workspace for fusion_py and create one view cloud
         self.config['min_z'] = -0.5  # min z to remove plane when extract normals
         self.config['voxel_grid_dim_x'] = 500
         self.config['voxel_grid_dim_y'] = 500
         self.config['voxel_grid_dim_z'] = 500
-        self.config['voxel_grid_origin_x'] = 0.0
-        self.config['voxel_grid_origin_y'] = -0.3
-        self.config['voxel_grid_origin_z'] = -0.5
+        self.config['voxel_grid_origin_x'] = self.config['work_space'][0]
+        self.config['voxel_grid_origin_y'] = self.config['work_space'][2]
+        self.config['voxel_grid_origin_z'] = self.config['work_space'][4]
 
-        self.config['fusion_max_depth'] = 1.2
         self.config['fusion_script_path'] = os.path.join(utils.get_curr_dir(), 'fusion.py')
         self.config['fusion_exe_path'] = os.path.join(os.path.dirname(utils.get_curr_dir()), 'tsdf_fusion')
         self.config['post_process_exe_path'] = os.path.join(os.path.dirname(utils.get_curr_dir()), 'post_process/build')
@@ -467,13 +482,16 @@ class FusionServer(object):
         :rtype: string
 
         """
+        pose_list = ["fusion_left2", "fusion_left", "fusion_1", "fusion_right", "fusion_right2"]
+        # pose_list = ["fusion_left", "fusion_1", "fusion_right", "fusion_right2"]
 
         # Step1: move robot to home
         print "[INFO] Move robot to home"
+        self.robot_move.set_vel_scaling(0.5)
         # self.robot_move.move_to_pose_named("home")
-        self.robot_move.move_to_pose_named("pick_1")
-
-        self.robot_move.set_vel_scaling(0.3)
+        self.robot_move.move_to_pose_named("cali_3")
+        self.robot_move.move_to_pose_named(pose_list[1])
+        self.robot_move.move_to_pose_named(pose_list[0])
 
         # Step2: start bagging for far out data collection
         print "[INFO] Start bagging"
@@ -483,10 +501,13 @@ class FusionServer(object):
 
         # Step3: moving robot through regular scan poses
         print "[INFO] Moving robot through poses"
-        # pose_list = ["test_1", "test_2", "test_3", "test_4", "pick_1", "pick_2", "pick_3", "pick_4"]
-        pose_list = ["fusion_1", "fusion_2", "fusion_3", "fusion_4", "fusion_5"]
-        for pose in pose_list:
-            self.robot_move.move_to_pose_named(pose)
+        self.robot_move.set_vel_scaling(0.5)
+
+        # for pose in pose_list:
+        #     self.robot_move.move_to_pose_named(pose)
+
+        # move to poses continue
+        self.robot_move.move_to_poses_named(pose_list)
 
         # Step4: stop bagging
         self.stop_bagging()
@@ -511,10 +532,12 @@ class FusionServer(object):
 
         # Step5: move back home
         print "[INFO] Move robot back to home"
-        self.robot_move.move_to_pose_named("home")
+        self.robot_move.set_vel_scaling(0.5)
+        self.robot_move.move_to_pose_named("cali_3")
 
         # wait for bagfile saving
         rospy.sleep(1.0)
+
         return path_to_bagfile
 
     def extract_data_from_rosbag(self, bag_filepath, images_dir=None, rgb_only=False):
@@ -672,6 +695,10 @@ class FusionServer(object):
         # write downsamples pose_data.yaml (forward kinematics)
         utils.saveToYaml(pose_dict_downsampled, os.path.join(images_dir_temp_path, 'pose_data.yaml'))
 
+        # copy camera_info.yaml
+        shutil.copy(os.path.join(images_dir_full_path, 'camera_info.yaml'),
+                    os.path.join(images_dir_temp_path, 'camera_info.yaml'))
+
         if not keep_raw:
             # remove old images
             shutil.move(os.path.join(images_dir_full_path, 'camera_info.yaml'),
@@ -686,29 +713,39 @@ class FusionServer(object):
         print "Previously: %d images" % num_original_images
         print "After: %d images" % num_kept_images
 
+        return images_dir_temp_path
+
     def tsdf_fusion_py(self, images_dir):
+        print "\n[INFO] Formatting data for tsdf fusion"
+        self.format_data_for_tsdf(images_dir)
+
+        mesh_save_dir = os.path.dirname(images_dir)
+
         fusion_exe_path = self.config['fusion_script_path']
         fusion_cmd = "python " + fusion_exe_path
-        os.system("%s %s %s %s" % (fusion_cmd, images_dir, str(self.config['fusion_voxel_size']),
-                                   str(self.config['fusion_max_depth'])))
+        os.system("%s %s %s %s %s %s %s %s %s %s" % (fusion_cmd, images_dir, mesh_save_dir,
+                                                     str(self.config['fusion_voxel_size']),
+                                                     self.config['work_space'][0], self.config['work_space'][1],
+                                                     self.config['work_space'][2], self.config['work_space'][3],
+                                                     self.config['work_space'][4], self.config['work_space'][5]))
         print "[INFO] Fusion cmd:", fusion_cmd
 
     def tsdf_fusion_cpp(self, images_dir):
         start = time.time()
+
+        print "\n[INFO] Formatting data for tsdf fusion"
+        self.format_data_for_tsdf(images_dir)
+
         fusion_exe_path = self.config['fusion_exe_path'] + '/fusion'  # fusion
         convert_script_path = self.config['fusion_exe_path'] + '/tsdf_bin_to_ply.py'
         extract_exe_path = self.config['post_process_exe_path'] + '/extract_normals'
-        creat_cloud_exe_path = self.config['post_process_exe_path'] + '/create_point_cloud'
 
-        save_dir = os.path.dirname(images_dir)
-        pcd_save_dir = os.path.dirname(images_dir) + '/clouds'
-        if not os.path.exists(pcd_save_dir):
-            os.mkdir(pcd_save_dir)
+        mesh_save_dir = os.path.dirname(images_dir)
 
         # run tsdf fusion
         # fusion_cmd: exe_path images_dir save_dir voxel_size dim_x dim_y dim_z origin_x origin_y origin_z
         fusion_cmd = "%s %s %s %s %s %s %s %s %s %s" % \
-                     (fusion_exe_path, images_dir, save_dir, str(self.config['fusion_voxel_size']),
+                     (fusion_exe_path, images_dir, mesh_save_dir, str(self.config['fusion_voxel_size']),
                       str(self.config['voxel_grid_dim_x']), str(self.config['voxel_grid_dim_y']),
                       str(self.config['voxel_grid_dim_z']), str(self.config['voxel_grid_origin_x']),
                       str(self.config['voxel_grid_origin_y']), str(self.config['voxel_grid_origin_z']))
@@ -717,15 +754,24 @@ class FusionServer(object):
 
         # convert tsdf.bin to mesh and cumpute normals
         # covert_cmd: script_path input_dir output_dir
-        covert_cmd = "python %s %s %s" % (convert_script_path, save_dir, save_dir)
+        covert_cmd = "python %s %s %s" % (convert_script_path, mesh_save_dir, mesh_save_dir)
         print "[INFO] Covert cmd:", covert_cmd
         os.system(covert_cmd)
 
         # extract surface normals from mesh
         # extract_cmd: exe_path input_dir output_dir
-        extract_cmd = "%s %s %s %s" % (extract_exe_path, save_dir, save_dir, self.config['min_z'])
+        extract_cmd = "%s %s %s %s" % (extract_exe_path, mesh_save_dir, mesh_save_dir, self.config['min_z'])
         print "[INFO] Extract cmd:", extract_cmd
         os.system(extract_cmd)
+
+        print "[INFO] Tsdf fusion and post processing took: %.3fs" % (time.time()-start)
+
+    def create_point_cloud(self, images_dir):
+        creat_cloud_exe_path = self.config['post_process_exe_path'] + '/create_point_cloud'
+
+        pcd_save_dir = os.path.dirname(images_dir) + '/clouds'
+        if not os.path.exists(pcd_save_dir):
+            os.mkdir(pcd_save_dir)
 
         # create point cloud from rgb and depth image
         def worker(creat_cloud_cmd):
@@ -740,7 +786,8 @@ class FusionServer(object):
             basename = os.path.basename(image)
             prefix = basename.split("_")[0]
 
-            color_img = os.path.join(dirname, prefix + '_rgb.png')
+            # color_img = os.path.join(dirname, prefix + '_rgb.png')
+            color_img = os.path.join(dirname, prefix + '_rgb.jpg')
             depth_img = os.path.join(dirname, prefix + '_depth.png')
             camera_pose = os.path.join(dirname, prefix + '_pose.txt')
             cloud_pcd = os.path.join(pcd_save_dir, prefix + '_cloud.pcd')
@@ -767,8 +814,6 @@ class FusionServer(object):
             if work_num == len(cloudls):
                 break
 
-        print "[INFO] Tsdf fusion and post processing took: %.3fs" % (time.time()-start)
-
     def handle_capture_scene_and_fuse(self, bag_filepath=None):
         """
         NOTE: The coordinate of tsdf is camera's world frame, we describe camera's pose use base_link->camera
@@ -785,14 +830,17 @@ class FusionServer(object):
         images_dir = self.extract_data_from_rosbag(bag_filepath)
         data_dir = os.path.dirname(os.path.dirname(images_dir))
 
-        print "\n[INFO] Formatting data for tsdf fusion"
-        self.format_data_for_tsdf(images_dir)
-
         print "\n[INFO] Running tsdf fusion"
         self.tsdf_fusion_cpp(images_dir)
 
+        print "\n[INFO] Create point cloud"
+        # self.create_point_cloud(images_dir)
+
         print "\n[INFO] Downsampling image folder"
-        # self.downsample_by_pose_difference_threshold(images_dir, 0.03, 10)
+        downsampled_images_dir = self.downsample_by_pose_difference_threshold(images_dir, 0.03, 5)
+
+        print "\n[INFO] Running tsdf fusion for downsampled images"
+        self.tsdf_fusion_py(downsampled_images_dir)
 
         print "\n[INFO] Handle capture scene and fuse finished!"
         print "\n[INFO] Data saved to dir: %s" % data_dir
@@ -817,10 +865,13 @@ if __name__ == "__main__":
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-19-19-17-05/processed/images"
+    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-29-15-18-10/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
+    # fs.tsdf_fusion_py(images_dir)
+    # exit()
+
     # fs.tsdf_fusion_cpp(images_dir)
     # print(images_dir)
     # exit()
@@ -869,8 +920,8 @@ if __name__ == "__main__":
     # fs.downsample_by_pose_difference_threshold(images_dir)
 
     # ###########    test reload bag file    ############
-    bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-19-19-17-05/raw/fusion_2019-12-19-19-17-05.bag"
-    fs.handle_capture_scene_and_fuse(bag_filepath)
+    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-29-16-57-18/raw/fusion_2019-12-29-16-57-18.bag"
+    # fs.handle_capture_scene_and_fuse(bag_filepath)
 
     # #################    test all    ##################
-    # fs.handle_capture_scene_and_fuse()
+    fs.handle_capture_scene_and_fuse()

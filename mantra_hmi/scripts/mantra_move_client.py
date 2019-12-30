@@ -17,7 +17,7 @@ def test_all_service():
 def move_to_pose_named(pose_name, test=False):
     print("[SRVICE] Wait for service ...")
     try:
-        rospy.wait_for_service('move_to_pose_named', timeout=5)
+        rospy.wait_for_service('move_to_pose_named', timeout=15)
         print("[SRVICE] Found move to pose named service!")
     except rospy.ROSException:
         print("[ERROR] Move to pose named service did not started!")
@@ -39,7 +39,7 @@ def move_to_pose_named(pose_name, test=False):
 def move_to_pose_shift(axis, value, test=False):
     print("[SRVICE] Wait for service ...")
     try:
-        rospy.wait_for_service('move_to_pose_shift', timeout=5)
+        rospy.wait_for_service('move_to_pose_shift', timeout=15)
         print("[SRVICE] Found move to pose shift service!")
     except rospy.ROSException:
         print("[ERROR] Move to pose shift service did not started!")
@@ -61,7 +61,7 @@ def move_to_pose_shift(axis, value, test=False):
 def move_to_joint_states(joint_states, test=False):
     print("[SRVICE] Wait for service ...")
     try:
-        rospy.wait_for_service('move_to_joint_states', timeout=5)
+        rospy.wait_for_service('move_to_joint_states', timeout=15)
         print("[SRVICE] Found move to joint states service!")
     except rospy.ROSException:
         print("[ERROR] Move to joint states service did not started!")
@@ -83,7 +83,7 @@ def move_to_joint_states(joint_states, test=False):
 def get_current_pose(test=False):
     print("[SRVICE] Wait for service ...")
     try:
-        rospy.wait_for_service('get_current_pose', timeout=5)
+        rospy.wait_for_service('get_current_pose', timeout=15)
         print("[SRVICE] Found get current pose service!")
     except rospy.ROSException:
         print("[ERROR] Get current pose service did not started!")
@@ -104,7 +104,7 @@ def get_current_pose(test=False):
 def get_base_ee_link(test=False):
     print("[SRVICE] Wait for service ...")
     try:
-        rospy.wait_for_service('get_base_ee_link', timeout=5)
+        rospy.wait_for_service('get_base_ee_link', timeout=15)
         print("[SRVICE] Found get base ee link service!")
     except rospy.ROSException:
         print("[ERROR] Get base ee link service did not started!")
@@ -125,7 +125,7 @@ def get_base_ee_link(test=False):
 def set_vel_scaling(scale, test=False):
     print("[SRVICE] Wait for service ...")
     try:
-        rospy.wait_for_service('set_vel_scaling', timeout=5)
+        rospy.wait_for_service('set_vel_scaling', timeout=15)
         print("[SRVICE] Found set vel scaling service!")
     except rospy.ROSException:
         print("[ERROR] Set vel scaling service did not started!")

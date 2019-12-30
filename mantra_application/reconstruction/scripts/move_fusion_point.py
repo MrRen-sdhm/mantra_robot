@@ -363,23 +363,12 @@ if __name__ == "__main__":
 
     mantra_pickup = MantraPickup()
 
-    mantra_pickup.group.set_named_target('cali_3')
-    mantra_pickup.group.go()
-
-    # 测试标记坐标转换，显示标记位置
-    # mantra_pickup.aruco_loc_show()
-
-    print("[INFO] Move to top of the object...")
-    # mantra_pickup.go_to_pose_goal()
-    mantra_pickup.go_to_pose()
-
-    # rospy.sleep(1)
-    # mantra_pickup.change_ee_joint_state(-30 * np.pi/180)
-
-    # print("Move to the init pose...")
-    # mantra_pickup.group.set_named_target('pick_4')
-    # mantra_pickup.group.go()
-    # rospy.sleep(2)
+    points = ['cali_3', 'fusion_left2', 'fusion_left', 'fusion_1', 'fusion_right', 'fusion_right2']
+    # points = ['cali_3', 'fusion_left', 'fusion_1', 'fusion_right']
+    for point in points:
+      print "[INFO] Move to point", point
+      mantra_pickup.group.set_named_target(point)
+      mantra_pickup.group.go()
 
     # 关闭并退出moveit
     mantra_pickup.moveit_commander.roscpp_shutdown()

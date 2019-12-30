@@ -14,28 +14,6 @@ from tf.transformations import quaternion_from_euler
 from moveit_commander.conversions import pose_to_list
 
 
-def all_close(goal, actual, tolerance):
-  """
-  Convenience method for testing if a list of values are within a tolerance of their counterparts in another list
-  @param: goal       A list of floats, a Pose or a PoseStamped
-  @param: actual     A list of floats, a Pose or a PoseStamped
-  @param: tolerance  A float
-  @returns: bool
-  """
-  all_equal = True
-  if type(goal) is list:
-    for index in range(len(goal)):
-      if abs(actual[index] - goal[index]) > tolerance:
-        return False
-
-  elif type(goal) is geometry_msgs.msg.PoseStamped:
-    return all_close(goal.pose, actual.pose, tolerance)
-
-  elif type(goal) is geometry_msgs.msg.Pose:
-    return all_close(pose_to_list(goal), pose_to_list(actual), tolerance)
-
-  return True
-
 class MoveGroupPythonIntefaceTutorial(object):
   """MoveGroupPythonIntefaceTutorial"""
   def __init__(self):
@@ -175,34 +153,7 @@ class MoveGroupPythonIntefaceTutorial(object):
     return False
 
 
-  def go_to_joint_state_0(self):
-    group = self.group
-
-    # Planning to a Joint Goal
-    joint_goal = group.get_current_joint_values()
-    # joint_goal[0] = pi/4
-    # joint_goal[1] = pi/8
-    # joint_goal[2] = pi/8
-    # joint_goal[3] = pi/16
-    # joint_goal[4] = pi/32
-    # joint_goal[5] = pi/64
-    # joint_goal[6] = pi/64
-    joint_goal[0] = 0
-    joint_goal[1] = 0
-    joint_goal[2] = 0
-    joint_goal[3] = 0
-    joint_goal[4] = 0
-    joint_goal[5] = 0
-    joint_goal[6] = pi/4
-
-    group.go(joint_goal, wait=True)
-
-    group.stop()
-
-    current_joints = self.group.get_current_joint_values()
-    return all_close(joint_goal, current_joints, 0.01)
-
-  def go_to_joint_state_1(self):
+  def go_to_joint_state(self):
     group = self.group
 
     # Planning to a Joint Goal
@@ -252,11 +203,11 @@ class MoveGroupPythonIntefaceTutorial(object):
     pose_goal.header.frame_id = 'base_link'
     pose_goal.header.stamp = rospy.Time.now()
 
-    pose_goal.pose.position.x = 0.500
-    pose_goal.pose.position.y = 0.000
-    pose_goal.pose.position.z = 0.500
+    pose_goal.pose.position.x = 0.139
+    pose_goal.pose.position.y = 0.390
+    pose_goal.pose.position.z = 0.065
 
-    euler = [0, 0, 0]
+    euler = [3.133, -0.602, -1.466]
     # euler = [0, -pi, 0]
     q = quaternion_from_euler(euler[0], euler[1], euler[2])
     pose_goal.pose.orientation.x = q[0]
@@ -288,12 +239,11 @@ def main():
     tutorial = MoveGroupPythonIntefaceTutorial()
 
     print "============ Press `Enter` to execute a movement using a joint state ..."
-    raw_input()
-    tutorial.go_to_joint_state_0()
-    rospy.sleep(0.5)
-    tutorial.go_to_joint_state_1()
-    rospy.sleep(0.5)
-    tutorial.go_to_pose_named("home")
+    # raw_input()
+    # tutorial.go_to_joint_state()
+    # rospy.sleep(0.5)
+    # tutorial.go_to_pose_named("home")
+    tutorial.go_to_pose_goal()
 
     print "============ Complete!"
 

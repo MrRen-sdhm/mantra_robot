@@ -10,6 +10,7 @@ from __future__ import print_function
 import os
 import sys
 import time
+
 curr_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(curr_path))
 
@@ -27,7 +28,9 @@ from mantra_hmi_pro_ui import *
 from save_states import create_group_state
 
 # QT相关
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget
+from PyQt5.QtGui import QIcon
 
 # 发送给Mantra_driver的控制指令
 command_arr = Int32MultiArray()
@@ -154,7 +157,7 @@ class WindowThread(QtCore.QThread):
 
     def run(self):
         global movej_rad_deg_flag
-        r = rospy.Rate(10)  # 10hz
+        r = rospy.Rate(2)  # 2hz
 
         while not rospy.is_shutdown():
             # 关节角刷新显示
@@ -332,6 +335,7 @@ class WindowThread(QtCore.QThread):
                         self.window.label_14.setText("Pose Y ( %.2f deg )" % float(curr_pose[5] / pi * 180.0))
                     else:
                         self.window.label_14.setText("Pose Y ( %.3f deg )" % float(curr_pose[5] / pi * 180.0))
+
             r.sleep()
 
     def stop(self):
@@ -343,6 +347,7 @@ class MyWindow(QMainWindow, Ui_Form):
         super(MyWindow, self).__init__()
         self.center()  # 窗口居中
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)  # 窗口置顶
+        self.setWindowIcon(QIcon(os.path.join(curr_path, "robot.ico")))
         self.setupUi(self)
         self.go_to_busy = False
         # 按钮状态标志位
@@ -380,6 +385,25 @@ class MyWindow(QMainWindow, Ui_Form):
     def __del__(self):
         self.fp.close()  # 关闭文件
 
+    # 键盘事件
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Enter:
+            self.emergency_stop()
+
+        if event.key() == Qt.Key_S:
+            self.emergency_stop()
+
+        if event.key() == Qt.Key_Escape:
+            sys.exit()  # 退出程序
+
+    # 鼠标事件
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MidButton:
+            self.emergency_stop()
+
+        if event.button() == Qt.RightButton:
+            self.emergency_stop()
+
     # 窗口居中
     def center(self):
         screen = QDesktopWidget().screenGeometry()
@@ -387,7 +411,7 @@ class MyWindow(QMainWindow, Ui_Form):
         # self.move((screen.width() - size.width()) / 2,
         #           (screen.height() - size.height()) / 2)
         # self.move((screen.width()), (screen.height() - size.height()))
-        self.move((screen.width() - size.width()*2/3), (screen.height() - size.height())/2)
+        self.move((screen.width() - size.width()*2/3), (screen.height() - size.height()*1.3))
 
     # 使能按钮
     def power(self):
@@ -777,10 +801,9 @@ class MyWindow(QMainWindow, Ui_Form):
 
 
 if __name__ == "__main__":
-    
-    # time.sleep(8)  # sleep to wait for move server come up
 
     app = QApplication(sys.argv)
+
     ui = Ui_Form()
     window = MyWindow()
 
@@ -804,6 +827,7 @@ if __name__ == "__main__":
     thread_sub.exit()
     thread_move.exit()
     thread_window.exit()
+
     sys.exit(app.exec_())
 
 

@@ -86,7 +86,7 @@ int main(int argc, char * argv[]) {
   float base2world[4 * 4];
   float cam2base[4 * 4];
   float cam2world[4 * 4];
-  float workspace[6] = {0.4,0.9,-0.3,0.3,-0.5,0.5};
+  float workspace[6] = {-2,2,-2,2,-2,2};  // Use voxel_grid_origin and voxel_grid_dim could control workspace, it's not used now!
   int im_width = 640;
   int im_height = 480;
   float depth_im[im_height * im_width];
@@ -138,6 +138,9 @@ int main(int argc, char * argv[]) {
     std::cout << "finished parsing params\n";
 
   }
+
+  std::cout << "[INFO] voxel_grid_origin_x:" << voxel_grid_origin_x << " voxel_grid_origin_y:"
+      << voxel_grid_origin_y << " voxel_grid_origin_z:" << voxel_grid_origin_z << std::endl;
 
   trunc_margin = 5 * voxel_size;
 

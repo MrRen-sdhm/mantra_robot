@@ -6,14 +6,17 @@ import time
 import rospy
 import moveit_commander
 import geometry_msgs.msg
+from moveit_msgs.msg import RobotTrajectory
 from math import pi
 from tf.transformations import quaternion_from_euler
-from mantra_application.srv import MoveToPoseNamed, MoveToPoseNamedResponse
-from mantra_application.srv import MoveToPoseShift, MoveToPoseShiftResponse
-from mantra_application.srv import MoveToJointStates, MoveToJointStatesResponse
-from mantra_application.srv import GetCurrentPose, GetCurrentPoseResponse
-from mantra_application.srv import GetBaseEELink, GetBaseEELinkResponse
-from mantra_application.srv import SetVelScaling, SetVelScalingResponse
+
+from mantra_application.srv import *
+# from mantra_application.srv import MoveToPoseNamed, MoveToPoseNamedResponse
+# from mantra_application.srv import MoveToPoseShift, MoveToPoseShiftResponse
+# from mantra_application.srv import MoveToJointStates, MoveToJointStatesResponse
+# from mantra_application.srv import GetCurrentPose, GetCurrentPoseResponse
+# from mantra_application.srv import GetBaseEELink, GetBaseEELinkResponse
+# from mantra_application.srv import SetVelScaling, SetVelScalingResponse
 
 
 class MoveGroup(object):
@@ -23,12 +26,6 @@ class MoveGroup(object):
         super(MoveGroup, self).__init__()
 
         rospy.init_node('mantra_move_server')
-        rospy.Service('move_to_pose_named', MoveToPoseNamed, self.handle_move_to_pose_named)
-        rospy.Service('move_to_pose_shift', MoveToPoseShift, self.handle_move_to_pose_shift)
-        rospy.Service('move_to_joint_states', MoveToJointStates, self.handle_move_to_joint_states)
-        rospy.Service('get_current_pose', GetCurrentPose, self.handle_get_current_pose)
-        rospy.Service('get_base_ee_link', GetBaseEELink, self.handle_get_base_ee_link)
-        rospy.Service('set_vel_scaling', SetVelScaling, self.handle_set_vel_scaling)
 
         print("[SRVICE] Mantra move server init done.")
 
@@ -37,8 +34,6 @@ class MoveGroup(object):
         moveit_commander.roscpp_initialize(sys.argv)
         robot = moveit_commander.RobotCommander()
         group = moveit_commander.MoveGroupCommander(group_name)
-
-        group.set_max_velocity_scaling_factor(0.5)
 
         # Get joint bounds
         joint_names = robot.get_joint_names(group=group_name)
@@ -62,10 +57,30 @@ class MoveGroup(object):
         self.eef_link = eef_link
         self.joint_bounds = joint_bounds
 
+        self.vel_scale = 0.5
+        self.acc_scale = 0.5
+
+        group.set_max_velocity_scaling_factor(self.vel_scale)
+        group.set_max_acceleration_scaling_factor(self.acc_scale)
+
+        rospy.Service('move_to_pose_named', MoveToPoseNamed, self.handle_move_to_pose_named)
+        rospy.Service('move_to_poses_named', MoveToPosesNamed, self.handle_move_to_poses_named)
+        rospy.Service('move_to_pose_shift', MoveToPoseShift, self.handle_move_to_pose_shift)
+        rospy.Service('move_to_joint_states', MoveToJointStates, self.handle_move_to_joint_states)
+        rospy.Service('get_current_pose', GetCurrentPose, self.handle_get_current_pose)
+        rospy.Service('get_base_ee_link', GetBaseEELink, self.handle_get_base_ee_link)
+        rospy.Service('set_vel_scaling', SetVelScaling, self.handle_set_vel_scaling)
+
     def handle_move_to_pose_named(self, req):
         ret = self.go_to_pose_named(req.pose_name)
         print("[SRVICE] Go to pose named: %s result:%s" % (str(req.pose_name), "Succeed" if ret else "Failed"))
         return MoveToPoseNamedResponse(ret)
+
+    def handle_move_to_poses_named(self, req):
+        ret = self.go_to_poses_named_continue(req.pose_names)
+        print("[SRVICE] Go to poses named:", req.pose_names, end='')
+        print(" result:%s" % "Succeed" if ret else "Failed")
+        return MoveToPosesNamedResponse(ret)
 
     def handle_move_to_pose_shift(self, req):
         ret = self.go_to_pose_shift(req.axis, req.value)
@@ -113,6 +128,8 @@ class MoveGroup(object):
             print("%.3f" % (pos / pi * 180.0), end=' ')
         print("]deg")
 
+        group.set_start_state_to_current_state()
+
         # Planning to a Joint Goal
         try:
             plan = group.go(goal_positions, wait=True)
@@ -126,12 +143,14 @@ class MoveGroup(object):
 
     def go_to_pose_named(self, pose_name):
         group = self.group
+        group.set_start_state_to_current_state()
         group.set_named_target(pose_name)
         plan = group.go()
         return plan
 
     def go_to_pose_shift(self, axis, value):
         group = self.group
+        group.set_start_state_to_current_state()
         group.shift_pose_target(axis, value)
         plan = group.go()
         return plan
@@ -165,6 +184,65 @@ class MoveGroup(object):
         group.clear_pose_targets()
         return plan
 
+    def go_to_poses_named_continue(self, names):
+        group = self.group
+
+        positions = []
+        for name in names:
+            position_dict = group.get_named_target_values(name)
+            joint_names = sorted(position_dict.keys())
+            position = []
+            for joint_name in joint_names:
+                position.append(position_dict[joint_name])
+            positions.append(position)
+
+        plan = self.stitch_positions(positions, scale=self.vel_scale)  # 使用全局速度比例, 通过set_vel_scaling设置
+        result = group.execute(plan)
+
+        return result
+
+    # 重新计算轨迹时间
+    def retime_trajectory(self, plan, scale):
+        group = self.group
+
+        ref_state = self.robot.get_current_state()
+        retimed_plan = group.retime_trajectory(ref_state, plan, velocity_scaling_factor=scale)
+        return retimed_plan
+
+    # 拼接轨迹点
+    def stitch_positions(self, positions, scale):
+        group = self.group
+
+        plan_list = []
+        state = self.robot.get_current_state()
+
+        # 路径规划, 连接各路径点
+        for i in range(len(positions)):
+            # 设置前一路径点为待规划的路径起点, 起始点除外
+            if i > 0:
+                state.joint_state.position = positions[i - 1]
+            group.set_start_state(state)
+
+            # 设置目标状态
+            group.set_joint_value_target(positions[i])
+            plan = group.plan()
+            plan_list.append(plan)
+
+        # 创建新轨迹, 重新计算时间
+        new_traj = RobotTrajectory()
+        new_traj.joint_trajectory.joint_names = plan_list[0].joint_trajectory.joint_names
+
+        # 轨迹点拼接
+        new_points = []
+        for plan in plan_list:
+            new_points += list(plan.joint_trajectory.points)
+        new_traj.joint_trajectory.points = new_points
+
+        # 重新计算轨迹时间
+        new_traj = self.retime_trajectory(new_traj, scale=scale)
+
+        return new_traj
+
     def get_current_pose(self):
         group = self.group
         xyz = group.get_current_pose(self.eef_link).pose.position
@@ -175,6 +253,8 @@ class MoveGroup(object):
 
     def set_vel_scaling(self, scale):
         group = self.group
+
+        self.vel_scale = scale  # 更新全局速度比例
         group.set_max_velocity_scaling_factor(scale)
 
 

@@ -1,6 +1,7 @@
 <launch>
     <arg name="marker_size" doc="Size of the ArUco marker used, in meters" default="0.1" />
     <arg name="marker_id" doc="The ID of the ArUco marker used" default="100" />
+    <arg name="fake" default="false" />
 
     <!-- start the Realsense and aruco tracker-->
     <include file="$(find mantra_application)/calibration/launch/aruco_tracker.launch" >
@@ -10,7 +11,7 @@
 
     <!-- start the robot-->
     <include file="$(find mantra_application)/launch/mantra_bringup.launch" >
-        <arg name="fake" value="false" />
+        <arg name="fake" value="$(arg fake)" />
         <arg name="rviz" value="false" />
         <arg name="hmi" value="true" />
     </include>
