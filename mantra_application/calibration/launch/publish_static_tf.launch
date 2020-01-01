@@ -11,11 +11,11 @@
     <!-- Step1: Publish transform from flange to camera_color_optical_frame (when need rgb image) -->
     <!-- X: L- R+    Y: F- B+ -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="ee_link2camera_color_optical_frame_broadcaster"
-      args="-0.0250 -0.089 0.0444564445915 -0.00543580883312, -0.00701280415477, -0.00167992619335, 0.999959224373 ee_link camera_color_optical_frame 10" /> -->
+      args="-0.0290 -0.089 0.051 -0.00543580883312, -0.00701280415477, -0.00167992619335, 0.999959224373 ee_link camera_color_optical_frame 10" /> -->
     
     <!-- Step2: Publish transform from flange to camera_link (when need depth image) -->
     <node pkg="tf" type="static_transform_publisher" name="ee_link2camera_link_broadcaster"
-          args="-0.0100155668201, -0.0890383573866, 0.0456669366354, 0.4926682284709, -0.5023686060671, 0.5041150019297, 0.5007712702652 ee_link camera_link 10" /> 
+          args="-0.0141377862642, -0.0889284200079, 0.0515310814358, 0.4954189829564, -0.5003398167041, 0.5042304307679, 0.4999717710377 ee_link camera_link 10" /> 
 </launch>
 
 <!-- args="-0.0250 -0.089 0.0444564445915 -0.00543580883312, -0.00701280415477, -0.00167992619335, 0.999959224373 ee_link camera_color_optical_frame 10" /> -->

@@ -352,11 +352,11 @@ class FusionServer(object):
         # self.config['voxel_grid_origin_z'] = -0.2
 
         # new
-        self.config['work_space'] = [0.1, 1.2, -0.3, 0.3, -0.5, 0.5]  # workspace for fusion_py and create one view cloud
+        self.config['work_space'] = [0.2, 1.2, -0.3, 0.3, -0.3, 0.3]  # workspace for fusion_py and create one view cloud
         self.config['min_z'] = -0.5  # min z to remove plane when extract normals
-        self.config['voxel_grid_dim_x'] = 500
+        self.config['voxel_grid_dim_x'] = 300
         self.config['voxel_grid_dim_y'] = 500
-        self.config['voxel_grid_dim_z'] = 500
+        self.config['voxel_grid_dim_z'] = 300
         self.config['voxel_grid_origin_x'] = self.config['work_space'][0]
         self.config['voxel_grid_origin_y'] = self.config['work_space'][2]
         self.config['voxel_grid_origin_z'] = self.config['work_space'][4]
@@ -482,14 +482,14 @@ class FusionServer(object):
         :rtype: string
 
         """
-        pose_list = ["fusion_left2", "fusion_left", "fusion_1", "fusion_right", "fusion_right2"]
-        # pose_list = ["fusion_left", "fusion_1", "fusion_right", "fusion_right2"]
+        # pose_list = ["fusion_left3", "fusion_left1", "fusion_3", "fusion_right1", "fusion_right3"]
+        pose_list = ["fusion_left1", "fusion_left5", "fusion_3", "fusion_right5", "fusion_right1"]
 
         # Step1: move robot to home
         print "[INFO] Move robot to home"
-        self.robot_move.set_vel_scaling(0.5)
+        self.robot_move.set_vel_scaling(0.4)
         # self.robot_move.move_to_pose_named("home")
-        self.robot_move.move_to_pose_named("cali_3")
+        self.robot_move.move_to_pose_named("cali_4")
         self.robot_move.move_to_pose_named(pose_list[1])
         self.robot_move.move_to_pose_named(pose_list[0])
 
@@ -501,7 +501,7 @@ class FusionServer(object):
 
         # Step3: moving robot through regular scan poses
         print "[INFO] Moving robot through poses"
-        self.robot_move.set_vel_scaling(0.5)
+        self.robot_move.set_vel_scaling(0.15)
 
         # for pose in pose_list:
         #     self.robot_move.move_to_pose_named(pose)
@@ -532,8 +532,8 @@ class FusionServer(object):
 
         # Step5: move back home
         print "[INFO] Move robot back to home"
-        self.robot_move.set_vel_scaling(0.5)
-        self.robot_move.move_to_pose_named("cali_3")
+        self.robot_move.set_vel_scaling(0.4)
+        self.robot_move.move_to_pose_named("cali_4")
 
         # wait for bagfile saving
         rospy.sleep(1.0)
@@ -865,10 +865,11 @@ if __name__ == "__main__":
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
     # ############    test format data    ##############
-    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-29-15-18-10/processed/images"
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-21-35-13/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
     # #############    test tsdf fusion    ##############
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-21-35-13/processed/images_downsampled"
     # fs.tsdf_fusion_py(images_dir)
     # exit()
 

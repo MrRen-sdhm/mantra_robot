@@ -453,6 +453,10 @@
 
   <!-- <link
     name="ee_link">
+  </link> -->
+
+  <link
+    name="ee_link">
     <inertial>
       <origin
         xyz="-1.6239E-06 -8.3885E-06 0.073334"
@@ -487,13 +491,9 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://mantra_description/meshes/ee_link.STL" />
+          filename="package://mantra_description/meshes/collision/ee_link.STL" />
       </geometry>
     </collision>
-  </link> -->
-
-  <link
-    name="ee_link">
   </link>
   
   <joint
@@ -509,4 +509,5 @@
     <axis
       xyz="0 0 0" />
   </joint>
+  
 </robot>

@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     mantra_pickup = MantraPickup()
 
-    points = ['cali_3', 'fusion_left2', 'fusion_left', 'fusion_1', 'fusion_right', 'fusion_right2']
+    points = ['cali_3', 'fusion_left2', 'fusion_left1', 'fusion_1', 'fusion_right1', 'fusion_right2']
     # points = ['cali_3', 'fusion_left', 'fusion_1', 'fusion_right']
     for point in points:
       print "[INFO] Move to point", point

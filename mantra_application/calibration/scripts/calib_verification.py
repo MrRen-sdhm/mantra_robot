@@ -81,7 +81,7 @@ class MantraPickup:
         arm.set_goal_position_tolerance(0.00001)
         arm.set_goal_orientation_tolerance(0.00001)
 
-        arm.set_max_velocity_scaling_factor(0.5)
+        arm.set_max_velocity_scaling_factor(0.4)
         arm.set_max_acceleration_scaling_factor(0.5)
 
         arm.set_planning_time(0.5) # 规划时间限制为2秒
@@ -295,7 +295,7 @@ class MantraPickup:
       pose_goal.pose.orientation.w = quat_out[3]
 
       # 退回10cm
-      pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.057, 2)
+      pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.07, 2)
       # pose_goal.pose = cal_end_pose_by_quat(pose_goal.pose, -0.15, 2)
 
       group.set_start_state_to_current_state()
@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
     mantra_pickup = MantraPickup()
 
-    mantra_pickup.group.set_named_target('cali_3')
+    mantra_pickup.group.set_named_target('cali_4')
     mantra_pickup.group.go()
 
     # 测试标记坐标转换，显示标记位置

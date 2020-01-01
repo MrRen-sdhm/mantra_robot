@@ -111,7 +111,7 @@ class MoveItDemo:
         # plan = stitch_positions(positions)
         # arm.execute(plan)
 
-        positions_name = ['fusion_left2', 'fusion_left', 'fusion_1', 'fusion_right']
+        positions_name = ['cali_3', 'fusion_left2', 'fusion_left1', 'fusion_1', 'fusion_right1', 'fusion_right2']
         positions = []
         for name in positions_name:
             position_dict = arm.get_named_target_values(name)
