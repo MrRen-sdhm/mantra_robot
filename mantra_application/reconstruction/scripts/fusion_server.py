@@ -335,7 +335,7 @@ class FusionServer(object):
         self.config = dict()
         self.config['world_frame'] = "base_link"
         self.config['camera_frame'] = "camera_color_optical_frame"
-        self.config['sleep_time_before_bagging'] = 3.0
+        self.config['sleep_time_before_bagging'] = 2.0
         self.config['bag_folder'] = "data"
         self.config['use_close_up_poses'] = False
 
@@ -885,37 +885,9 @@ if __name__ == "__main__":
     # os.system(extract_cmd)
 
     # #############    test cloud create    ##############
-    # pcd_save_dir = os.path.dirname(images_dir) + '/clouds'
-    # if not os.path.exists(pcd_save_dir):
-    #     os.mkdir(pcd_save_dir)
-    # creat_cloud_exe_path = fs.config['post_process_exe_path'] + '/create_point_cloud'
-    # imagels = sorted(glob.glob(os.path.join(images_dir, '*depth.png')))
-    # print imagels
-    #
-    # def worker(creat_cloud_cmd):
-    #     os.system(creat_cloud_cmd)
-    #
-    # for image in imagels:
-    #     dirname = os.path.dirname(image)
-    #     basename = os.path.basename(image)
-    #     prefix = basename.split("_")[0]
-    #
-    #     color_img = os.path.join(dirname, prefix + '_rgb.png')
-    #     depth_img = os.path.join(dirname, prefix + '_depth.png')
-    #     camera_pose = os.path.join(dirname, prefix + '_pose.txt')
-    #     cloud_pcd = os.path.join(pcd_save_dir, prefix + '_cloud.pcd')
-    #
-    #     # creat_cloud_cmd: exe_path color_path depth_path cam_K_dir camera_pose save_path -x x -y y -z z
-    #     creat_cloud_cmd = "%s %s %s %s %s %s %s %s %s %s %s %s" % \
-    #                       (creat_cloud_exe_path, color_img, depth_img, images_dir, camera_pose, cloud_pcd,
-    #                        fs.config['work_space'][0], fs.config['work_space'][1],
-    #                        fs.config['work_space'][2], fs.config['work_space'][3],
-    #                        fs.config['work_space'][4], fs.config['work_space'][5])
-    #     print "[INFO] Creat cloud:", cloud_pcd
-    #     # os.system(creat_cloud_cmd)
-    #     # print("creat_cloud_cmd", creat_cloud_cmd)
-    #     p = multiprocessing.Process(target=worker, args=(creat_cloud_cmd,))
-    #     p.start()
+    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-22-22-05/processed/images_downsampled"
+    fs.create_point_cloud(images_dir)
+    exit()
 
     # #############    test downsample    ###############
     # fs.downsample_by_pose_difference_threshold(images_dir)

@@ -4,7 +4,7 @@ import rospy
 from yinshi_driver.srv import *
 
 
-def hand_contol_client(command, pose):
+def hand_control_client(command, pose):
     if pose is None:
         pose = -1
     else:
@@ -40,5 +40,5 @@ if __name__ == "__main__":
         print "[ERROR] Please specify the pose [1-1000]"
     else:
         print "[SRVICE] Requesting %s" % command
-        print "[SRVICE] Result = %s" % hand_contol_client(command, pose)
+        print "[SRVICE] Result = %s" % hand_control_client(command, pose)
 
