@@ -396,6 +396,9 @@ class MyWindow(QMainWindow, Ui_Form):
         if event.key() == Qt.Key_Escape:
             sys.exit()  # 退出程序
 
+        if event.key() == Qt.Key_Q:
+            sys.exit()  # 退出程序
+
     # 鼠标事件
     def mousePressEvent(self, event):
         if event.button() == Qt.MidButton:

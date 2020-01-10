@@ -3,7 +3,8 @@
 <launch>  
     <arg name="fake" default="false" />
     <arg name="rviz" default="true" />
-    <arg name="show" default="false" />
+    <arg name="show_pose" default="false" />
+    <arg name="show_traj" default="false" />
     <arg name="hmi" default="true" />
 
     <!-- robot_ip: IP-address of the robot's socket-messaging server -->
@@ -12,7 +13,8 @@
     <!-- robot driver -->
     <include unless="$(arg fake)" file="$(find mantra_driver)/launch/mantra_driver.launch"> 
       <arg name="use_hand" value="false" />
-      <arg name="show_info" value="$(arg show)" />
+      <arg name="show_pose_info" value="$(arg show_pose)" />
+      <arg name="show_traj_info" value="$(arg show_traj)" />
     </include>
 
     <!-- robot model -->

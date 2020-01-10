@@ -483,7 +483,8 @@ class FusionServer(object):
 
         """
         # pose_list = ["fusion_left3", "fusion_left1", "fusion_3", "fusion_right1", "fusion_right3"]
-        pose_list = ["fusion_left1", "fusion_left5", "fusion_3", "fusion_right5", "fusion_right1"]
+        # pose_list = ["fusion_left1", "fusion_left5", "fusion_3", "fusion_right5", "fusion_right1"]
+        pose_list = ["pick_8", "fusion_1", "fusion_2", "pick_8"]
 
         # Step1: move robot to home
         print "[INFO] Move robot to home"
@@ -885,9 +886,9 @@ if __name__ == "__main__":
     # os.system(extract_cmd)
 
     # #############    test cloud create    ##############
-    images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-22-22-05/processed/images_downsampled"
-    fs.create_point_cloud(images_dir)
-    exit()
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-22-22-05/processed/images_downsampled"
+    # fs.create_point_cloud(images_dir)
+    # exit()
 
     # #############    test downsample    ###############
     # fs.downsample_by_pose_difference_threshold(images_dir)

@@ -71,8 +71,14 @@ cam2obj_trans = [0.05185268692428623, 0.03499475249100164, 0.34325048453803747]
 
 
 def cal_obj_pose_in_world(base2cam_trans, base2cam_quat, cam2obj_trans, cam2obj_rot):
-    cam2obj_rot44 = numpy.identity(4)
-    cam2obj_rot44[:3, :3] = cam2obj_rot
+    """
+    1、ROS transforms 没有提供旋转矩阵与四元数之间转换的函数，但是提供了齐次变换矩阵(homogeneous matrix)转换为四元数的函数，
+    可以先创建齐次变换矩阵表示的旋转矩阵，再通过函数将旋转矩阵转换为四元数。
+    2、通过齐次变换矩阵(homogeneous matrix)可实现坐标系的变换。
+    """
+    # 将旋转矩阵转换为四元数
+    cam2obj_rot44 = numpy.identity(4)  # 创建齐次变换矩阵
+    cam2obj_rot44[:3, :3] = cam2obj_rot  # 写入旋转矩阵
     cam2obj_quat = quaternion_from_matrix(cam2obj_rot44)
 
     # cam2obj转换为齐次变换矩阵

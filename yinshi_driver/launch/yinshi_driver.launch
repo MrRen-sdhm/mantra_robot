@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="fake" default="false" />
+
+    <!-- start gripper driver -->
+    <node name="yinshi_driver" pkg="yinshi_driver" type="yinshi_driver" respawn="true" output="screen" />
+    
+</launch>

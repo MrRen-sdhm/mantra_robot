@@ -4,9 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /TF1
-        - /TF1/Frames1
-        - /MarkerArray1
         - /MotionPlanning1
         - /MotionPlanning1/Planning Request1
       Splitter Ratio: 0.605654776
@@ -53,7 +50,7 @@ Visualization Manager:
         camera_color_frame:
           Value: false
         camera_color_optical_frame:
-          Value: true
+          Value: false
         camera_depth_frame:
           Value: false
         camera_depth_optical_frame:
@@ -61,6 +58,8 @@ Visualization Manager:
         camera_link:
           Value: false
         ee_link:
+          Value: true
+        grasp:
           Value: true
         link1:
           Value: false
@@ -76,8 +75,6 @@ Visualization Manager:
           Value: false
         link7:
           Value: false
-        obj_pose:
-          Value: true
       Marker Scale: 0.600000024
       Name: TF
       Show Arrows: false
@@ -96,14 +93,13 @@ Visualization Manager:
                           camera_link:
                             camera_aligned_depth_to_color_frame:
                               camera_color_optical_frame:
-                                {}
+                                grasp:
+                                  {}
                             camera_color_frame:
                               {}
                             camera_depth_frame:
                               camera_depth_optical_frame:
                                 {}
-          obj_pose:
-            {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -138,10 +134,11 @@ Visualization Manager:
       Value: false
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /grasps_rviz
+      Marker Topic: /detect_grasps/grasps_rviz
       Name: MarkerArray
       Namespaces:
-        {}
+        finger: true
+        hand_base: true
       Queue Size: 100
       Value: true
     - Acceleration_Scaling_Factor: 0.5
@@ -333,7 +330,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 1.93070221
+      Distance: 1.58016133
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -348,10 +345,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.834798276
+      Pitch: 0.654798388
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 1.51066434
+      Yaw: 1.04566479
     Saved: ~
 Window Geometry:
   Displays:
