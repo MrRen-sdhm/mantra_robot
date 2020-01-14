@@ -4,7 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /TF1/Frames1
         - /TF1/Tree1
         - /MotionPlanning1
         - /MotionPlanning1/Scene Robot1
@@ -48,6 +47,8 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: true
+        camera:
+          Value: false
         ee_link:
           Value: true
         link1:
@@ -64,7 +65,7 @@ Visualization Manager:
           Value: false
         link7:
           Value: false
-      Marker Scale: 0.800000012
+      Marker Scale: 0.600000024
       Name: TF
       Show Arrows: false
       Show Axes: true
@@ -78,6 +79,8 @@ Visualization Manager:
                   link5:
                     link6:
                       link7:
+                        camera:
+                          {}
                         ee_link:
                           {}
       Update Interval: 0
@@ -116,6 +119,11 @@ Visualization Manager:
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
           base_link:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
+          camera:
             Alpha: 1
             Show Axes: false
             Show Trail: false
@@ -210,6 +218,11 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          camera:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
+            Value: true
           ee_link:
             Alpha: 1
             Show Axes: false
@@ -286,10 +299,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.499798417
+      Pitch: 0.324798584
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 1.34038973
+      Yaw: 0.950390339
     Saved: ~
 Window Geometry:
   Displays:

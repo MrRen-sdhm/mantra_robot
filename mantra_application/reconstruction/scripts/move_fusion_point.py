@@ -363,12 +363,25 @@ if __name__ == "__main__":
 
     mantra_pickup = MantraPickup()
 
-    points = ['cali_3', 'fusion_left2', 'fusion_left1', 'fusion_1', 'fusion_right1', 'fusion_right2']
+    # points = ['cali_3', 'fusion_left2', 'fusion_left1', 'fusion_1', 'fusion_right1', 'fusion_right2']
     # points = ['cali_3', 'fusion_left', 'fusion_1', 'fusion_right']
+    # points = ["pick_8", "fusion_1", "fusion_2", "pick_8"]
+    # points = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
+
+    points = ["capture_l1", "capture_m1", "capture_r1", "capture_r2", "capture_m2", "capture_l2", "capture_l3", "capture_m3", "capture_r3"]
+    # points = ["capture_l1", "capture_r1"]
+    
+    mantra_pickup.group.set_named_target("test_4")
+    plan = mantra_pickup.group.go()
+    if not plan:
+      exit()
+
     for point in points:
       print "[INFO] Move to point", point
       mantra_pickup.group.set_named_target(point)
-      mantra_pickup.group.go()
+      plan = mantra_pickup.group.go()
+      if not plan:
+        break
 
     # 关闭并退出moveit
     mantra_pickup.moveit_commander.roscpp_shutdown()

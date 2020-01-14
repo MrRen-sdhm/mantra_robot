@@ -45,8 +45,8 @@ class MoveGroup(object):
 
         group.allow_replanning(False)
         group.set_planning_time(0.5)
-        # group.set_goal_position_tolerance(0.01)
-        # group.set_goal_orientation_tolerance(0.05)
+        group.set_goal_position_tolerance(0.0001)
+        group.set_goal_orientation_tolerance(0.0001)
 
         planning_frame = group.get_planning_frame()
         eef_link = group.get_end_effector_link()
@@ -58,7 +58,7 @@ class MoveGroup(object):
         self.joint_bounds = joint_bounds
 
         self.vel_scale = 0.5
-        self.acc_scale = 0.5
+        self.acc_scale = 0.25
 
         group.set_max_velocity_scaling_factor(self.vel_scale)
         group.set_max_acceleration_scaling_factor(self.acc_scale)

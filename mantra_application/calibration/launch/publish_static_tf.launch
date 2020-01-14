@@ -3,19 +3,21 @@
 <!-- static_transform_publisher x y z qx qy qz qw frame_id child_frame_id  period_in_ms -->
 <launch>
     <!-- NOTE: Realsense rgb camera's tf tree is: camera_link->camera_aligned_depth_to_color_frame->camera_color_optical_frame
-    handeye calibration get the tf between flange and camera_color_optical_frame, but we should publish tf between flange and camera_link
-    Step1: Publish tf from flange to camera_color_optical_frame, so that we could get a complete tf tree
-    Step2: Get the tf from flange to camera_link, and just publish the tf from flange to camera_link to ensure tf tree legal
+    handeye calibration get the tf between ee_link and camera_color_optical_frame, but we should publish tf between ee_link and camera_link
+    Step1: Publish tf from ee_link to camera_color_optical_frame, so that we could get a complete tf tree
+    Step2: Publish tf from camera_color_optical_frame to camera_link: 
+        set pub_tf as true in aruco_tracker.launch or calib_verification.launch
+    Step3: Get the tf from ee_link to camera_link, and just publish the tf from ee_link to camera_link to ensure tf tree legal
        "rosrun tf tf_echo ee_link camera_link" or "rosrun mantra_application get_camera_trans.py"-->
 
-    <!-- Step1: Publish transform from flange to camera_color_optical_frame (when need rgb image) -->
-    <!-- X: L- R+    Y: F- B+ -->
+    <!-- Step1: Publish transform from ee_link to camera_color_optical_frame (when need rgb image) -->
+    <!-- X: L- R+    Y: F- B+   Z: U- D+ -->
     <!-- <node pkg="tf" type="static_transform_publisher" name="ee_link2camera_color_optical_frame_broadcaster"
-      args="-0.0290 -0.089 0.051 -0.00543580883312, -0.00701280415477, -0.00167992619335, 0.999959224373 ee_link camera_color_optical_frame 10" /> -->
+      args="-0.030 -0.088 0.053 -0.00543580883312, -0.00701280415477, -0.00167992619335, 0.999959224373 ee_link camera_color_optical_frame 10" /> -->
     
-    <!-- Step2: Publish transform from flange to camera_link (when need depth image) -->
+    <!-- Step3: Publish transform from ee_link to camera_link (when need depth image) -->
     <node pkg="tf" type="static_transform_publisher" name="ee_link2camera_link_broadcaster"
-          args="-0.0141377862642, -0.0889284200079, 0.0515310814358, 0.4954189829564, -0.5003398167041, 0.5042304307679, 0.4999717710377 ee_link camera_link 10" /> 
+          args="-0.0151377862642, -0.0879284200079, 0.0535310814358, 0.4954189829564, -0.5003398167041, 0.5042304307679, 0.4999717710377 ee_link camera_link 10" /> 
 </launch>
 
 <!-- args="-0.0250 -0.089 0.0444564445915 -0.00543580883312, -0.00701280415477, -0.00167992619335, 0.999959224373 ee_link camera_color_optical_frame 10" /> -->
@@ -25,22 +27,5 @@
 
 <!-- args="-0.0325500465614 -0.0956959462435 0.0321692426558 -0.0114186931926 -0.0144067428291 -0.00804208581971 0.999798671765 ee_link camera_color_optical_frame 10" />  -->
 
-  <!-- translation: 
-  x: -0.0305271241839
-  y: -0.0990569812777
-  z: 0.0300291880092
-rotation: 
-  x: 0.00721833920296
-  y: -0.00896190419179
-  z: 0.00281073171005
-  w: 0.999929837358 -->
-
-  <!-- translation: 
-  x: -0.0305500465614
-  y: -0.0956959462435
-  z: 0.0321692426558
-rotation: 
-  x: -0.0114186931926
-  y: -0.0144067428291
-  z: -0.00804208581971
-  w: 0.999798671765 -->
+<!-- Good!!! -->
+<!-- args="-0.0290 -0.089 0.051 -0.00543580883312, -0.00701280415477, -0.00167992619335, 0.999959224373 ee_link camera_color_optical_frame 10" /> -->

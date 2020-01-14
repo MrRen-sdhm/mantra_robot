@@ -24,8 +24,6 @@ import ros_utils as ros_utils
 from transforms3d import quaternions
 from mantra_application.srv import *
 
-ROS_BAGGING_NODE_NAME = "rosbag_node"
-
 
 class RobotMove(object):
     def __init__(self):
@@ -179,7 +177,9 @@ class ImageCapture(object):
     def load_ros_bag(self, ros_bag_filename):
         self.ros_bag = rosbag.Bag(ros_bag_filename, "r")
 
-    def process_ros_bag(self, bag, output_dir, rgb_only=False):
+    def process_ros_bag(self, bag, output_dir, rgb_only=False, stamp_ls=None):
+        if stamp_ls is None:
+            stamp_ls = []
 
         image_topics = []
         for key, topic in self.topics_dict.iteritems():
@@ -294,7 +294,6 @@ class ImageCapture(object):
             d['depth_image_filename'] = depth_filename
 
         utils.saveToYaml(pose_data, os.path.join(output_dir, 'pose_data.yaml'))
-
         # extract the camera info msg
 
         camera_info_msg = None
@@ -303,12 +302,44 @@ class ImageCapture(object):
             break
 
         camera_info_dict = ros_utils.camera_info_dict_from_camera_info_msg(camera_info_msg)
-
-        # NOTE: currently the batch_extract_and_fuse_all_scenes.py
-        # script checks for the existence of this file (camera_info.yaml) 
-        # to determine if the extraction process was completed.
-
         utils.saveToYaml(camera_info_dict, os.path.join(output_dir, 'camera_info.yaml'))
+
+        # #############################      Save stamped images      ################################
+        pose_data = dict()
+        stamped_img_output_dir = os.path.join(os.path.dirname(output_dir), "images_stamped")
+        if len(stamp_ls) > 0:
+            for idx, stamp in enumerate(stamp_ls):
+                # get index
+                rgb_idx = ImageCapture.lookup_synchronized_image(stamp[1], rgb_data['timestamps'])
+                depth_idx = ImageCapture.lookup_synchronized_image(stamp[1], depth_data['timestamps'])
+
+                # save images
+                if not os.path.isdir(stamped_img_output_dir):
+                    os.makedirs(stamped_img_output_dir)
+
+                rgb_filename = "%s_%s.jpg" % (stamp[0], "rgb")
+                rgb_filename_full = os.path.join(stamped_img_output_dir, rgb_filename)
+
+                depth_filename = "%s_%s.png" % (stamp[0], "depth")
+                depth_filename_full = os.path.join(stamped_img_output_dir, depth_filename)
+                cv2.imwrite(rgb_filename_full, rgb_data['cv_img'][rgb_idx], [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+                cv2.imwrite(depth_filename_full, depth_data['cv_img'][depth_idx], [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
+
+                # print "[DEBUG] stamped pose:%s rgb_idx:" % (stamp[0], rgb_idx)
+                # print "[DEBUG] stamped pose:%s depth_idx:" % (stamp[0], depth_idx)
+
+                pose_data[idx] = dict()
+                d = pose_data[idx]
+                trans, rot = depth_data['camera_to_world'][depth_idx]
+                quat_wxyz = [rot[3], rot[0], rot[1], rot[2]]
+                transform_dict = utils.dictFromPosQuat(trans, quat_wxyz)
+                d['camera_to_world'] = transform_dict
+                d['timestamp'] = depth_data['timestamps'][depth_idx]
+                d['rgb_image_filename'] = rgb_filename
+                d['depth_image_filename'] = depth_filename
+
+            utils.saveToYaml(pose_data, os.path.join(stamped_img_output_dir, 'pose_data.yaml'))
+            utils.saveToYaml(camera_info_dict, os.path.join(stamped_img_output_dir, 'camera_info.yaml'))
 
     @staticmethod
     def lookup_synchronized_image(query_time, timestamps):
@@ -330,6 +361,7 @@ class FusionServer(object):
         self.robot_move = RobotMove()
         self.setupConfig()
         self.setupTF()
+        self.stamp_ls = []
 
     def setupConfig(self):
         self.config = dict()
@@ -337,11 +369,15 @@ class FusionServer(object):
         self.config['camera_frame'] = "camera_color_optical_frame"
         self.config['sleep_time_before_bagging'] = 2.0
         self.config['bag_folder'] = "data"
-        self.config['use_close_up_poses'] = False
+        self.config['keep_raw_bag'] = True
+        self.config['keep_raw_images'] = False
+
+        # if use close up poses to create point clouds
+        self.config['use_close_up_poses'] = True
 
         self.config['fusion_voxel_size'] = 0.002
 
-        # # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
+        # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
         # self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
         # self.config['min_z'] = -0.01  # min z to remove plane when extract normals
         # self.config['voxel_grid_dim_x'] = 240
@@ -352,11 +388,11 @@ class FusionServer(object):
         # self.config['voxel_grid_origin_z'] = -0.2
 
         # new
-        self.config['work_space'] = [0.2, 1.2, -0.3, 0.3, -0.3, 0.3]  # workspace for fusion_py and create one view cloud
+        self.config['work_space'] = [0.2, 0.8, -0.3, 0.3, -0.3, 0.5]  # workspace for fusion_py and create one view cloud
         self.config['min_z'] = -0.5  # min z to remove plane when extract normals
         self.config['voxel_grid_dim_x'] = 300
         self.config['voxel_grid_dim_y'] = 500
-        self.config['voxel_grid_dim_z'] = 300
+        self.config['voxel_grid_dim_z'] = 500
         self.config['voxel_grid_origin_x'] = self.config['work_space'][0]
         self.config['voxel_grid_origin_y'] = self.config['work_space'][2]
         self.config['voxel_grid_origin_z'] = self.config['work_space'][4]
@@ -410,7 +446,7 @@ class FusionServer(object):
 
         return path_to_bag_file
 
-    def start_bagging(self, path_to_bag_file):
+    def start_bagging(self, path_to_bag_file, bag_node_name):
         # create parent folder if it doesn't exist
         parent_folder = os.path.dirname(path_to_bag_file)
         if not os.path.exists(parent_folder):
@@ -423,7 +459,7 @@ class FusionServer(object):
         rospy.sleep(self.config['sleep_time_before_bagging'])
 
         # build up command string
-        rosbag_cmd = "rosbag record __name:=" + ROS_BAGGING_NODE_NAME
+        rosbag_cmd = "rosbag record __name:=" + bag_node_name
         rosbag_cmd += " -O " + path_to_bag_file
         for i in self.topics_to_bag:
             rosbag_cmd += " " + i
@@ -437,13 +473,13 @@ class FusionServer(object):
 
         return path_to_bag_file
 
-    def stop_bagging(self):
+    def stop_bagging(self, bag_node_name):
         """
         Stops ROS bagging
         :return:
         :rtype:
         """
-        cmd = "rosnode kill /" + ROS_BAGGING_NODE_NAME
+        cmd = "rosnode kill /" + bag_node_name
         print "cmd", cmd
         os.system(cmd)
 
@@ -482,66 +518,83 @@ class FusionServer(object):
         :rtype: string
 
         """
+        print "[DEBUG] Start full capture."
+
+        start_pose_name = "test_4"
         # pose_list = ["fusion_left3", "fusion_left1", "fusion_3", "fusion_right1", "fusion_right3"]
         # pose_list = ["fusion_left1", "fusion_left5", "fusion_3", "fusion_right5", "fusion_right1"]
-        pose_list = ["pick_8", "fusion_1", "fusion_2", "pick_8"]
+        # pose_list = ["view_right", "middle_fusion", "view_left"]
+
+        # For small obj
+        # pose_list = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
+        pose_list = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
 
         # Step1: move robot to home
         print "[INFO] Move robot to home"
-        self.robot_move.set_vel_scaling(0.4)
-        # self.robot_move.move_to_pose_named("home")
-        self.robot_move.move_to_pose_named("cali_4")
-        self.robot_move.move_to_pose_named(pose_list[1])
-        self.robot_move.move_to_pose_named(pose_list[0])
+        self.robot_move.set_vel_scaling(0.5)
+        self.robot_move.move_to_pose_named(start_pose_name)
+        self.robot_move.move_to_pose_named(pose_list[0])  # FIXME
 
         # Step2: start bagging for far out data collection
         print "[INFO] Start bagging"
         path_to_bagfile = self.get_bag_folder()
         print "[INFO] Path to bag file: %s" % path_to_bagfile
-        self.start_bagging(path_to_bagfile)
+        self.start_bagging(path_to_bagfile, "bag_node")
 
         # Step3: moving robot through regular scan poses
         print "[INFO] Moving robot through poses"
         self.robot_move.set_vel_scaling(0.15)
 
-        # for pose in pose_list:
-        #     self.robot_move.move_to_pose_named(pose)
-
         # move to poses continue
-        self.robot_move.move_to_poses_named(pose_list)
+        self.robot_move.move_to_poses_named(pose_list)  # FIXME
 
         # Step4: stop bagging
-        self.stop_bagging()
-
-        # Optional step: move robot through close up poses
-        if use_close_up_poses:
-            # move to first pose before we start bagging
-            print "[INFO] Moving robot through close up scan poses"
-            self.robot_move.move_to_pose_named("home")
-
-            # start bagging
-            path_to_bagfile = self.get_bag_folder("raw_close_up")
-            print "[INFO] Path to close up poses bag file: %s" % path_to_bagfile
-            self.start_bagging(path_to_bagfile)
-
-            # move the robot through close up poses
-            pose_list = ["test_1", "test_2", "test_3", "test_4"]
-            for pose in pose_list:
-                self.robot_move.move_to_pose_named(pose)
-
-            self.stop_bagging()
-
-        # Step5: move back home
-        print "[INFO] Move robot back to home"
-        self.robot_move.set_vel_scaling(0.4)
-        self.robot_move.move_to_pose_named("cali_4")
+        self.stop_bagging("bag_node")
 
         # wait for bagfile saving
         rospy.sleep(1.0)
 
-        return path_to_bagfile
+        # Optional step: move robot through close up poses
+        path_to_close_up_bagfile = os.path.dirname(path_to_bagfile) + "/close_up.bag"
+        if use_close_up_poses:
+            print "[DEBUG] Start close up capture."
+            self.robot_move.set_vel_scaling(0.5)
 
-    def extract_data_from_rosbag(self, bag_filepath, images_dir=None, rgb_only=False):
+            pose_list = ["capture_l1", "capture_m1", "capture_r1", "capture_r2", "capture_m2", "capture_l2"]
+
+            # move to first pose before we start bagging
+            print "[INFO] Moving robot through close up scan poses"
+            self.robot_move.move_to_pose_named(start_pose_name)
+            self.robot_move.move_to_pose_named(pose_list[0])
+
+            # start bagging
+            print "[INFO] Path to close up poses bag file: %s" % path_to_close_up_bagfile
+            self.start_bagging(path_to_close_up_bagfile, "bag_node")
+
+            self.robot_move.set_vel_scaling(0.15)
+
+            # move the robot through close up poses
+            for pose in pose_list:
+                self.robot_move.move_to_pose_named(pose)
+                stamp = [pose, rospy.Time.now().to_nsec()]
+                print "[DEBUG] Move to pose:%s done, time_stamp:%d" % (pose, rospy.Time.now().to_nsec())
+                self.stamp_ls.append(stamp)
+            # self.robot_move.move_to_poses_named(pose_list)
+
+            self.stop_bagging("bag_node")
+
+        # Step5: move back home
+        print "[INFO] Move robot back to home"
+        self.robot_move.set_vel_scaling(0.4)
+        self.robot_move.move_to_pose_named(start_pose_name)
+
+        # wait for bagfile saving
+        rospy.sleep(1.0)
+        # exit()
+
+        return path_to_bagfile, path_to_close_up_bagfile
+
+    def extract_data_from_rosbag(self, bag_filepath, keep_raw=True, extract_close_up=False, images_dir=None, stamp_ls=None, rgb_only=False):
         """
         This wraps the ImageCapture calls to load and process the raw rosbags, to prepare for fusion.
 
@@ -562,12 +615,17 @@ class FusionServer(object):
             log_dir = os.path.dirname(os.path.dirname(bag_filepath))
             processed_dir = os.path.join(log_dir, 'processed')
             images_dir = os.path.join(processed_dir, 'images')
+            if extract_close_up:
+                images_dir = os.path.join(processed_dir, 'images_close_up')
 
         print "Using images_dir %s" % images_dir
         image_capture = ImageCapture(rgb_topic, depth_topic, camera_info_topic,
                                      self.config['camera_frame'], self.config['world_frame'])
         image_capture.load_ros_bag(bag_filepath)
-        image_capture.process_ros_bag(image_capture.ros_bag, images_dir, rgb_only=rgb_only)
+        image_capture.process_ros_bag(image_capture.ros_bag, images_dir, stamp_ls=stamp_ls, rgb_only=rgb_only)
+
+        if not keep_raw:
+            os.remove(bag_filepath)
 
         rospy.loginfo("Finished writing extracted images to disk")
 
@@ -642,7 +700,7 @@ class FusionServer(object):
         pose_yaml = os.path.join(images_dir_full_path, "pose_data.yaml")
         pose_dict = utils.getDictFromYamlFilename(pose_yaml)
 
-        images_dir_temp_path = os.path.join(os.path.dirname(images_dir_full_path), 'images_downsampled')
+        images_dir_temp_path = images_dir_full_path + "_downsampled"
         if not os.path.isdir(images_dir_temp_path):
             os.makedirs(images_dir_temp_path)
 
@@ -714,7 +772,10 @@ class FusionServer(object):
         print "Previously: %d images" % num_original_images
         print "After: %d images" % num_kept_images
 
-        return images_dir_temp_path
+        if keep_raw:
+            return images_dir_temp_path
+        else:
+            return images_dir_full_path
 
     def tsdf_fusion_py(self, images_dir):
         print "\n[INFO] Formatting data for tsdf fusion"
@@ -767,10 +828,11 @@ class FusionServer(object):
 
         print "[INFO] Tsdf fusion and post processing took: %.3fs" % (time.time()-start)
 
-    def create_point_cloud(self, images_dir):
+    def create_point_cloud(self, images_dir, save_dir=''):
+        print "[INFO] Create point cloud for images dir:", images_dir
         creat_cloud_exe_path = self.config['post_process_exe_path'] + '/create_point_cloud'
 
-        pcd_save_dir = os.path.dirname(images_dir) + '/clouds'
+        pcd_save_dir = os.path.join(os.path.dirname(images_dir), save_dir)
         if not os.path.exists(pcd_save_dir):
             os.mkdir(pcd_save_dir)
 
@@ -785,7 +847,8 @@ class FusionServer(object):
         for image in imagels:
             dirname = os.path.dirname(image)
             basename = os.path.basename(image)
-            prefix = basename.split("_")[0]
+            suffix = basename.split("_")[-1]
+            prefix = basename[:-len(suffix)-1]
 
             # color_img = os.path.join(dirname, prefix + '_rgb.png')
             color_img = os.path.join(dirname, prefix + '_rgb.jpg')
@@ -803,6 +866,11 @@ class FusionServer(object):
             print "Creat cloud:", cloud_pcd
             # print "creat_cloud_cmd", creat_cloud_cmd
             # os.system(creat_cloud_cmd)
+
+            if not os.path.exists(camera_pose):
+                print "[DEBUG] Format data for create point cloud."
+                self.format_data_for_tsdf(images_dir)
+
             if os.path.exists(color_img) and os.path.exists(camera_pose):  # check
                 p = multiprocessing.Process(target=worker, args=(creat_cloud_cmd,))
                 p.start()
@@ -813,35 +881,41 @@ class FusionServer(object):
         while True:  # wait for all work done
             cloudls = glob.glob(os.path.join(pcd_save_dir, '*pcd'))
             if work_num == len(cloudls):
+                print "[INFO] Point clouds saved to:", pcd_save_dir
                 break
 
-    def handle_capture_scene_and_fuse(self, bag_filepath=None):
+    def handle_capture_scene_and_fuse(self, bag_filepath=None, close_up_bag_filepath=None):
         """
         NOTE: The coordinate of tsdf is camera's world frame, we describe camera's pose use base_link->camera
         so the tsdf's coordinate is robot's "base_link"
         """
-
+        start = time.time()
         print "\n[INFO] Handling capture_scene_and_fuse"
 
         print "\n[INFO] Start capture scene"
         if bag_filepath is None:
-            bag_filepath = self.capture_scene(self.config['use_close_up_poses'])
+            bag_filepath, close_up_bag_filepath = self.capture_scene(self.config['use_close_up_poses'])
 
         print "\n[INFO] Extract images from bag"
-        images_dir = self.extract_data_from_rosbag(bag_filepath)
+        images_dir = self.extract_data_from_rosbag(bag_filepath, keep_raw=self.config['keep_raw_bag'])
         data_dir = os.path.dirname(os.path.dirname(images_dir))
 
         print "\n[INFO] Running tsdf fusion"
-        self.tsdf_fusion_cpp(images_dir)
-
-        print "\n[INFO] Create point cloud"
-        # self.create_point_cloud(images_dir)
-
-        print "\n[INFO] Downsampling image folder"
-        downsampled_images_dir = self.downsample_by_pose_difference_threshold(images_dir, 0.03, 5)
-
-        print "\n[INFO] Running tsdf fusion for downsampled images"
+        downsampled_images_dir = self.downsample_by_pose_difference_threshold(images_dir, 0.01, 5, keep_raw=self.config['keep_raw_images'])
+        self.tsdf_fusion_cpp(downsampled_images_dir)
         self.tsdf_fusion_py(downsampled_images_dir)
+
+        if self.config['use_close_up_poses']:
+            print "\n[INFO] Extract close_up images from bag"
+            close_up_images_dir = self.extract_data_from_rosbag(close_up_bag_filepath, keep_raw=self.config['keep_raw_bag'],
+                                                                extract_close_up=True, stamp_ls=self.stamp_ls)
+
+            print "\n[INFO] Create point cloud"
+            close_up_downsampled_images_dir = self.downsample_by_pose_difference_threshold(close_up_images_dir, 0.01, 5, keep_raw=self.config['keep_raw_images'])
+            self.create_point_cloud(close_up_downsampled_images_dir, save_dir="clouds")
+
+            stamped_img_output_dir = os.path.join(os.path.dirname(close_up_images_dir), "images_stamped")
+            self.create_point_cloud(stamped_img_output_dir, save_dir="images_stamped")
 
         print "\n[INFO] Handle capture scene and fuse finished!"
         print "\n[INFO] Data saved to dir: %s" % data_dir
@@ -850,6 +924,8 @@ class FusionServer(object):
         plyls = glob.glob(os.path.join(data_dir, 'processed', '*.ply'))
         if len(plyls) == 0:
             raise Exception("Tsdf fusion failed, please check the problem!")
+
+        print "\n[INFO] Fusion took: %ds" % (time.time()-start)
 
 
 if __name__ == "__main__":
@@ -862,6 +938,10 @@ if __name__ == "__main__":
     # fs.stop_bagging()
 
     # #############    test extract data    ############
+    # close_up_bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-13-20-06-02/raw/close_up.bag"
+    # close_up_images_dir = fs.extract_data_from_rosbag(close_up_bag_filepath, keep_raw=True, extract_close_up=True)
+    # exit()
+
     # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-10-27-15-57-08/raw/fusion_2019-10-27-15-57-08.bag"
     # images_dir = fs.extract_data_from_rosbag(bag_filepath, rgb_only=False)
 
@@ -869,13 +949,9 @@ if __name__ == "__main__":
     # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-21-35-13/processed/images"
     # data_cnt = fs.format_data_for_tsdf(images_dir)
 
-    # #############    test tsdf fusion    ##############
-    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-21-35-13/processed/images_downsampled"
-    # fs.tsdf_fusion_py(images_dir)
-    # exit()
-
-    # fs.tsdf_fusion_cpp(images_dir)
-    # print(images_dir)
+    # #############    test downsample    ###############
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-13-16-39-45/processed/images_close_up"
+    # fs.downsample_by_pose_difference_threshold(images_dir)
     # exit()
 
     # ###########    test extrac normals    #############
@@ -885,17 +961,27 @@ if __name__ == "__main__":
     # print "[INFO] Extract cmd:", extract_cmd
     # os.system(extract_cmd)
 
+    # #############    test tsdf fusion    ##############
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-13-20-06-02/processed/images"
+    # # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-13-20-06-02/processed/images_close_up"
+    # fs.tsdf_fusion_py(images_dir)
+    # exit()
+
+    # fs.tsdf_fusion_cpp(images_dir)
+    # print(images_dir)
+    # exit()
+
     # #############    test cloud create    ##############
-    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-01-22-22-05/processed/images_downsampled"
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-14-20-09-45/processed/images_close_up"
+    # fs.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
     # fs.create_point_cloud(images_dir)
     # exit()
 
-    # #############    test downsample    ###############
-    # fs.downsample_by_pose_difference_threshold(images_dir)
-
     # ###########    test reload bag file    ############
-    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2019-12-29-16-57-18/raw/fusion_2019-12-29-16-57-18.bag"
-    # fs.handle_capture_scene_and_fuse(bag_filepath)
+    # bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-13-20-06-02/raw/fusion_2020-01-13-20-06-02.bag"
+    # close_up_bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-13-20-06-02/raw/close_up.bag"
+    # fs.handle_capture_scene_and_fuse(bag_filepath, close_up_bag_filepath)
+    # exit()
 
     # #################    test all    ##################
     fs.handle_capture_scene_and_fuse()

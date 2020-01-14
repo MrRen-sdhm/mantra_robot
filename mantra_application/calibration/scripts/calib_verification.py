@@ -300,7 +300,16 @@ class MantraPickup:
 
       group.set_start_state_to_current_state()
       group.set_pose_target(pose_goal)
-      group.go()
+
+      while not rospy.is_shutdown():
+        traj = group.plan()
+        traj_len = len(traj.joint_trajectory.points)
+        print "[INFO] Traj len:", traj_len
+        if traj_len < 40:
+          plan = group.execute(traj, wait=True)
+          if plan:
+            break
+      # group.go()
 
       print "Step1:", pose_goal.pose
 
@@ -363,7 +372,7 @@ if __name__ == "__main__":
 
     mantra_pickup = MantraPickup()
 
-    mantra_pickup.group.set_named_target('cali_4')
+    mantra_pickup.group.set_named_target('test_4')
     mantra_pickup.group.go()
 
     # 测试标记坐标转换，显示标记位置

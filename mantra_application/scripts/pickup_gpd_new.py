@@ -109,7 +109,7 @@ class MantraPickup:
         arm.set_goal_position_tolerance(0.001)
         arm.set_goal_orientation_tolerance(0.01)
 
-        arm.set_max_velocity_scaling_factor(0.4)
+        arm.set_max_velocity_scaling_factor(0.5)
         arm.set_max_acceleration_scaling_factor(0.5)
 
         arm.set_planning_time(0.08) # 规划时间限制为2秒
@@ -195,7 +195,7 @@ class MantraPickup:
       # 发布场景物体颜色设置
       self.scene_pub.publish(p)
 
-    def add_box(self, timeout=0.5):
+    def add_box(self, timeout=1.0):
       scene = self.scene
 
       # 等待场景准备就绪
@@ -678,7 +678,7 @@ if __name__ == "__main__":
 
     mantra_pickup.add_box()
 
-    mantra_pickup.group.set_named_target('pick_8')
+    mantra_pickup.group.set_named_target('pick_1')
     mantra_pickup.group.go()
     mantra_pickup.update_cloud()
 
@@ -701,17 +701,17 @@ if __name__ == "__main__":
       print "\033[1;36m%s\033[0m" % "[INFO] Bring up the object..."
       # mantra_pickup.shift_pose_target()
       mantra_pickup.cartesian_move(dir=-1, scale=0.5)
-      mantra_pickup.group.set_named_target('middle_1')
+      mantra_pickup.group.set_named_target('middle_right_1')
       mantra_pickup.group.go()
 
-      mantra_pickup.group.set_named_target('place_1')
+      mantra_pickup.group.set_named_target('place_right_1')
       mantra_pickup.group.go()
 
       print "\033[1;36m%s\033[0m" % "[INFO] Open the gripper..."
       mantra_pickup.hand_control_client("Open")
       time.sleep(0.5)
 
-      mantra_pickup.group.set_named_target('pick_8')
+      mantra_pickup.group.set_named_target('pick_1')
       mantra_pickup.group.go()
       mantra_pickup.update_cloud()
 

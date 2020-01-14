@@ -27,8 +27,8 @@ class image_converter:
             print e
 
         # 显示Opencv格式的图像
-        # cv2.imshow("Image Color", cv_image_color)
-        # cv2.waitKey(3)
+        cv2.imshow("Image Color", cv_image_color)
+        cv2.waitKey(3)
 
     def depth_callback(self,data):
         global cv_image_depth
@@ -41,8 +41,8 @@ class image_converter:
             print e
 
         # 显示Opencv格式的图像
-        cv2.imshow("Image Depth", cv_image_depth)
-        cv2.waitKey(3)
+        # cv2.imshow("Image Depth", cv_image_depth)
+        # cv2.waitKey(3)
 
 if __name__ == '__main__':
     try:

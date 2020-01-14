@@ -6,7 +6,9 @@
     <!-- start the Realsense and aruco tracker-->
     <include file="$(find mantra_application)/calibration/launch/aruco_tracker.launch" >
         <arg name="use_rviz" value="false" />
-        <arg name="pub_tf" value="True" />
+        
+        <!-- false: if use ee_link2camera_color_optical_frame_broadcaster true: when get the tf from ee_link to camera_link-->
+        <arg name="pub_tf" value="false" />
     </include>
 
     <!-- start the robot-->
