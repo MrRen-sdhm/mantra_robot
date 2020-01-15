@@ -239,6 +239,15 @@
         <joint name="joint6" value="-1.799"/>
         <joint name="joint7" value="-2.312"/>
     </group_state>
+    <group_state name="fusion_1_rot" group="arm">
+        <joint name="joint1" value="-1.424"/>
+        <joint name="joint2" value="-0.841"/>
+        <joint name="joint3" value="1.044"/>
+        <joint name="joint4" value="-0.791"/>
+        <joint name="joint5" value="0.164"/>
+        <joint name="joint6" value="-1.799"/>
+        <joint name="joint7" value="-1.265"/>
+    </group_state>
     <group_state name="fusion_2" group="arm">
         <joint name="joint1" value="0.018"/>
         <joint name="joint2" value="-0.358"/>
@@ -247,6 +256,24 @@
         <joint name="joint5" value="0.011"/>
         <joint name="joint6" value="-1.601"/>
         <joint name="joint7" value="-1.562"/>
+    </group_state>
+    <group_state name="fusion_3" group="arm">
+        <joint name="joint1" value="1.424"/>
+        <joint name="joint2" value="-0.841"/>
+        <joint name="joint3" value="-1.044"/>
+        <joint name="joint4" value="-0.791"/>
+        <joint name="joint5" value="-0.164"/>
+        <joint name="joint6" value="-1.799"/>
+        <joint name="joint7" value="-2.312"/>
+    </group_state>
+    <group_state name="fusion_3_rot" group="arm">
+        <joint name="joint1" value="1.424"/>
+        <joint name="joint2" value="-0.841"/>
+        <joint name="joint3" value="-1.044"/>
+        <joint name="joint4" value="-0.791"/>
+        <joint name="joint5" value="-0.164"/>
+        <joint name="joint6" value="-1.799"/>
+        <joint name="joint7" value="-3.359"/>
     </group_state>
     <group_state name="fusion_new_left_bak" group="arm">
         <joint name="joint1" value="-1.110"/>
@@ -282,7 +309,7 @@
         <joint name="joint4" value="-0.822"/>
         <joint name="joint5" value="0.031"/>
         <joint name="joint6" value="-1.930"/>
-        <joint name="joint7" value="0.614"/>
+        <joint name="joint7" value="0.514"/>
     </group_state>
     <group_state name="fusion_middle_left" group="arm">
         <joint name="joint1" value="-0.096"/>
@@ -336,7 +363,7 @@
         <joint name="joint4" value="-0.808"/>
         <joint name="joint5" value="0.174"/>
         <joint name="joint6" value="-1.895"/>
-        <joint name="joint7" value="2.534"/>
+        <joint name="joint7" value="2.634"/>
     </group_state>
     <group_state name="capture_l1" group="arm">
         <joint name="joint1" value="-0.897"/>

@@ -686,7 +686,7 @@ if __name__ == "__main__":
 
     # mantra_pickup.go_to_pose_manual()
 
-    for i in range(10):
+    for i in range(12):
       print "\033[1;36m%s\033[0m" % "[INFO] Plan a traj connect Top and Approach..."
       # mantra_pickup.go_to_pose_goal()
       mantra_pickup.go_to_pose_goal_service()

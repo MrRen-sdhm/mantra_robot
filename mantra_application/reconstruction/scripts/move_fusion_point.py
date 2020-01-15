@@ -368,8 +368,13 @@ if __name__ == "__main__":
     # points = ["pick_8", "fusion_1", "fusion_2", "pick_8"]
     # points = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
 
-    points = ["capture_l1", "capture_m1", "capture_r1", "capture_r2", "capture_m2", "capture_l2", "capture_l3", "capture_m3", "capture_r3"]
+    points = ["fusion_1", "fusion_2", "fusion_3"]
+    # near
+    # points = ["capture_l1", "capture_m1", "capture_r1", "capture_r2", "capture_m2", "capture_l2", "capture_l3", "capture_m3", "capture_r3"]
+    # close up
     # points = ["capture_l1", "capture_r1"]
+
+    
     
     mantra_pickup.group.set_named_target("test_4")
     plan = mantra_pickup.group.go()

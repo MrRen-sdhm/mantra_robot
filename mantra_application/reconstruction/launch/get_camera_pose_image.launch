@@ -4,6 +4,7 @@
         <arg name="width" value="640" />
         <arg name="height" value="480" />
         <arg name="json_file_path" value="$(find realsense2_viewer)/config/D435i-fusion-new.json"/>
+        <arg name="clip_distance"  value="0.6"/>
     </include>
 
     <!-- <arg name="camera_info_file" default="845112071101_camera_info.yaml" /> -->

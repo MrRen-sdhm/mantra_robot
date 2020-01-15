@@ -368,14 +368,18 @@ class FusionServer(object):
         self.config['world_frame'] = "base_link"
         self.config['camera_frame'] = "camera_color_optical_frame"
         self.config['sleep_time_before_bagging'] = 2.0
-        self.config['bag_folder'] = "data"
+        # self.config['bag_folder'] = "data"
+        self.config['bag_folder'] = "data_new/muti_object"
+
         self.config['keep_raw_bag'] = True
         self.config['keep_raw_images'] = False
 
         # if use close up poses to create point clouds
-        self.config['use_close_up_poses'] = True
+        self.config['use_close_up_poses'] = False  # Mark
+        self.config['use_close_up_poses'] = True  # Mark
 
         self.config['fusion_voxel_size'] = 0.002
+        time.sleep(5)
 
         # self.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]  # workspace to create one view cloud [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
         # self.config['work_space'] = [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]  # workspace to create one view cloud [0.4, 2.0, -0.4, 0.4, -0.01, 1.0]
@@ -388,7 +392,7 @@ class FusionServer(object):
         # self.config['voxel_grid_origin_z'] = -0.2
 
         # new
-        self.config['work_space'] = [0.2, 0.8, -0.3, 0.3, -0.3, 0.5]  # workspace for fusion_py and create one view cloud
+        self.config['work_space'] = [0.2, 0.8, -0.3, 0.3, 0.1, 0.5]  # workspace for fusion_py and create one view cloud
         self.config['min_z'] = -0.5  # min z to remove plane when extract normals
         self.config['voxel_grid_dim_x'] = 300
         self.config['voxel_grid_dim_y'] = 500
@@ -525,9 +529,12 @@ class FusionServer(object):
         # pose_list = ["fusion_left1", "fusion_left5", "fusion_3", "fusion_right5", "fusion_right1"]
         # pose_list = ["view_right", "middle_fusion", "view_left"]
 
-        # For small obj
-        # pose_list = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
-        pose_list = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
+        if not self.config['use_close_up_poses']:
+            # For full table
+            pose_list = ["fusion_1", "fusion_1_rot", "fusion_2", "fusion_3_rot", "fusion_3"]
+        else:
+            # For high accuracy
+            pose_list = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
 
         # Step1: move robot to home
         print "[INFO] Move robot to home"
@@ -972,9 +979,9 @@ if __name__ == "__main__":
     # exit()
 
     # #############    test cloud create    ##############
-    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-14-20-09-45/processed/images_close_up"
+    # images_dir = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-15-15-46-44/processed/images"
     # fs.config['work_space'] = [-4.0, 4.0, -4.0, 4.0, -4.0, 4.0]
-    # fs.create_point_cloud(images_dir)
+    # fs.create_point_cloud(images_dir, save_dir="clouds")
     # exit()
 
     # ###########    test reload bag file    ############
