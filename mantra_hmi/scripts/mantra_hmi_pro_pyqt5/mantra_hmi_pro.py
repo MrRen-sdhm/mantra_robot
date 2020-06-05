@@ -1255,8 +1255,8 @@ if __name__ == "__main__":
     thread_move.back_home_signal.connect(window.back_home_enable)  # 设置槽函数
     thread_move.start()  # 启动关节运动线程
 
-    thread_window = WindowThread(window)
-    thread_window.start()  # 启动界面刷新线程
+    # thread_window = WindowThread(window)
+    # thread_window.start()  # 启动界面刷新线程
 
     window.show()  # 界面显示
 
