@@ -5,7 +5,7 @@
     <arg name="rviz" default="true" />
     <arg name="show_pose" default="false" />
     <arg name="show_traj" default="false" />
-    <arg name="hmi" default="true" />
+    <arg name="hmi" default="false" />  <!--FIXME-->
 
     <!-- robot_ip: IP-address of the robot's socket-messaging server -->
     <!-- <arg name="robot_ip" doc="IP of the controller" /> -->

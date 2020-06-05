@@ -145,7 +145,7 @@ class MoveGroup(object):
         group = self.group
         group.set_start_state_to_current_state()
         group.set_named_target(pose_name)
-        plan = group.go()
+        plan = group.go(wait=True) # 这里设置成阻塞的
         return plan
 
     def go_to_pose_shift(self, axis, value):

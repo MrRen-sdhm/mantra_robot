@@ -18,7 +18,7 @@ This repository contains the following ROS packages of Mantra manipulator：
 
   ​	4. Communicate with HMI through ROS Topic
 
-- **mantra_hmi** -- Mantra HMI, used to control thr mantra throug GUI.
+- **mantra_hmi** -- Mantra HMI, used to control the mantra throug GUI.
 
   It is written in Python and the UI of it is written in PyQt5. It communicates with driver through ROS Topic, and use Moveit！to plan motion path.
 

@@ -267,7 +267,7 @@ Visualization Manager:
         Show Robot Collision: false
         Show Robot Visual: true
       Value: true
-      Velocity_Scaling_Factor: 0.5
+      Velocity_Scaling_Factor: 1
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -284,7 +284,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 2.20434189
+      Distance: 3.468575
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
