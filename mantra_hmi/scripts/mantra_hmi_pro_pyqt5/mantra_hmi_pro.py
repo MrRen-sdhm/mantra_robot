@@ -33,36 +33,33 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget
 from PyQt5.QtGui import QIcon
 
+"""
+python中内置数据类型（int、list、dict）的操作都是原子的，多线程读写不需要加锁
+"""
 # 互斥锁
 command_arr_mutex = QMutex()
-vel_scaling_mutex = QMutex()
-moveJ_mutex = QMutex()
-moveL_mutex = QMutex()
-back_home_mutex = QMutex()
-change_vel_mutex = QMutex()
-
 
 # 发送给Mantra_driver的控制指令
-command_arr = Int32MultiArray()
+command_arr = Int32MultiArray()  # ROS中自定义的数据类型，保险起见，对其读写加锁
 command_cnt = 4
-command_arr.data = [0]*command_cnt  # 0:使能 1:复位 2:置零 3:急停, PubThread及主线程按钮函数均会写,须加锁
+command_arr.data = [0]*command_cnt  # 0:使能 1:复位 2:置零 3:急停, PubThread及主线程按钮函数均会写，须加锁
 
 joint_ctl_arr = [0]*7 # 关节控制标志位, 可弃用
 
-vel_scaling = 0.0  # 速度调整比例, 主线程按钮函数均会写,MoveThread线程中传入到服务函数set_vel_scaling中,保险起见须加锁
-movej_rad_deg_flag = 1  # 角度显示单位切换标志, 默认为角度, 仅主线程按钮函数会写,其他线程只读
-movel_rad_deg_flag = 1  # 角度显示单位切换标志, 默认为角度, 仅主线程按钮函数会写,其他线程只读
-movel_m_cm_flag = 1  # 距离显示单位切换标志, 默认为m, 仅主线程按钮函数会写,其他线程只读
-curr_joints = [0.0]*7  # 当前关节角, 仅SubThread线程写,其他线程只读
-goal_joints = [0.0]*7  # 目标关节角, 仅主线程按钮函数写,其他线程只读
-curr_pose = [0.0]*7  # 当前位置, 仅SubThread线程写,其他线程只读
-movel_axis = None  # MoveL 移动轴, MoveThread线程中传入到服务函数set_vel_scaling中,保险起见须加锁,TODO:目前未加
-movel_value = None  # MoveL 移动值, MoveThread线程中传入到服务函数set_vel_scaling中,保险起见须加锁,TODO:目前未加
+vel_scaling = 0.0  # 速度调整比例
+movej_rad_deg_flag = 1  # 角度显示单位切换标志, 默认为角度
+movel_rad_deg_flag = 1  # 角度显示单位切换标志, 默认为角度
+movel_m_cm_flag = 1  # 距离显示单位切换标志, 默认为m
+curr_joints = [0.0]*7  # 当前关节角
+goal_joints = [0.0]*7  # 目标关节角
+curr_pose = [0.0]*7  # 当前位置
+movel_axis = None  # MoveL 移动轴
+movel_value = None  # MoveL 移动值
 
-moveJ = False  # 关节运动标志, MoveThread及主线程按钮函数均会写,须加锁
-moveL = False  # 线性运动标志, MoveThread及主线程按钮函数均会写,须加锁
-back_home_flag = False  # 回零点标志, MoveThread及主线程按钮函数均会写,须加锁
-change_vel = False  # 调整速度标志, MoveThread及主线程按钮函数均会写,须加锁
+moveJ = False  # 关节运动标志
+moveL = False  # 线性运动标志
+back_home_flag = False  # 回零点标志
+change_vel = False  # 调整速度标志
 
 
 class PubThread(QtCore.QThread):
@@ -75,7 +72,7 @@ class PubThread(QtCore.QThread):
         r = rospy.Rate(50)  # 50hz
         while not rospy.is_shutdown():
             # 加锁, 发送/置位command_arr过程中不允许其他线程修改
-            command_arr_mutex.lock()  # TODO:验证锁的有效性
+            command_arr_mutex.lock()
 
             try:
                 self.pub.publish(command_arr)
@@ -83,8 +80,6 @@ class PubThread(QtCore.QThread):
                 print ("Stop publish.")
                 break
             # print(command_arr.data)
-            # if command_arr.data[1] == 1:
-            #     print(command_arr.data)
 
             # 消息已发送, 置位
             command_arr.data = [0]*command_cnt
@@ -149,39 +144,23 @@ class MoveThread(QtCore.QThread):
             if moveJ:  # 关节运动
                 move_to_joint_states(goal_joints)
                 print("[INFO] Go to joint state...")
-                # 加锁
-                # moveJ_mutex.lock()
                 moveJ = False  # 标志复位
-                # moveJ_mutex.unlock()
 
             if moveL:  # 线性运动
                 move_to_pose_shift(movel_axis, movel_value)
                 print("[INFO] Go to pose shift...")
-                # 加锁
-                # moveL_mutex.lock()
                 moveL = False  # 标志复位
-                # moveL_mutex.unlock()
 
-            if back_home_flag:  # 回零点 FIXME:此线程会写back_home变量,主线程也会写,需要加锁
+            if back_home_flag:  # 回零点
                 move_to_pose_named('home')
                 # 回到零点函数执行完成，无论返回成功与否, 发信号使能回back_home按钮
                 self.back_home_signal.emit()
-                # 加锁
-                back_home_mutex.lock()
                 back_home_flag = False  # 标志复位
-                back_home_mutex.unlock()
 
             if change_vel:  # 调整速度
-                # 加锁
-                vel_scaling_mutex.lock()
                 set_vel_scaling(vel_scaling)
-                vel_scaling_mutex.unlock()
                 print ("[INFO] Change speed...")
-
-                # 加锁
-                change_vel_mutex.lock()
                 change_vel = False  # 标志复位
-                change_vel_mutex.unlock()
 
             r.sleep()
 
@@ -563,7 +542,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
 
     # 使能按钮
     def power(self):
-        # 尝试获得锁,写command_arr中的数据
+        # 尝试获得锁，写command_arr中的数据
         command_arr_mutex.lock()
         command_arr.data[0] = 1  # 使能指令位置一
         command_arr_mutex.unlock()
@@ -591,7 +570,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
     def emergency_stop():
         print("[INFO] Emergency stop.")
 
-        # 尝试获得锁,写command_arr中的数据
+        # 尝试获得锁，写command_arr中的数据
         command_arr_mutex.lock()
         command_arr.data[3] = 1  # 急停指令位置一
         command_arr_mutex.unlock()
@@ -639,10 +618,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         self.backHomeButton.setEnabled(False)  # 禁用此按钮直到运动完成
         self.horizontalSlider.setEnabled(False)  # 禁用速度设置滑块
         print("[INFO] Arm back home request.")
-        # 加锁
-        back_home_mutex.lock()
         back_home_flag = True
-        back_home_mutex.unlock()
 
     def back_home_enable(self):  # 恢复被禁用的按钮
         self.backHomeButton.setEnabled(True)
@@ -674,14 +650,8 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
     def slide_moved(self):
         global change_vel, vel_scaling
         value = self.horizontalSlider.value()
-        # 加锁
-        change_vel_mutex.lock()
         change_vel = True  # 速度调整标志置位
-        change_vel_mutex.unlock()
-        #加锁
-        vel_scaling_mutex.lock()
-        vel_scaling = float(value) / 100.0  # 更新当前速度比例
-        vel_scaling_mutex.unlock()        
+        vel_scaling = float(value) / 100.0  # 更新当前速度比例    
         self.label_8.setText("Speed {:d}%".format(value))
 
     def movej_step_change(self):
@@ -712,10 +682,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 0
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] -= self.joint_step  # 操作当前关节目标位置
 
@@ -729,10 +696,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 0
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] += self.joint_step  # 操作当前关节目标位置
             pass
@@ -745,10 +709,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 1
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] -= self.joint_step  # 操作当前关节目标位置
 
@@ -762,10 +723,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 1
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] += self.joint_step  # 操作当前关节目标位置
 
@@ -777,10 +735,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 2
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] -= self.joint_step  # 操作当前关节目标位置
 
@@ -794,10 +749,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 2
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] += self.joint_step  # 操作当前关节目标位置
 
@@ -809,10 +761,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 3
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] -= self.joint_step  # 操作当前关节目标位置
 
@@ -826,10 +775,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 3
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] += self.joint_step  # 操作当前关节目标位置
 
@@ -841,10 +787,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 4
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] -= self.joint_step  # 操作当前关节目标位置
 
@@ -858,10 +801,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 4
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] += self.joint_step  # 操作当前关节目标位置
 
@@ -873,10 +813,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 5
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] -= self.joint_step  # 操作当前关节目标位置
 
@@ -890,10 +827,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 5
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] += self.joint_step  # 操作当前关节目标位置
 
@@ -905,10 +839,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 6
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] -= self.joint_step  # 操作当前关节目标位置
 
@@ -922,10 +853,7 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         index = 6
         global moveJ, goal_joints
         if not moveJ:
-            # 加锁
-            # moveJ_mutex.lock()
             moveJ = True
-            # moveJ_mutex.unlock()
             goal_joints = list(curr_joints)  # copy curr_joints
             goal_joints[index] += self.joint_step  # 操作当前关节目标位置
 
@@ -936,120 +864,84 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
     def x_minus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 0
             movel_value = -self.xyz_step
 
     def x_plus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 0
             movel_value = self.xyz_step
 
     def y_minus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 1
             movel_value = -self.xyz_step
 
     def y_plus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 1
             movel_value = self.xyz_step
 
     def z_minus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 2
             movel_value = -self.xyz_step
 
     def z_plus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 2
             movel_value = self.xyz_step
 
     def roll_minus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 3
             movel_value = -self.rpy_step
 
     def roll_plus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 3
             movel_value = self.rpy_step
 
     def pitch_minus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 4
             movel_value = -self.rpy_step
 
     def pitch_plus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 4
             movel_value = self.rpy_step
 
     def yaw_minus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 5
             movel_value = -self.rpy_step
 
     def yaw_plus(self):
         global moveL, movel_axis, movel_value
         if not moveL:
-            # 加锁
-            # moveL_mutex.lock()
             moveL = True
-            # moveL_mutex.unlock()
             movel_axis = 5
             movel_value = self.rpy_step
     
