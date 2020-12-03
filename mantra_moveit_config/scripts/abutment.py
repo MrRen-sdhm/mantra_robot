@@ -290,18 +290,26 @@ def main():
   try:
     tutorial = MoveGroupPythonIntefaceTutorial()
 
-    # tutorial.go_to_pose_named("point_1")
-    # tutorial.go_to_pose_named("point_2")
-    # tutorial.go_to_pose_named("point_3")
-    tutorial.go_to_pose_named("point_2.1")
-    # tutorial.go_to_pose_named("point_5")
-    tutorial.go_to_pose_named("point_2.2")
-    tutorial.move_cart_eez(0.08)
-    tutorial.change_ee_joint_state(pi/2)
-    tutorial.change_ee_joint_state(0)
-    rospy.sleep(1)
-    tutorial.go_to_pose_named("point_2.2")
-    tutorial.go_to_pose_named("point_2.1")
+    # rospy.sleep(5)
+
+    tutorial.go_to_pose_named("rescon_right")
+    rospy.sleep(2)
+    tutorial.go_to_pose_named("rescon_mid")
+    rospy.sleep(2)
+    tutorial.go_to_pose_named("rescon_left")
+
+    # # tutorial.go_to_pose_named("point_1")
+    # # tutorial.go_to_pose_named("point_2")
+    # # tutorial.go_to_pose_named("point_3")
+    # tutorial.go_to_pose_named("point_2.1")
+    # # tutorial.go_to_pose_named("point_5")
+    # tutorial.go_to_pose_named("point_2.2")
+    # tutorial.move_cart_eez(0.08)
+    # tutorial.change_ee_joint_state(pi/2)
+    # tutorial.change_ee_joint_state(0)
+    # rospy.sleep(1)
+    # tutorial.go_to_pose_named("point_2.2")
+    # tutorial.go_to_pose_named("point_2.1")
 
     print "============ Complete!"
 

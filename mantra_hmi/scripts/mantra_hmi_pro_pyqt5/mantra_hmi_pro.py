@@ -49,12 +49,12 @@ joint_ctl_arr = [0]*7 # 关节控制标志位, 可弃用
 vel_scaling = 0.0  # 速度调整比例
 movej_rad_deg_flag = 1  # 角度显示单位切换标志, 默认为角度
 movel_rad_deg_flag = 1  # 角度显示单位切换标志, 默认为角度
-movel_m_cm_flag = 1  # 距离显示单位切换标志, 默认为m
+movel_m_cm_flag = 1  # 距离显示单位切换标志, 默认为米
 curr_joints = [0.0]*7  # 当前关节角
 goal_joints = [0.0]*7  # 目标关节角
 curr_pose = [0.0]*7  # 当前位置
-movel_axis = None  # MoveL 移动轴
-movel_value = None  # MoveL 移动值
+movel_axis = None  # MoveL 移动的参考轴
+movel_value = None  # MoveL 移动的距离/角度
 
 moveJ = False  # 关节运动标志
 moveL = False  # 线性运动标志

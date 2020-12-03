@@ -8,12 +8,12 @@
     </include>
 
     <!-- <arg name="camera_info_file" default="845112071101_camera_info.yaml" /> -->
-    <arg name="camera_info_file" default="846112071730/846112071730_camera_info.yaml" />
+    <!-- <arg name="camera_info_file" default="846112071730/846112071730_camera_info.yaml" /> -->
 
     <!-- publish custom camera info -->
-    <node name="camera_info_publisher" pkg="realsense2_viewer" type="yaml_to_camera_info_publisher.py" output="screen">
+    <!-- <node name="camera_info_publisher" pkg="realsense2_viewer" type="yaml_to_camera_info_publisher.py" output="screen">
         <param name="camera_info_file" value="$(find realsense2_viewer)/calibration/$(arg camera_info_file)" />
-    </node>
+    </node> -->
 
     <!-- start the robot-->
     <include file="$(find mantra_application)/launch/mantra_bringup.launch" >

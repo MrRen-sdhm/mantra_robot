@@ -79,6 +79,27 @@ def move_to_joint_states(joint_states, test=False):
         print("[SRVICE] Move to joint states service call failed: %s" % e)
         return False
 
+def move_ee_z(dis, scale, test=False):
+    print("[SRVICE] Wait for service ...")
+    try:
+        rospy.wait_for_service('move_ee_z', timeout=15)
+        print("[SRVICE] Found move ee z states service!")
+    except rospy.ROSException:
+        print("[ERROR] Move ee z service did not started!")
+        return False
+
+    if test:  # test success
+        return True
+
+    try:
+        move_ee_z = rospy.ServiceProxy('move_ee_z', MoveEEZ)
+        resp = move_ee_z(dis, scale)
+        print("[SRVICE] Move ee z result:", resp.success)
+        return resp.success
+    except rospy.ServiceException, e:
+        print("[SRVICE] Move ee z service call failed: %s" % e)
+        return False
+
 
 def get_current_pose(test=False):
     print("[SRVICE] Wait for service ...")
@@ -145,12 +166,16 @@ def set_vel_scaling(scale, test=False):
 
 if __name__ == "__main__":
     test_all_service()
-    print("[SRVICE] get_end_effector result =", get_base_ee_link())
-    print("[SRVICE] move_to_pose_named result = %s" % move_to_pose_named("home"))
-    print("[SRVICE] get_current_pose result = ", get_current_pose())
-    print("[SRVICE] move_to_joint_states result = %s" % move_to_joint_states([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]))
-    print("[SRVICE] set_vel_scaling result = %s" % set_vel_scaling(0.2))
-    print("[SRVICE] move_to_pose_shift result = %s" % move_to_pose_shift(2, -0.3))
-    print("[SRVICE] get_current_pose result = ", get_current_pose())
+    # print("[SRVICE] get_end_effector result =", get_base_ee_link())
+    # print("[SRVICE] move_to_pose_named result = %s" % move_to_pose_named("home"))
+    # print("[SRVICE] get_current_pose result = ", get_current_pose())
+    # print("[SRVICE] move_to_joint_states result = %s" % move_to_joint_states([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]))
+    # print("[SRVICE] set_vel_scaling result = %s" % set_vel_scaling(0.2))
+    # print("[SRVICE] move_to_pose_shift result = %s" % move_to_pose_shift(2, -0.3))
+    # print("[SRVICE] get_current_pose result = ", get_current_pose())
+
     # print("[SRVICE] set_vel_scaling result = %s" % set_vel_scaling(1.0))
     # print("[SRVICE] move_to_pose_named result = %s" % move_to_pose_named("home"))
+
+    print("[SRVICE] move_ee_z result = %s" % move_ee_z(0.05, 0.5))
+    

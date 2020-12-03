@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#coding:utf-8
 
 # system
 import os
@@ -23,6 +24,7 @@ import ros_utils as ros_utils
 
 from transforms3d import quaternions
 from mantra_application.srv import *
+from get_camera_pose_image_manual import *
 
 
 class RobotMove(object):
@@ -362,21 +364,23 @@ class FusionServer(object):
         self.setupConfig()
         self.setupTF()
         self.stamp_ls = []
+        self.im_converter = image_converter()
 
     def setupConfig(self):
         self.config = dict()
         self.config['world_frame'] = "base_link"
         self.config['camera_frame'] = "camera_color_optical_frame"
         self.config['sleep_time_before_bagging'] = 2.0
-        # self.config['bag_folder'] = "data"
-        self.config['bag_folder'] = "data_new/muti_object"
+        self.config['bag_folder'] = "data"
+        # self.config['bag_folder'] = "data/muti_object"
+        self.config['obj_name'] = "multi"  # "bread" "yogurt" "banana" "charger" "mango" "lemon"
 
         self.config['keep_raw_bag'] = True
         self.config['keep_raw_images'] = False
 
         # if use close up poses to create point clouds
         self.config['use_close_up_poses'] = False  # Mark
-        self.config['use_close_up_poses'] = True  # Mark
+        # self.config['use_close_up_poses'] = True  # Mark
 
         self.config['fusion_voxel_size'] = 0.002
         time.sleep(5)
@@ -392,8 +396,8 @@ class FusionServer(object):
         # self.config['voxel_grid_origin_z'] = -0.2
 
         # new
-        self.config['work_space'] = [0.2, 0.8, -0.3, 0.3, 0.1, 0.5]  # workspace for fusion_py and create one view cloud
-        self.config['min_z'] = -0.5  # min z to remove plane when extract normals
+        self.config['work_space'] = [0.33, 0.7, -0.20, 0.25, 0.1, 0.5]  # workspace for fusion_py and create one view cloud
+        self.config['min_z'] = 0.265  # min z to remove plane when extract normals
         self.config['voxel_grid_dim_x'] = 300
         self.config['voxel_grid_dim_y'] = 500
         self.config['voxel_grid_dim_z'] = 500
@@ -410,14 +414,14 @@ class FusionServer(object):
             "/tf_static",
             "/camera/aligned_depth_to_color/image_raw",
             "/camera/aligned_depth_to_color/camera_info",
-            "/camera/color/camera_info",
+            "/camera_info",  # "/camera/color/camera_info"，使用自行发布的彩色相机内参，不使用realsense-ros发布的
             "/camera/color/image_raw"
         ]
 
         self.topics_dict = dict()
         self.topics_dict['rgb'] = "/camera/color/image_raw"
         self.topics_dict['depth'] = "/camera/aligned_depth_to_color/image_raw"
-        self.topics_dict['camera_info'] = "/camera/color/camera_info"
+        self.topics_dict['camera_info'] = "/camera_info",  # "/camera/color/camera_info"，使用自行发布的彩色相机内参，不使用realsense-ros发布的
 
     def setupTF(self):
         tfWrapper = TFWrapper()
@@ -439,7 +443,7 @@ class FusionServer(object):
     def get_bag_folder(self, log_subdir="raw"):
         """ get the folder name to store bag files"""
         base_path = os.path.join(os.path.dirname(utils.get_curr_dir()), self.config['bag_folder'])
-        log_id_name = utils.get_current_YYYY_MM_DD_hh_mm_ss()
+        log_id_name = self.config['obj_name'] + '-' + utils.get_current_YYYY_MM_DD_hh_mm_ss()
         bagfile_directory = os.path.join(base_path, log_id_name, log_subdir)
         bagfile_name = "fusion_" + log_id_name + ".bag"
 
@@ -529,12 +533,10 @@ class FusionServer(object):
         # pose_list = ["fusion_left1", "fusion_left5", "fusion_3", "fusion_right5", "fusion_right1"]
         # pose_list = ["view_right", "middle_fusion", "view_left"]
 
-        if not self.config['use_close_up_poses']:
-            # For full table
-            pose_list = ["fusion_1", "fusion_1_rot", "fusion_2", "fusion_3_rot", "fusion_3"]
-        else:
-            # For high accuracy
-            pose_list = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
+        # For full table
+        pose_list = ["fusion_1", "fusion_1_rot", "fusion_2", "fusion_3_rot", "fusion_3"]
+        # For high accuracy
+        # pose_list = ["fusion_new_left", "fusion_new_left_rot", "fusion_middle", "fusion_new_right_rot", "fusion_new_right"]
 
         # Step1: move robot to home
         print "[INFO] Move robot to home"
@@ -561,9 +563,9 @@ class FusionServer(object):
         # wait for bagfile saving
         rospy.sleep(1.0)
 
-        # Optional step: move robot through close up poses
+        # Optional step: move robot through close up poses, 将舍弃不用
         path_to_close_up_bagfile = os.path.dirname(path_to_bagfile) + "/close_up.bag"
-        if use_close_up_poses:
+        if use_close_up_poses:  # 为了采集合适的单视角点云
             print "[DEBUG] Start close up capture."
             self.robot_move.set_vel_scaling(0.5)
 
@@ -589,6 +591,26 @@ class FusionServer(object):
             # self.robot_move.move_to_poses_named(pose_list)
 
             self.stop_bagging("bag_node")
+
+        # 采集单视角点云
+        path_to_one_view_cloud = os.path.dirname(os.path.dirname(path_to_bagfile)) + "/one_view_clouds"
+        os.system("mkdir -p " + path_to_one_view_cloud)
+
+        # pose_list = ["capture_l1", "capture_m1", "capture_r1", "capture_r2", "capture_m2", "capture_l2"]
+        pose_list = ["one-view1", "one-view2", "one-view3", "one-view4", "one-view5", "one-view6"]
+
+        # move to first pose before we start bagging
+        print "[INFO] Moving robot to take one-view clouds"
+        self.robot_move.set_vel_scaling(0.8)
+        # self.robot_move.move_to_pose_named(start_pose_name)
+        # self.robot_move.move_to_pose_named(pose_list[0])
+
+        # move the robot through close up poses
+        for i, pose in enumerate(pose_list):
+            self.robot_move.move_to_pose_named(pose)
+            print "[DEBUG] Move to pose:%s done, take one-view cloud"
+            rospy.sleep(0.2)
+            get_camera_pose_image(self.im_converter, i, path_to_one_view_cloud, self.config['min_z'])
 
         # Step5: move back home
         print "[INFO] Move robot back to home"
@@ -919,7 +941,7 @@ class FusionServer(object):
 
             print "\n[INFO] Create point cloud"
             close_up_downsampled_images_dir = self.downsample_by_pose_difference_threshold(close_up_images_dir, 0.01, 5, keep_raw=self.config['keep_raw_images'])
-            self.create_point_cloud(close_up_downsampled_images_dir, save_dir="clouds")
+            # self.create_point_cloud(close_up_downsampled_images_dir, save_dir="clouds")
 
             stamped_img_output_dir = os.path.join(os.path.dirname(close_up_images_dir), "images_stamped")
             self.create_point_cloud(stamped_img_output_dir, save_dir="images_stamped")
@@ -989,6 +1011,11 @@ if __name__ == "__main__":
     # close_up_bag_filepath = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/2020-01-13-20-06-02/raw/close_up.bag"
     # fs.handle_capture_scene_and_fuse(bag_filepath, close_up_bag_filepath)
     # exit()
+
+    # ###########    test get camera pose image    ############
+    # path = "/home/sdhm/catkin_ws/src/mantra_robot/mantra_application/reconstruction/data/multi-view"
+    # im_converter = image_converter()
+    # get_camera_pose_image(im_converter, 0, path)
 
     # #################    test all    ##################
     fs.handle_capture_scene_and_fuse()

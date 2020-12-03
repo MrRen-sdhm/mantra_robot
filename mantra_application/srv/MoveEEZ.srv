@@ -1,0 +1,4 @@
+float64 dis
+float64 scale
+---
+bool success

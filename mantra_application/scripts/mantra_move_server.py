@@ -9,6 +9,11 @@ import geometry_msgs.msg
 from moveit_msgs.msg import RobotTrajectory
 from math import pi
 from tf.transformations import quaternion_from_euler
+from trajectory_msgs.msg import JointTrajectoryPoint
+
+from copy import deepcopy
+from std_msgs.msg import String
+from transforms3d import quaternions
 
 from mantra_application.srv import *
 # from mantra_application.srv import MoveToPoseNamed, MoveToPoseNamedResponse
@@ -17,6 +22,62 @@ from mantra_application.srv import *
 # from mantra_application.srv import GetCurrentPose, GetCurrentPoseResponse
 # from mantra_application.srv import GetBaseEELink, GetBaseEELinkResponse
 # from mantra_application.srv import SetVelScaling, SetVelScalingResponse
+
+
+# 通过四元数计算方向向量
+def cal_direction_vec(quat):
+    quat_wxyz = (quat.w, quat.x, quat.y, quat.z)
+    rotation_matrix = quaternions.quat2mat(quat_wxyz)
+    direction_x = rotation_matrix[:,0] # 旋转矩阵第一列为x轴方向向量
+    direction_y = rotation_matrix[:,1] # 旋转矩阵第二列为y轴方向向量
+    direction_z = rotation_matrix[:,2] # 旋转矩阵第三列为z轴方向向量
+    # print "rotation_matrix:\n", rotation_matrix
+    # print "direction vector:\n", direction_x, direction_y, direction_z, "\n"
+    return (direction_x, direction_y, direction_z)
+
+# 通过方向向量及移动距离计算终点位姿, axis：0-x 1-y 2-z
+def cal_pose_by_dir_vec(start_pose, dir_vec, distance, axis):
+    end_pose = deepcopy(start_pose)
+    end_pose.position.x += dir_vec[axis][0]*distance
+    end_pose.position.y += dir_vec[axis][1]*distance
+    end_pose.position.z += dir_vec[axis][2]*distance
+    return end_pose
+
+# 通过起点位姿及移动距离计算终点位姿, 为上面两个函数的整合 axis：0-x 1-y 2-z
+def cal_end_pose_by_quat(start_pose, distance, axis):
+    dir_vec = cal_direction_vec(start_pose.orientation)
+    end_pose = cal_pose_by_dir_vec(start_pose, dir_vec, distance, axis)
+    return end_pose
+
+# ros格式四元数绕某轴旋转angle弧度，输入为[x,y,z,w]格式，输出也为[x,y,z,w]格式
+def rot_around_axis(quat, angle, axis):
+    if axis == 0:
+        axis_vec = [1, 0, 0]
+    elif axis == 1:
+        axis_vec = [0, 1, 0]
+    elif axis == 2:
+        axis_vec = [0, 0, 1]
+
+    quat_out = quaternion_multiply(quat, quaternion_about_axis(pi, axis_vec))
+
+    return quat_out
+
+def pose_rot_around_axis(pose_in, angle, axis):
+    quat_in = [pose_in.pose.orientation.x, pose_in.pose.orientation.y, pose_in.pose.orientation.z, pose_in.pose.orientation.w]
+    quat_out = rot_around_axis(quat_in, angle, axis)
+
+    pose_out = geometry_msgs.msg.PoseStamped()
+    pose_out.header.frame_id = pose_in.header.frame_id
+    pose_out.header.stamp = pose_in.header.stamp
+
+    pose_out.pose.position = pose_in.pose.position
+
+    pose_out.pose.orientation.x = quat_out[0]
+    pose_out.pose.orientation.y = quat_out[1]
+    pose_out.pose.orientation.z = quat_out[2]
+    pose_out.pose.orientation.w = quat_out[3]
+
+    return pose_out
 
 
 class MoveGroup(object):
@@ -67,9 +128,11 @@ class MoveGroup(object):
         rospy.Service('move_to_poses_named', MoveToPosesNamed, self.handle_move_to_poses_named)
         rospy.Service('move_to_pose_shift', MoveToPoseShift, self.handle_move_to_pose_shift)
         rospy.Service('move_to_joint_states', MoveToJointStates, self.handle_move_to_joint_states)
+        rospy.Service('move_ee_z', MoveEEZ, self.handle_move_ee_z)
         rospy.Service('get_current_pose', GetCurrentPose, self.handle_get_current_pose)
         rospy.Service('get_base_ee_link', GetBaseEELink, self.handle_get_base_ee_link)
         rospy.Service('set_vel_scaling', SetVelScaling, self.handle_set_vel_scaling)
+        
 
     def handle_move_to_pose_named(self, req):
         ret = self.go_to_pose_named(req.pose_name)
@@ -91,6 +154,11 @@ class MoveGroup(object):
         ret = self.go_to_joint_state(req.joint_states)
         print("[SRVICE] Go to joint states result:%s" % "Succeed" if ret else "Failed")
         return MoveToJointStatesResponse(ret)
+
+    def handle_move_ee_z(self, req):
+        ret = self.move_ee_z(req.dis, req.scale)
+        print("[SRVICE] Move ee z result:%s" % "Succeed" if ret else "Failed")
+        return MoveEEZResponse(ret)
 
     def handle_get_current_pose(self, req):
         pose = self.get_current_pose()
@@ -258,8 +326,103 @@ class MoveGroup(object):
         group.set_max_velocity_scaling_factor(scale)
 
 
+    # ############## 末端z轴笛卡尔路径规划  ##############
+    @staticmethod
+    def scale_trajectory_speed(traj, scale):
+      new_traj = RobotTrajectory()
+      new_traj.joint_trajectory = traj.joint_trajectory
+
+      n_joints = len(traj.joint_trajectory.joint_names)
+      n_points = len(traj.joint_trajectory.points)
+      points = list(traj.joint_trajectory.points)
+
+      for i in range(n_points):
+          point = JointTrajectoryPoint()
+          point.positions = traj.joint_trajectory.points[i].positions
+
+          point.time_from_start = traj.joint_trajectory.points[i].time_from_start / scale
+          point.velocities = list(traj.joint_trajectory.points[i].velocities)
+          point.accelerations = list(traj.joint_trajectory.points[i].accelerations)
+
+          for j in range(n_joints):
+              point.velocities[j] = point.velocities[j] * scale
+              point.accelerations[j] = point.accelerations[j] * scale * scale
+          points[i] = point
+
+      new_traj.joint_trajectory.points = points
+      return new_traj
+
+    def plan_cartesian(self, waypoints, scale=1.0, start_state=None):
+      group = self.group
+
+      # 开始笛卡尔空间轨迹规划
+      fraction = 0.0  # 路径规划覆盖率
+      maxtries = 150  # 最大尝试规划次数
+      attempts = 0  # 已经尝试规划次数
+
+      # 设置机器臂运动初始状态
+      if start_state is not None:
+        state = self.robot.get_current_state()
+        state.joint_state.position = list(start_state)
+        group.set_start_state(state)
+      else:
+        group.set_start_state_to_current_state()      
+
+      # 尝试规划一条笛卡尔空间下的路径，依次通过所有路点
+      while fraction < 1.0 and attempts < maxtries:
+          (plan, fraction) = group.compute_cartesian_path(
+              waypoints,  # waypoint poses，路点列表
+              0.005,  # eef_step，终端步进值
+              0.0,  # jump_threshold，跳跃阈值
+              True)  # avoid_collisions，避障规划
+
+          # 尝试次数累加
+          attempts += 1
+
+          # 打印运动规划进程
+          if attempts % 10 == 0:
+              rospy.loginfo("Still trying after " + str(attempts) + " attempts...")
+
+      # 如果路径规划成功（覆盖率>90%）,则开始控制机械臂运动
+      if fraction > 0.9:
+        rospy.loginfo("Cartesian path computed successfully.")
+        plan = self.scale_trajectory_speed(plan, scale)
+        if start_state is None:
+          plan = group.execute(plan)
+          rospy.loginfo("Cartesian path execution complete.")
+          return True
+        else:
+          return plan
+
+      # 如果路径规划失败，则打印失败信息
+      else:
+          rospy.loginfo("Path planning failed with only " + str(fraction) + " success after " + str(
+              maxtries) + " attempts.")
+          return None
+
+    def cartesian_move(self, dis, scale):
+      group = self.group
+      # 前进
+      waypoints = []
+      wpose = group.get_current_pose().pose
+      waypoints.append(deepcopy(wpose))
+
+      wpose = cal_end_pose_by_quat(wpose, dis, 2)
+      waypoints.append(deepcopy(wpose))
+
+      ret = self.plan_cartesian(waypoints, scale=scale)
+      return ret
+    
+    def move_ee_z(self, dis, scale):
+        group = self.group
+        ret = self.cartesian_move(dis, scale)
+        return ret
+
+
 def main():
+    print("Mantra move server init...")
     time.sleep(8)  # sleep to wait for moveit come up
+    print("Mantra move server started!")
     move_group = MoveGroup()
     rospy.spin()
 
