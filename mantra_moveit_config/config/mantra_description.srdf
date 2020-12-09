@@ -22,6 +22,15 @@
         <joint name="joint6" value="0" />
         <joint name="joint7" value="0" />
     </group_state>
+    <group_state name="work" group="arm">
+        <joint name="joint1" value="0" />
+        <joint name="joint2" value="-0.13671204885273353" />
+        <joint name="joint3" value="0" />
+        <joint name="joint4" value="-1.6530154495887388" />
+        <joint name="joint5" value="0" />
+        <joint name="joint6" value="-1.3512237203404176" />
+        <joint name="joint7" value="-1.5725455212760495" />
+    </group_state>
     <group_state name="rescon_right" group="arm">
         <joint name="joint1" value="-2.034"/>
         <joint name="joint2" value="0.581"/>
