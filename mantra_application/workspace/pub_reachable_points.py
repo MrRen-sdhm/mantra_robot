@@ -14,7 +14,7 @@ import numpy as np
 rospy.init_node("create_cloud_xyzrgb")
 pub = rospy.Publisher("point_cloud2", PointCloud2, queue_size=2)
 
-reachable_points = np.loadtxt("reachable_points.csv", delimiter=",")
+reachable_points = np.loadtxt("reachable_points_mode1.csv", delimiter=",")
 
 points = []
 for point in reachable_points:
