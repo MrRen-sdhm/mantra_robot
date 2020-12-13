@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import rospy, sys
-import moveit_commander
-from moveit_commander import MoveGroupCommander
-from moveit_msgs.msg import RobotTrajectory
-from trajectory_msgs.msg import JointTrajectoryPoint
-
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 
 class LinearInterpolation(object):
@@ -88,7 +83,7 @@ class LinearInterpolation(object):
         q[0, 2] = 0 # for linear model, the acceleration is infinite, here we set to zero
         return q
 
-        
+
 class ParabolicInterpolation(object):
     def __init__(self, name='Parabolic', q_via=None, t_via=None):
         """
@@ -128,7 +123,7 @@ class ParabolicInterpolation(object):
         :param: qf: float
             the position of the flex point
         """
-        
+
         try:
             abs(t0 - t1) < 1e-6
         except ValueError:
@@ -418,38 +413,41 @@ def Interpolation(time, pos, vel, acc):
     for i in range(t.shape[0]):
         linear_trajectory[i,:] = linear_interpolation.getPosition(t[i])
 
-    plt.figure(figsize=(6, 10))
-    plt.subplot(3,1,1)
-    plt.plot(t_given, q_given[:, 0], 'ro')
-    plt.plot(t, linear_trajectory[:,0], 'k')
-    plt.grid('on')
-    plt.title('Linear interpolation')
-    plt.xlabel('time (s)')
-    plt.ylabel('position (rad)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
-    plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
+    plot(t_given, q_given, "Linear interpolation", t, linear_trajectory)
+    # exit()
 
-    plt.subplot(3,1,2)
-    plt.plot(t_given, q_given[:, 1], 'rh')
-    plt.plot(t, linear_trajectory[:,1], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('velocity (rad / s)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.figure(figsize=(6, 10))
+    # plt.subplot(3,1,1)
+    # plt.plot(t_given, q_given[:, 0], 'ro')
+    # plt.plot(t, linear_trajectory[:,0], 'k')
+    # plt.grid('on')
+    # plt.title('Linear interpolation')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('position (rad)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
 
-    plt.subplot(3,1,3)
-    plt.plot(t_given, q_given[:, 2], 'rd')
-    plt.plot(t, linear_trajectory[:,2], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('acceleration (rad / s$^{2}$)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.subplot(3,1,2)
+    # plt.plot(t_given, q_given[:, 1], 'rh')
+    # plt.plot(t, linear_trajectory[:,1], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('velocity (rad / s)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
 
-    plt.savefig('Linear interpolation.svg', dpi=600, bbox_inches='tight')
-    # plt.savefig('Linear interpolation.pdf', dpi=600, bbox_inches='tight')
+    # plt.subplot(3,1,3)
+    # plt.plot(t_given, q_given[:, 2], 'rd')
+    # plt.plot(t, linear_trajectory[:,2], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('acceleration (rad / s$^{2}$)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
 
-    # plt.show()
-    # exit(0)
+    # plt.savefig('Linear interpolation.svg', dpi=600, bbox_inches='tight')
+    # # plt.savefig('Linear interpolation.pdf', dpi=600, bbox_inches='tight')
+
+    # # plt.show()
+    # # exit(0)
 
 
     #%% ************************ Parabolic interpolation *******************************
@@ -459,35 +457,37 @@ def Interpolation(time, pos, vel, acc):
     for i in range(t.shape[0]):
         parabolic_trajectory[i,:] = parabolic_interpolation.getPosition(t[i])
 
-    plt.figure(figsize=(6, 10))
-    plt.subplot(3,1,1)
-    plt.plot(t_given, q_given[:, 0], 'ro')
-    plt.plot(t, parabolic_trajectory[:,0], 'k')
-    plt.grid('on')
-    plt.title('Parabolic interpolation')
-    plt.xlabel('time (s)')
-    plt.ylabel('position (rad)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
-    plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
+    plot(t_given, q_given, "Parabolic interpolation", t, parabolic_trajectory)
 
-    plt.subplot(3,1,2)
-    plt.plot(t_given, q_given[:, 1], 'rh')
-    plt.plot(t, parabolic_trajectory[:,1], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('velocity (rad / s)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.figure(figsize=(6, 10))
+    # plt.subplot(3,1,1)
+    # plt.plot(t_given, q_given[:, 0], 'ro')
+    # plt.plot(t, parabolic_trajectory[:,0], 'k')
+    # plt.grid('on')
+    # plt.title('Parabolic interpolation')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('position (rad)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
 
-    plt.subplot(3,1,3)
-    plt.plot(t_given, q_given[:, 2], 'rd')
-    plt.plot(t, parabolic_trajectory[:,2], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('acceleration (rad / s$^{2}$)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.subplot(3,1,2)
+    # plt.plot(t_given, q_given[:, 1], 'rh')
+    # plt.plot(t, parabolic_trajectory[:,1], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('velocity (rad / s)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
 
-    plt.savefig('Parabolic interpolation.svg', dpi=600, bbox_inches='tight')
-    # plt.savefig('Parabolic interpolation.pdf', dpi=600, bbox_inches='tight')
+    # plt.subplot(3,1,3)
+    # plt.plot(t_given, q_given[:, 2], 'rd')
+    # plt.plot(t, parabolic_trajectory[:,2], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('acceleration (rad / s$^{2}$)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+
+    # plt.savefig('Parabolic interpolation.svg', dpi=600, bbox_inches='tight')
+    # # plt.savefig('Parabolic interpolation.pdf', dpi=600, bbox_inches='tight')
 
     #%% ************************ Cubic interpolation *******************************
     cubic_interpolation = CubicInterpolation('Cubic', q_given, t_given)
@@ -496,35 +496,37 @@ def Interpolation(time, pos, vel, acc):
     for i in range(t.shape[0]):
         cubic_trajectory[i,:] = cubic_interpolation.getPosition(t[i])
 
-    plt.figure(figsize=(6, 10))
-    plt.subplot(3,1,1)
-    plt.plot(t_given, q_given[:, 0], 'ro')
-    plt.plot(t, cubic_trajectory[:,0], 'k')
-    plt.grid('on')
-    plt.title('Cubic interpolation')
-    plt.xlabel('time (s)')
-    plt.ylabel('position (rad)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
-    plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
+    plot(t_given, q_given, "Cubic interpolation", t, cubic_trajectory)
 
-    plt.subplot(3,1,2)
-    plt.plot(t_given, q_given[:, 1], 'rh')
-    plt.plot(t, cubic_trajectory[:,1], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('velocity (rad / s)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.figure(figsize=(6, 10))
+    # plt.subplot(3,1,1)
+    # plt.plot(t_given, q_given[:, 0], 'ro')
+    # plt.plot(t, cubic_trajectory[:,0], 'k')
+    # plt.grid('on')
+    # plt.title('Cubic interpolation')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('position (rad)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
 
-    plt.subplot(3,1,3)
-    plt.plot(t_given, q_given[:, 2], 'rd')
-    plt.plot(t, cubic_trajectory[:,2], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('acceleration (rad / s$^{2}$)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.subplot(3,1,2)
+    # plt.plot(t_given, q_given[:, 1], 'rh')
+    # plt.plot(t, cubic_trajectory[:,1], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('velocity (rad / s)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
 
-    plt.savefig('Cubic interpolation.svg', dpi=600, bbox_inches='tight')
-    # plt.savefig('Cubic interpolation.pdf', dpi=600, bbox_inches='tight')
+    # plt.subplot(3,1,3)
+    # plt.plot(t_given, q_given[:, 2], 'rd')
+    # plt.plot(t, cubic_trajectory[:,2], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('acceleration (rad / s$^{2}$)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+
+    # plt.savefig('Cubic interpolation.svg', dpi=600, bbox_inches='tight')
+    # # plt.savefig('Cubic interpolation.pdf', dpi=600, bbox_inches='tight')
 
     #%% *************** Polynomial of degree five interpolation *********************
     polynomial5_interpolation = Polynomial5Interpolation('Polynomial5', q_given, t_given)
@@ -533,35 +535,37 @@ def Interpolation(time, pos, vel, acc):
     for i in range(t.shape[0]):
         polynomial5_trajectory[i,:] = polynomial5_interpolation.getPosition(t[i])
 
-    plt.figure(figsize=(6, 10))
-    plt.subplot(3,1,1)
-    plt.plot(t_given, q_given[:, 0], 'ro')
-    plt.plot(t, polynomial5_trajectory[:,0], 'k')
-    plt.grid('on')
-    plt.title('Polynomial of degree 5 interpolation')
-    plt.xlabel('time (s)')
-    plt.ylabel('position (rad)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
-    plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
+    plot(t_given, q_given, "Polynomial of degree five interpolation", t, polynomial5_trajectory)
 
-    plt.subplot(3,1,2)
-    plt.plot(t_given, q_given[:, 1], 'rh')
-    plt.plot(t, polynomial5_trajectory[:,1], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('velocity (rad / s)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.figure(figsize=(6, 10))
+    # plt.subplot(3,1,1)
+    # plt.plot(t_given, q_given[:, 0], 'ro')
+    # plt.plot(t, polynomial5_trajectory[:,0], 'k')
+    # plt.grid('on')
+    # plt.title('Polynomial of degree 5 interpolation')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('position (rad)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
 
-    plt.subplot(3,1,3)
-    plt.plot(t_given, q_given[:, 2], 'rd')
-    plt.plot(t, polynomial5_trajectory[:,2], 'k')
-    plt.grid('on')
-    plt.xlabel('time (s)')
-    plt.ylabel('acceleration (rad / s$^{2}$)')
-    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.subplot(3,1,2)
+    # plt.plot(t_given, q_given[:, 1], 'rh')
+    # plt.plot(t, polynomial5_trajectory[:,1], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('velocity (rad / s)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
 
-    plt.savefig('Polynomial of degree five interpolation.svg', dpi=600, bbox_inches='tight')
-    # plt.savefig('Polynomial of degree five interpolation.pdf', dpi=600, bbox_inches='tight')
+    # plt.subplot(3,1,3)
+    # plt.plot(t_given, q_given[:, 2], 'rd')
+    # plt.plot(t, polynomial5_trajectory[:,2], 'k')
+    # plt.grid('on')
+    # plt.xlabel('time (s)')
+    # plt.ylabel('acceleration (rad / s$^{2}$)')
+    # plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+
+    # plt.savefig('Polynomial of degree five interpolation.svg', dpi=600, bbox_inches='tight')
+    # # plt.savefig('Polynomial of degree five interpolation.pdf', dpi=600, bbox_inches='tight')
 
     #%% ************************** Comparison ***************************
     plt.figure(figsize=(6, 10))
@@ -608,190 +612,85 @@ def Interpolation(time, pos, vel, acc):
 
 
     plt.show()
-    
 
-class MoveItDemo:
+
+def plot(t_given, q_given, title, t_traj=None, traj=None):
+    fig = plt.figure(figsize=(8, 8))
+    plt.subplots_adjust(wspace=0.0, hspace=0.05) # 设置子图间距
+    ax1 = plt.subplot(3,1,1)
+    plt.plot(t_given, q_given[:, 0], 'ro')
+    # 显示插补轨迹
+    if t_traj is not None and traj is not None: plt.plot(t_traj, traj[:,0], 'k')
+
+    plt.grid('on')
+    #plt.title(title)
+    #plt.xlabel('time (s)')
+    plt.ylabel('position (rad)', size=13)
+    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    # plt.ylim(min(q_given[:, 0]) - 0.1, max(q_given[:, 0]) + 0.1)
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(1.0)) # 设置刻度密度
+    plt.gca().axes.xaxis.set_ticklabels([])
+
+    ax2 = plt.subplot(3,1,2)
+    plt.plot(t_given, q_given[:, 1], 'rh')
+    #plt.plot(t_given, q_given[:, 1], 'k')
+    # 显示插补轨迹
+    if t_traj is not None and traj is not None: plt.plot(t_traj, traj[:,1], 'k')
+
+    plt.grid('on')
+    #plt.xlabel('time (s)')
+    plt.ylabel('velocity (rad / s)', size=13)
+    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(1.0)) # 设置刻度密度
+    plt.gca().axes.xaxis.set_ticklabels([])
+
+    ax3 = plt.subplot(3,1,3)
+    plt.plot(t_given, q_given[:, 2], 'rd')
+    #plt.plot(t_given, q_given[:, 2], 'k')
+    # 显示插补轨迹
+    if t_traj is not None and traj is not None:
+        if title != "Linear interpolation": plt.plot(t_traj, traj[:,2], 'k')  # 线性插补加速度未无穷大，不绘制
+
+    plt.grid('on')
+    plt.xlabel('time (s)', size=13)
+    plt.ylabel('acceleration (rad / s$^{2}$)', size=13)
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(1.0)) # 设置刻度密度
+    plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+
+    fig.align_ylabels([ax1, ax2, ax3]) # 对齐标签
+    plt.savefig('%s.svg' % title, dpi=600, bbox_inches='tight')
+    # plt.savefig('%s.pdf' % title, dpi=600, bbox_inches='tight')
+
+    ax1.set_title(title) # 不保存title
+
+    plt.show()
+
+
+class Demo:
     def __init__(self):
-        # 初始化move_group的API
-        moveit_commander.roscpp_initialize(sys.argv)
+        data = np.loadtxt("trajectory3.csv", skiprows=1, delimiter=',')
+        #print data.shape
+        time_ls, pos, vel, acc = data[:,0], data[:,1], data[:,2], data[:,3]
 
-        # 初始化ROS节点
-        rospy.init_node('demo', anonymous=True)
-                        
-        # 初始化需要使用move group控制的机械臂中的arm group
-        arm = MoveGroupCommander('arm')
-        robot = moveit_commander.RobotCommander()
-        
-        # 当运动规划失败后，允许重新规划
-        arm.allow_replanning(True)
-        
-        # 设置目标位置所使用的参考坐标系
-        arm.set_pose_reference_frame('base_link')
-        
-        # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
-        arm.set_goal_position_tolerance(0.01)
-        arm.set_goal_orientation_tolerance(0.1)
-        # arm.set_max_velocity_scaling_factor(0.01)
+        t_given = data[:,0]
+        q_given = data[:,[1,2,3]]
 
-        arm.set_named_target("home")
-        arm.go()
-
-        def traj_pack(plan, joint_num=6, save_name=None):
-            traj_len = len(plan.joint_trajectory.points)
-            time_ls, pos_ls, vel_ls, acc_ls = [], [], [], []
-
-            # print plan.joint_trajectory.points
-            
-            for point in plan.joint_trajectory.points:
-                time_ls.append(point.time_from_start.secs + point.time_from_start.nsecs / 1e9)
-                pos_ls.append(point.positions)
-                vel_ls.append(point.velocities)
-                acc_ls.append(point.accelerations)
-            
-            pos, vel, acc = [], [], []
-            for i in range(traj_len):
-                pos.append(pos_ls[i][joint_num])
-                vel.append(vel_ls[i][joint_num])
-                acc.append(acc_ls[i][joint_num])
-
-            # 保存为CSV
-            if save_name is not None:
-                np.savetxt("%s.csv" % save_name, np.array([time_ls, pos, vel, acc]).transpose(), delimiter=',', header="time,pos,vel,acc", comments="")
-            
-            return time_ls, pos, vel, acc
-
-        # ************************ 测试普通轨迹规划 *******************************
-        # arm.set_start_state_to_current_state()
-        # arm.set_named_target("test_1")
-        # plan = arm.plan()
-
-        # ************************ 测试连续路径轨迹规划（零点->中间点->零点） *******************************
-        # 重新计算轨迹时间
-        def retime_trajectory(plan, scale):
-            ref_state = robot.get_current_state()
-            retimed_plan = arm.retime_trajectory(ref_state, plan, velocity_scaling_factor=scale)
-            return retimed_plan
-
-        # 轨迹点拼接
-        def stitch_trajectory(plan_list):
-            new_traj = RobotTrajectory()
-            new_traj.joint_trajectory.joint_names = plan_list[0].joint_trajectory.joint_names
-
-            # 轨迹点拼接
-            new_points = []
-            for plan in plan_list:
-                new_points += list(plan.joint_trajectory.points)
-            new_traj.joint_trajectory.points = new_points
-
-            # 重新计算轨迹时间
-            new_traj = retime_trajectory(new_traj, scale=1.0)
-
-            return new_traj
-
-        # 轨迹列表
-        plan_list = []
-
-        # 设置初始状态
-        state = robot.get_current_state()
-        arm.set_start_state(state)
-        # 设置目标状态
-        aim_position1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.57]
-        arm.set_joint_value_target(aim_position1)
-        plan1 = arm.plan()
-        plan_list.append(plan1)
-
-        # 保存轨迹
-        traj_pack(plan1, save_name = "trajectory1")
-
-        # 设置初始状态
-        state.joint_state.position = aim_position1
-        arm.set_start_state(state)
-        # 设置目标状态
-        aim_position2 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        arm.set_joint_value_target(aim_position2)
-        plan2 = arm.plan()
-        plan_list.append(plan2)
-
-        plan2 = stitch_trajectory(plan_list) # 拼接轨迹1和2
-        traj_pack(plan2, save_name = "trajectory2")
-
-        # 设置初始状态
-        state.joint_state.position = aim_position2
-        arm.set_start_state(state)
-        # 设置目标状态
-        aim_position3 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.57]
-        arm.set_joint_value_target(aim_position3)
-        plan3 = arm.plan()
-        plan_list.append(plan3)
-
-        plan3 = stitch_trajectory(plan_list) # 拼接轨迹1、2和3
-        traj_pack(plan3, save_name = "trajectory3")
-
-        # 执行轨迹
-        arm.execute(plan3)
-        # exit(0)
-
-
-        ####################################轨迹可视化#############################################
-        plan = plan3 # 用于可视化的轨迹
-
-        traj_len = len(plan.joint_trajectory.points)
-        print "traj_len:", traj_len
-
-        time_ls, pos, vel, acc = traj_pack(plan)
+        print time_ls
 
         # 显示原始轨迹
         print "\npos", pos
         print "\nvel", vel
         print "\nacc", acc
 
-        # plt.plot(time_ls, pos, 'ro')  # 轨迹点
-        # plt.plot(time_ls, pos, 'k')  # 连接轨迹点
-        # plt.show()
+        plot(t_given, q_given, "Origin trajectory")
 
-        plt.figure(figsize=(6, 10))
-        plt.subplot(3,1,1)
-        plt.plot(time_ls, pos, 'ro')
-        # plt.plot(time_ls, pos, 'k')
-        plt.grid('on')
-        plt.title('Origin trajectory')
-        plt.xlabel('time (s)')
-        plt.ylabel('position (rad)')
-        plt.xlim(time_ls[0]-0.5, time_ls[-1]+0.5)
-        plt.ylim(min(pos) - 0.1, max(pos) + 0.1)
+        # exit()
 
-        plt.subplot(3,1,2)
-        plt.plot(time_ls, vel, 'ro')
-        # plt.plot(time_ls, vel, 'k')
-        plt.grid('on')
-        plt.xlabel('time (s)')
-        plt.ylabel('velocity (rad / s)')
-        plt.xlim(time_ls[0]-0.5, time_ls[-1]+0.5)
-
-        plt.subplot(3,1,3)
-        plt.plot(time_ls, acc, 'ro')
-        # plt.plot(time_ls, acc, 'k')
-        plt.grid('on')
-        plt.xlabel('time (s)')
-        plt.ylabel('acceleration (rad / s$^{2}$)')
-        plt.xlim(time_ls[0]-0.5, time_ls[-1]+0.5)
-
-        plt.savefig('Origin trajectory.svg', dpi=600, bbox_inches='tight')
-        # plt.savefig('Origin trajectory.pdf', dpi=600, bbox_inches='tight')
-
-        plt.show()
 
         # 插值测试
-        # Interpolation(time_ls, pos, vel, acc)
-        
+        Interpolation(time_ls, pos, vel, acc)
 
-        # 关闭并退出moveit
-        moveit_commander.roscpp_shutdown()
-        moveit_commander.os._exit(0)
 
 
 if __name__ == "__main__":
-    try:
-        MoveItDemo()
-    except rospy.ROSInterruptException:
-        pass
+    Demo()
