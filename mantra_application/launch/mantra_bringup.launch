@@ -11,11 +11,11 @@
     <!-- <arg name="robot_ip" doc="IP of the controller" /> -->
 
     <!-- robot driver -->
-    <include unless="$(arg fake)" file="$(find mantra_driver)/launch/mantra_driver.launch"> 
+    <!-- <include unless="$(arg fake)" file="$(find mantra_driver)/launch/mantra_driver.launch"> 
       <arg name="use_hand" value="false" />
       <arg name="show_pose_info" value="$(arg show_pose)" />
       <arg name="show_traj_info" value="$(arg show_traj)" />
-    </include>
+    </include> -->
 
     <!-- robot model -->
     <include unless="$(arg fake)" file="$(find mantra_moveit_config)/launch/demo.launch">

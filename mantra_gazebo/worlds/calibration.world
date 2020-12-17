@@ -1,0 +1,875 @@
+<sdf version='1.6'>
+  <world name='default'>
+    <light name='sun' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose frame=''>0 0 10 0 -0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+    <model name='ground_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>100</mu>
+                <mu2>50</mu2>
+              </ode>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Grey</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+    </model>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <physics name='default_physics' default='0' type='ode'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <model name='mantra'>
+      <link name='base_link'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>0 -0 0.053478 0 -0 0</pose>
+          <mass>5</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='base_link_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/base_link.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='base_link_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/base_link.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <link name='link1'>
+        <pose frame=''>0 0 0.2005 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>3e-06 0.037673 0.11395 0 -0 0</pose>
+          <mass>0.44985</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='link1_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/link1.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link1_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/link1.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint1' type='revolute'>
+        <child>link1</child>
+        <parent>base_link</parent>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>-3</lower>
+            <upper>3</upper>
+            <effort>0</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
+        </axis>
+      </joint>
+      <link name='link2'>
+        <pose frame=''>0 0 0.3705 1.5708 -0 0</pose>
+        <inertial>
+          <pose frame=''>3e-06 0.056045 0.037673 0 -0 0</pose>
+          <mass>0.44985</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='link2_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/link2.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link2_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/link2.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint2' type='revolute'>
+        <child>link2</child>
+        <parent>link1</parent>
+        <axis>
+          <xyz>0 -1 0</xyz>
+          <limit>
+            <lower>-1.93</lower>
+            <upper>1.93</upper>
+            <effort>0</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
+        </axis>
+      </joint>
+      <link name='link3'>
+        <pose frame=''>0 -0 0.5405 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>-7e-06 0.030029 0.10355 0 -0 0</pose>
+          <mass>0.39258</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='link3_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/link3.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link3_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/link3.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint3' type='revolute'>
+        <child>link3</child>
+        <parent>link2</parent>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>-3</lower>
+            <upper>3</upper>
+            <effort>0</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
+        </axis>
+      </joint>
+      <link name='link4'>
+        <pose frame=''>0 -0 0.7005 1.5708 -0 0</pose>
+        <inertial>
+          <pose frame=''>1e-06 0.053967 0.031711 0 -0 0</pose>
+          <mass>0.36723</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='link4_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/link4.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link4_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/link4.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint4' type='revolute'>
+        <child>link4</child>
+        <parent>link3</parent>
+        <axis>
+          <xyz>0 -1 0</xyz>
+          <limit>
+            <lower>-1.88</lower>
+            <upper>1.88</upper>
+            <effort>0</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
+        </axis>
+      </joint>
+      <link name='link5'>
+        <pose frame=''>0 -0 0.8605 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>1e-06 0.031711 0.10603 0 -0 0</pose>
+          <mass>0.36723</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='link5_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/link5.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link5_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/link5.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint5' type='revolute'>
+        <child>link5</child>
+        <parent>link4</parent>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>-3</lower>
+            <upper>3</upper>
+            <effort>0</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
+        </axis>
+      </joint>
+      <link name='link6'>
+        <pose frame=''>0 -0 1.0205 1.5708 -0 0</pose>
+        <inertial>
+          <pose frame=''>1e-06 0.053967 0.031711 0 -0 0</pose>
+          <mass>0.36723</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <collision name='link6_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/link6.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link6_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/link6.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint6' type='revolute'>
+        <child>link6</child>
+        <parent>link5</parent>
+        <axis>
+          <xyz>0 -1 0</xyz>
+          <limit>
+            <lower>-1.93</lower>
+            <upper>1.93</upper>
+            <effort>0</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
+        </axis>
+      </joint>
+      <link name='link7'>
+        <pose frame=''>0 -0 1.1805 0 -0 0</pose>
+        <inertial>
+          <pose frame=''>-3e-06 -1e-05 0.08801 0 -0 0</pose>
+          <mass>0.27174</mass>
+          <inertia>
+            <ixx>3.00066</ixx>
+            <ixy>7.12401e-12</ixy>
+            <ixz>1.92285e-08</ixz>
+            <iyy>3.00066</iyy>
+            <iyz>-1.77072e-08</iyz>
+            <izz>3</izz>
+          </inertia>
+        </inertial>
+        <collision name='link7_collision'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/link7.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='link7_fixed_joint_lump__camera_link_collision_1'>
+          <pose frame=''>-0.07 0 0.1 1.5708 -0 1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_gazebo/meshes/d435.STL</uri>
+            </mesh>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <collision name='link7_fixed_joint_lump__ee_link_collision_2'>
+          <pose frame=''>0 0 0.0655 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/collision/ee_link.STL</uri>
+            </mesh>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='link7_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/link7.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='link7_fixed_joint_lump__camera_link_visual_1'>
+          <pose frame=''>-0.07 0 0.1 1.5708 -0 1.5708</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_gazebo/meshes/d435.STL</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>__default__</uri>
+              <name>__default__</name>
+            </script>
+          </material>
+        </visual>
+        <visual name='link7_fixed_joint_lump__ee_link_visual_2'>
+          <pose frame=''>0 0 0.0655 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/sdhm/catkin_ws/src/mantra_robot/mantra_description/meshes/visual/ee_link.STL</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <gravity>1</gravity>
+        <velocity_decay/>
+        <sensor name='camera' type='camera'>
+          <update_rate>30</update_rate>
+          <camera name='d435i'>
+            <horizontal_fov>1.0472</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.005</near>
+              <far>1.5</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0</mean>
+              <stddev>0.007</stddev>
+            </noise>
+          </camera>
+          <plugin name='camera_controller' filename='libgazebo_ros_camera.so'>
+            <alwaysOn>true</alwaysOn>
+            <updateRate>0.0</updateRate>
+            <cameraName>camera</cameraName>
+            <imageTopicName>color/image_raw</imageTopicName>
+            <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
+            <frameName>camera_link_optical</frameName>
+            <hackBaseline>0.07</hackBaseline>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+            <robotNamespace>/</robotNamespace>
+          </plugin>
+          <pose frame=''>-0.07 0 0.1 -3e-06 -1.57079 -3e-06</pose>
+        </sensor>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='joint7' type='revolute'>
+        <child>link7</child>
+        <parent>link6</parent>
+        <axis>
+          <xyz>0 0 -1</xyz>
+          <limit>
+            <lower>-3.5</lower>
+            <upper>3.5</upper>
+            <effort>0</effort>
+            <velocity>1</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+          <use_parent_model_frame>1</use_parent_model_frame>
+        </axis>
+      </joint>
+      <static>0</static>
+      <plugin name='gazebo_ros_control' filename='libgazebo_ros_control.so'>
+        <robotNamespace>/mantra</robotNamespace>
+        <legacyModeNS>true</legacyModeNS>
+        <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+      </plugin>
+      <pose frame=''>0 0 0 0 -0 0</pose>
+    </model>
+    <light name='user_spot_light_0' type='spot'>
+      <pose frame=''>0.56582 0.254309 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+      <attenuation>
+        <range>20</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <spot>
+        <inner_angle>0.6</inner_angle>
+        <outer_angle>1</outer_angle>
+        <falloff>1</falloff>
+      </spot>
+    </light>
+    <light name='user_spot_light_1' type='spot'>
+      <pose frame=''>0.051488 -4.60335 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+      <attenuation>
+        <range>20</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <spot>
+        <inner_angle>0.6</inner_angle>
+        <outer_angle>1</outer_angle>
+        <falloff>1</falloff>
+      </spot>
+    </light>
+    <light name='user_spot_light_2' type='spot'>
+      <pose frame=''>-4.55766 0.039409 1 0 -0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+      <direction>0 0 -1</direction>
+      <attenuation>
+        <range>20</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <spot>
+        <inner_angle>0.6</inner_angle>
+        <outer_angle>1</outer_angle>
+        <falloff>1</falloff>
+      </spot>
+    </light>
+    <state world_name='default'>
+      <sim_time>871 932000000</sim_time>
+      <real_time>136 536465828</real_time>
+      <wall_time>1608206983 15979635</wall_time>
+      <iterations>135290</iterations>
+      <model name='Marker1'>
+        <pose frame=''>0.436522 -0.011647 0 0 1.56816 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>0.436522 -0.011647 0 0 1.56816 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='ground_plane'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='mantra'>
+        <pose frame=''>0.005356 0.002173 0 -1e-06 -0 -0.090665</pose>
+        <scale>1 1 1</scale>
+        <link name='base_link'>
+          <pose frame=''>0.005356 0.002173 0 -1e-06 -0 -0.090665</pose>
+          <velocity>0 0 0.009786 -0.000222 0.000778 -6e-06</velocity>
+          <acceleration>0.035018 0.014822 19.5489 -0.280896 0.943931 -0.011565</acceleration>
+          <wrench>0.175092 0.074111 97.7443 0 -0 0</wrench>
+        </link>
+        <link name='link1'>
+          <pose frame=''>0.005356 0.002173 0.2005 0 -1e-06 -2.6698</pose>
+          <velocity>0.000157 4.3e-05 0.009787 -0.000183 0.000806 -0.000225</velocity>
+          <acceleration>0.240928 0.059885 9.77923 -0.182763 0.805587 -0.22503</acceleration>
+          <wrench>0.108381 0.026939 4.39919 0 -0 0</wrench>
+        </link>
+        <link name='link2'>
+          <pose frame=''>0.005356 0.002173 0.3705 1.5708 -1.00314 -2.6698</pose>
+          <velocity>0.000319 4e-05 0.009787 -0.001342 0.003153 -0.000222</velocity>
+          <acceleration>0.425858 0.075138 9.63472 1.79981 -0.011466 2.91931</acceleration>
+          <wrench>0.191572 0.033801 4.33418 0 -0 0</wrench>
+        </link>
+        <link name='link3'>
+          <pose frame=''>0.133035 0.067317 0.461902 0.943373 -0.413175 2.32593</pose>
+          <velocity>0.000643 0.000104 0.009294 -0.000808 0.003426 0.000144</velocity>
+          <acceleration>0.906996 0.177056 9.03245 2.33349 -0.284194 -2.99795</acceleration>
+          <wrench>0.356068 0.069509 3.54596 0 -0 0</wrench>
+        </link>
+        <link name='link4'>
+          <pose frame=''>0.253203 0.12863 0.547928 -2.94416 -0.713451 0.964167</pose>
+          <velocity>0.000951 0.00016 0.008828 -0.000768 0.003541 5e-06</velocity>
+          <acceleration>0.839477 0.13559 8.64047 2.37364 -0.398915 -3.13639</acceleration>
+          <wrench>0.308281 0.049793 3.17304 0 -0 0</wrench>
+        </link>
+        <link name='link5'>
+          <pose frame=''>0.39381 0.056059 0.524199 -1.97039 1.17969 -2.41948</pose>
+          <velocity>0.000888 0.000113 0.00838 0.001323 0.00246 -0.000348</velocity>
+          <acceleration>0.814429 0.112102 8.09276 -1.81811 0.681473 2.79352</acceleration>
+          <wrench>0.299083 0.041167 2.9719 0 -0 0</wrench>
+        </link>
+        <link name='link6'>
+          <pose frame=''>0.534418 -0.016511 0.50047 -1.20808 -0.143264 2.66728</pose>
+          <velocity>0.000821 7.2e-05 0.007931 0.000265 9.2e-05 0.000625</velocity>
+          <acceleration>0.842766 0.065269 7.92259 0.265492 0.091665 0.625111</acceleration>
+          <wrench>0.309489 0.023969 2.90941 0 -0 0</wrench>
+        </link>
+        <link name='link7'>
+          <pose frame=''>0.489489 -0.05726 0.352413 -2.86119 -0.272998 3.05992</pose>
+          <velocity>0.000845 6.6e-05 0.007919 7.6e-05 -8e-05 -1e-06</velocity>
+          <acceleration>0.85106 0.072342 7.91482 0.075692 -0.080326 -0.000856</acceleration>
+          <wrench>0.231267 0.019658 2.15077 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun'>
+        <pose frame=''>0 0 10 0 -0 0</pose>
+      </light>
+      <light name='user_spot_light_0'>
+        <pose frame=''>6.09498 0.033685 0.55544 3.14159 1.55821 3.14159</pose>
+      </light>
+      <light name='user_spot_light_1'>
+        <pose frame=''>-0.093685 -5.71929 1.64441 1.58813 -0 0</pose>
+      </light>
+      <light name='user_spot_light_2'>
+        <pose frame=''>-4.55275 0.039409 0.753891 3.14159 -1.56717 3.14159</pose>
+      </light>
+    </state>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose frame=''>2.29286 -1.29996 1.21772 -0 0.443644 2.33219</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <model name='Marker1'>
+      <static>1</static>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://marker1/meshes/Marker1.dae</uri>
+              <scale>0.2 0.2 0.2</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+      </link>
+      <pose frame=''>0.436522 -0.011647 0 0 -0 0</pose>
+    </model>
+  </world>
+</sdf>

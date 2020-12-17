@@ -31,6 +31,24 @@
         <joint name="joint6" value="-1.3512237203404176" />
         <joint name="joint7" value="-1.5725455212760495" />
     </group_state>
+    <group_state name="calib" group="arm">
+        <joint name="joint1" value="-0.15438432786662049" />
+        <joint name="joint2" value="-0.7255083125274591" />
+        <joint name="joint3" value="0.15587882433258507" />
+        <joint name="joint4" value="-0.9797626972167544" />
+        <joint name="joint5" value="0.17523057525048463" />
+        <joint name="joint6" value="-1.7146665340302192" />
+        <joint name="joint7" value="0.025986576903249917" />
+    </group_state>
+    <group_state name="calib1" group="arm">
+        <joint name="joint1" value="2.5792315119422784" />
+        <joint name="joint2" value="1.0031013799384922" />
+        <joint name="joint3" value="1.0744908339513946" />
+        <joint name="joint4" value="1.1522681799783325" />
+        <joint name="joint5" value="2.65701595074372" />
+        <joint name="joint6" value="-1.56487765244635" />
+        <joint name="joint7" value="0.40517742697564446" />
+    </group_state>
     <group_state name="rescon_right" group="arm">
         <joint name="joint1" value="-2.034"/>
         <joint name="joint2" value="0.581"/>

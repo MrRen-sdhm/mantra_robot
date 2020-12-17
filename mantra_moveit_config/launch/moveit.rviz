@@ -6,7 +6,6 @@ Panels:
       Expanded:
         - /TF1/Tree1
         - /MotionPlanning1
-        - /MotionPlanning1/Scene Robot1
         - /MotionPlanning1/Planning Request1
       Splitter Ratio: 0.521229863
     Tree Height: 517
@@ -47,8 +46,10 @@ Visualization Manager:
         All Enabled: false
         base_link:
           Value: true
-        camera:
+        camera_link:
           Value: false
+        camera_link_optical:
+          Value: true
         ee_link:
           Value: true
         link1:
@@ -79,8 +80,9 @@ Visualization Manager:
                   link5:
                     link6:
                       link7:
-                        camera:
-                          {}
+                        camera_link:
+                          camera_link_optical:
+                            {}
                         ee_link:
                           {}
       Update Interval: 0
@@ -123,11 +125,15 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          camera:
+          camera_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          camera_link_optical:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ee_link:
             Alpha: 1
             Show Axes: false
@@ -218,11 +224,15 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
-          camera:
+          camera_link:
             Alpha: 1
             Show Axes: false
             Show Trail: false
             Value: true
+          camera_link_optical:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
           ee_link:
             Alpha: 1
             Show Axes: false
@@ -284,25 +294,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 3.468575
+      Distance: 2.57168937
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.000713493675
-        Y: -0.0122833
-        Z: 0.242669314
+        X: 0.552710712
+        Y: -0.0542898811
+        Z: 0.752269864
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.459798574
+      Pitch: 0.00979820173
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 0.00538146961
+      Yaw: 4.57855988
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,0 +1,8 @@
+<launch>
+
+    <rosparam file="$(find mantra_gazebo)/config/trajectory_control.yaml" command="load"/>
+
+    <node name="mantra_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" ns="/mantra" args="arm_joint_controller"/>
+    
+</launch>

@@ -568,55 +568,66 @@ def Interpolation(time, pos, vel, acc):
     # # plt.savefig('Polynomial of degree five interpolation.pdf', dpi=600, bbox_inches='tight')
 
     #%% ************************** Comparison ***************************
-    plt.figure(figsize=(6, 10))
-    plt.subplot(3,1,1)
+    fig = plt.figure(figsize=(8, 8))
+    ticker_step = 1.0
+    plt.subplots_adjust(wspace=0.0, hspace=0.05) # 设置子图间距
+
+    ax1 = plt.subplot(3,1,1)
     plt.plot(t_given, q_given[:, 0], 'ro', label='given pos')
     plt.plot(t, linear_trajectory[:,0], 'k', label='linear')
     plt.plot(t, parabolic_trajectory[:,0], 'deepskyblue', label='parabolic')
     plt.plot(t, cubic_trajectory[:,0], 'limegreen', label='cubic')
     plt.plot(t, polynomial5_trajectory[:,0], 'm', label='poly 5')
     plt.grid('on')
-    plt.legend(loc='upper right')
-    plt.title('Comparison')
-    plt.xlabel('time (s)')
-    plt.ylabel('position (rad)')
+    plt.legend(loc='lower right')
+    plt.xlabel('time (s)', size=13)
+    plt.ylabel('position (rad)', size=13)
     plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
     plt.ylim(min(q_given[:,0]) - 0.1, max(q_given[:,0]) + 0.1)
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(ticker_step)) # 设置刻度密度
+    plt.gca().axes.xaxis.set_ticklabels([])
 
-    plt.subplot(3,1,2)
+    ax2 = plt.subplot(3,1,2)
     plt.plot(t_given, q_given[:, 1], 'rh', label='given vel')
     plt.plot(t, linear_trajectory[:,1], 'k', label='linear')
     plt.plot(t, parabolic_trajectory[:,1], 'deepskyblue', label='parabolic')
     plt.plot(t, cubic_trajectory[:,1], 'limegreen', label='cubic')
     plt.plot(t, polynomial5_trajectory[:,1], 'm', label='poly 5')
     plt.grid('on')
-    plt.legend(loc='upper right')
-    plt.xlabel('time (s)')
-    plt.ylabel('velocity (rad / s)')
+    plt.legend(loc='lower right')
+    plt.xlabel('time (s)', size=13)
+    plt.ylabel('velocity (rad / s)', size=13)
     plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(ticker_step)) # 设置刻度密度
+    plt.gca().axes.xaxis.set_ticklabels([])
 
-    plt.subplot(3,1,3)
+    ax3 = plt.subplot(3,1,3)
     plt.plot(t_given, q_given[:, 2], 'rd', label='given acc')
-    plt.plot(t, linear_trajectory[:,2], 'k', label='linear')
+    # plt.plot(t, linear_trajectory[:,2], 'k', label='linear')
     plt.plot(t, parabolic_trajectory[:,2], 'deepskyblue', label='parabolic')
     plt.plot(t, cubic_trajectory[:,2], 'limegreen', label='cubic')
     plt.plot(t, polynomial5_trajectory[:,2], 'm', label='poly 5')
     plt.grid('on')
     plt.legend(loc='upper right')
-    plt.xlabel('time (s)')
-    plt.ylabel('acceleration (rad / s$^{2}$)')
+    plt.xlabel('time (s)', size=13)
+    plt.ylabel('acceleration (rad / s$^{2}$)', size=13)
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(ticker_step)) # 设置刻度密度
     plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
 
+    fig.align_ylabels([ax1, ax2, ax3]) # 对齐标签
     plt.savefig('Comparison.svg', dpi=600, bbox_inches='tight')
     # plt.savefig('Comparison.pdf', dpi=600, bbox_inches='tight')
 
+    ax1.set_title('Comparison') # 不保存title
 
     plt.show()
 
 
 def plot(t_given, q_given, title, t_traj=None, traj=None):
     fig = plt.figure(figsize=(8, 8))
+    ticker_step = 1.0
     plt.subplots_adjust(wspace=0.0, hspace=0.05) # 设置子图间距
+
     ax1 = plt.subplot(3,1,1)
     plt.plot(t_given, q_given[:, 0], 'ro')
     # 显示插补轨迹
@@ -628,7 +639,7 @@ def plot(t_given, q_given, title, t_traj=None, traj=None):
     plt.ylabel('position (rad)', size=13)
     plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
     # plt.ylim(min(q_given[:, 0]) - 0.1, max(q_given[:, 0]) + 0.1)
-    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(1.0)) # 设置刻度密度
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(ticker_step)) # 设置刻度密度
     plt.gca().axes.xaxis.set_ticklabels([])
 
     ax2 = plt.subplot(3,1,2)
@@ -641,7 +652,7 @@ def plot(t_given, q_given, title, t_traj=None, traj=None):
     #plt.xlabel('time (s)')
     plt.ylabel('velocity (rad / s)', size=13)
     plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
-    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(1.0)) # 设置刻度密度
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(ticker_step)) # 设置刻度密度
     plt.gca().axes.xaxis.set_ticklabels([])
 
     ax3 = plt.subplot(3,1,3)
@@ -654,7 +665,7 @@ def plot(t_given, q_given, title, t_traj=None, traj=None):
     plt.grid('on')
     plt.xlabel('time (s)', size=13)
     plt.ylabel('acceleration (rad / s$^{2}$)', size=13)
-    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(1.0)) # 设置刻度密度
+    plt.gca().axes.xaxis.set_major_locator(ticker.MultipleLocator(ticker_step)) # 设置刻度密度
     plt.xlim(t_given[0]-0.5, t_given[-1]+0.5)
 
     fig.align_ylabels([ax1, ax2, ax3]) # 对齐标签
@@ -663,7 +674,7 @@ def plot(t_given, q_given, title, t_traj=None, traj=None):
 
     ax1.set_title(title) # 不保存title
 
-    plt.show()
+    # plt.show()
 
 
 class Demo:
