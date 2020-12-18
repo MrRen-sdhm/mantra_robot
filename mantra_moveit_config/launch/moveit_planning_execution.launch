@@ -1,4 +1,6 @@
 <launch>
+  <arg name="use_rviz" default="true"/>
+
   # The planning and execution components of MoveIt! configured to 
   # publish the current configuration of the robot (simulated or real)
   # and the current state of the world as seen by the planner
@@ -7,7 +9,7 @@
   </include>
 
   # The visualization component of MoveIt!
-  <include file="$(find mantra_moveit_config)/launch/moveit_rviz.launch">
+  <include if="$(arg use_rviz)" file="$(find mantra_moveit_config)/launch/moveit_rviz.launch">
     <arg name="config" value="true"/>
     <arg name="debug" value="false"/>
   </include>

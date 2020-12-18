@@ -11,7 +11,22 @@ catkin_make -j7
 
 
 
-#### 2、install vision-visp
+2、install opencv-python(v4.2)
+
+```
+sudo pip2 install opencv-python==4.2.0.32
+```
+
+for ros kinetic, should to uninstall opencv in `/opt/ros/kinetic/lib/python2.7/dist-packages/cv2.so` first:
+
+```
+sudo easy_install trash-cli
+sudo trash-put /opt/ros/kinetic/lib/python2.7/dist-packages/cv2.so
+```
+
+
+
+#### ~~2、install vision-visp~~
 
 Get [vision_visp](http://wiki.ros.org/vision_visp) stack:
 

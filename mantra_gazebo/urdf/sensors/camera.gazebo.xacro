@@ -11,7 +11,7 @@ This link is the base of the arm in which arm is placed
     <sensor type="camera" name="camera">
       <update_rate>30.0</update_rate>
       <camera name="d435i">
-        <horizontal_fov>1.047198</horizontal_fov>
+        <horizontal_fov>1.0</horizontal_fov>
         <!-- <horizontal_fov>0.95</horizontal_fov> -->
         <image>
           <width>640</width>
@@ -28,7 +28,7 @@ This link is the base of the arm in which arm is placed
                That pixel's noise value is added to each of its color
                channels, which at that point lie in the range [0,1]. -->
           <mean>0.0</mean>
-          <stddev>0.007</stddev>
+          <stddev>0.000</stddev> <!-- 0.007 -->
         </noise>
       </camera>
       <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
@@ -38,7 +38,7 @@ This link is the base of the arm in which arm is placed
         <imageTopicName>color/image_raw</imageTopicName>
         <cameraInfoTopicName>color/camera_info</cameraInfoTopicName>
         <frameName>camera_link_optical</frameName>
-        <hackBaseline>0.07</hackBaseline>
+        <hackBaseline>0.0</hackBaseline>  <!-- 0.07 -->
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
         <distortionK3>0.0</distortionK3>

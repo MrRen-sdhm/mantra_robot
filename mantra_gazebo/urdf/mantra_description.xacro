@@ -501,11 +501,11 @@
       link="ee_link" />
     <axis
       xyz="0 0 0" />
-    <limit
+    <!-- <limit
       lower="-1.85"
       upper="1.85"
       effort="100"
-      velocity="1" />
+      velocity="1" /> -->
   </joint>
 
   <!-- scene -->
