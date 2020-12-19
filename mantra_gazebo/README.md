@@ -1,7 +1,5 @@
 ## mantra_gazebo
 
-
-
 启动gazebo环境：
 
 ```bash
@@ -18,7 +16,22 @@ roslaunch mantra_gazebo mantra_moveit_gazebo.launch
 
 [Gazebo Moveit! 配置教程](https://www.guyuehome.com/2839)
 
-需要注意：xacro格式的URDF文件中，所有joint limit务必将`velocity="0"`改成`velocity="1"` ！！！
+URDF需要注意：
+
+1. xacro格式的URDF文件中，所有joint limit务必将`velocity="0"`改成`velocity="1"` ！！！否则无法控制机械臂运动（rviz中机械臂运动，但gazebo中不）
+
+2. 添加了fixed类型的关节，以确保机械臂底座不会移动
+
+   ```
+   <!-- Used for fixing robot to Gazebo 'base_link' -->
+   <link name="world"/>
+   <joint name="fixed" type="fixed">
+       <parent link="world"/>
+       <child link="base_link"/>
+   </joint>
+   ```
+
+   
 
 mantra_moveit_config中修改的内容：
 
@@ -57,3 +70,9 @@ camera.urdf.xacro文件底部可选择相机类型，可选彩色或深度相机
 ```
 
 实际使用时，**输出的图像在camera_link_optical坐标系下表示**
+
+
+
+Tips：
+
+1. world文件中不要保存机器人，即删除机器人后再保存world文件

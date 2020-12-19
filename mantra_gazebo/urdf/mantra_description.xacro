@@ -3,13 +3,20 @@
 <robot name="mantra" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="M_PI" value="3.1415926536"/>
 
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+  <joint name="fixed" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+
   <link
     name="base_link">
     <inertial>
       <origin
         xyz="5.69641035035705E-08 -7.52429850161379E-09 0.0534781808387783"
         rpy="0 0 0" />
-      <mass value="5" />  <!-- modified -->
+      <mass value="50" />  <!-- modified -->
       <!-- modified -->
       <inertia  
         ixx="1.0"
@@ -98,7 +105,7 @@
     <limit
       lower="-3.0"
       upper="3.0"
-      effort="0"
+      effort="100"
       velocity="1" />
   </joint>
   <link
@@ -156,7 +163,7 @@
     <limit
       lower="-1.930"
       upper="1.930"
-      effort="0"
+      effort="100"
       velocity="1" />
   </joint>
   <link
@@ -214,7 +221,7 @@
     <limit
       lower="-3.0"
       upper="3.0"
-      effort="0"
+      effort="100"
       velocity="1" />
   </joint>
   <link
@@ -272,7 +279,7 @@
     <limit
       lower="-1.880"
       upper="1.880"
-      effort="0"
+      effort="100"
       velocity="1" />
   </joint>
   <link
@@ -330,7 +337,7 @@
     <limit
       lower="-3.0"
       upper="3.0"
-      effort="0"
+      effort="100"
       velocity="1" />
   </joint>
   <link
@@ -388,7 +395,7 @@
     <limit
       lower="-1.930"
       upper="1.930"
-      effort="0"
+      effort="100"
       velocity="1" />
   </joint>
   <link
@@ -446,7 +453,7 @@
     <limit
       lower="-3.5"
       upper="3.5"
-      effort="0"
+      effort="100"
       velocity="1" />
   </joint>
   <link
@@ -456,7 +463,7 @@
         xyz="-1.6239E-06 -8.3885E-06 0.073334"
         rpy="0 0 0" />
       <mass
-        value="0.13129" />
+        value="0.013129" />
       <inertia  
         ixx="1.0"
         ixy="0.0"
@@ -501,11 +508,11 @@
       link="ee_link" />
     <axis
       xyz="0 0 0" />
-    <!-- <limit
+    <limit
       lower="-1.85"
       upper="1.85"
       effort="100"
-      velocity="1" /> -->
+      velocity="1" />
   </joint>
 
   <!-- scene -->

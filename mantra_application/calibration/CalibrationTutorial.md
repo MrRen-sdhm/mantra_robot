@@ -84,8 +84,19 @@ cd ~/catkin_ws rosdep install -iyr --from-paths src build catkin build
 
 #### 4、Start calibration
 
+real:
+
 ```
 roslaunch mantra_application eye_on_hand_calibration.launch
+```
+
+
+
+sim:
+
+```
+roslaunch mantra_application eye_on_hand_calibration_gazebo.launch
+rosrun mantra_application calib_auto_move_and_sample.py
 ```
 
 
