@@ -1,10 +1,12 @@
 <launch>
+    <arg name="gazebo" default="false" />
     <arg name="moveit_controller_manager" default="moveit_simple_controller_manager/MoveItSimpleControllerManager" />
+
     <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
 
     <!-- loads ros_controllers to the param server -->
     <rosparam file="$(find mantra_moveit_config)/config/controllers.yaml"/>
 
     <!-- gazebo -->
-    <rosparam file="$(find mantra_moveit_config)/config/controllers_gazebo.yaml"/>
+    <rosparam if="$(arg gazebo)" file="$(find mantra_moveit_config)/config/controllers_gazebo.yaml"/>
 </launch>

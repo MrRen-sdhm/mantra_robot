@@ -422,8 +422,8 @@ if __name__ == "__main__":
       try: # 仅保存计算成功的(有些算法计算出来的结果会有nan)
         trans, quat = mantra_pickup.compute_calibration('OpenCV/' + algo)
         t_e_c = trans_quat_to_mat44(trans, quat)
-        print "\nresult of %s:" % algo, trans, quat
         np.savetxt(path + "/data/t_e_c_%s.txt" % algo, t_e_c)
+        print "\nresult of %s:" % algo, trans, quat
       except:
         pass
 

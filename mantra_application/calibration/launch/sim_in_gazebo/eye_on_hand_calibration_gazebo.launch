@@ -51,8 +51,8 @@
         <arg name="robot_acceleration_scaling" value="0.2" />
     </include>
 
-    <!-- t_c_m
-    - Translation: [-0.070, 0.000, 0.034]
+    <!-- t_e_c
+    - Translation: [-0.070, 0.000, 0.0345]
     - Rotation: in Quaternion [0.000, -0.000, -0.707, 0.707]
                 in RPY (radian) [0.000, -0.000, -1.571]
                 in RPY (degree) [0.000, -0.000, -90.000] -->
