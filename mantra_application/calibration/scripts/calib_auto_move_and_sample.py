@@ -39,6 +39,13 @@ from easy_handeye_msgs import srv
 path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))  # 上级目录
 
 
+# def trans_quat_to_mat44(trans, quat):
+#   # 平移及四元数数组转齐次变换矩阵
+#   trans = translation_matrix(trans)
+#   mat44 = quaternion_matrix(quat)
+#   mat44[:, 3] = trans[:, 3]
+#   return mat44
+
 def trans_quat_to_mat44(trans, quat):
   # 平移及四元数数组转齐次变换矩阵
   trans = translation_matrix(trans)
@@ -208,12 +215,12 @@ class aruco_pix_listener:
 
 
 class MantraPickup:
-  def __init__(self, handeye_client):
+  def __init__(self, handeye_client, mode):
     # 初始化move_group的API
     moveit_commander.roscpp_initialize(sys.argv)
 
     # 初始化ROS节点
-    rospy.init_node('moveit_cartesian_demo', anonymous=True)
+    rospy.init_node('demo', anonymous=True)
                     
     # 初始化需要使用move group控制的机械臂中的arm group
     arm = MoveGroupCommander('arm')
@@ -229,7 +236,11 @@ class MantraPickup:
     # 设置位置(单位：米)和姿态（单位：弧度）的允许误差
     arm.set_goal_position_tolerance(0.0001)
     arm.set_goal_orientation_tolerance(0.0001)
-    arm.set_max_velocity_scaling_factor(1.0)
+    
+    if mode == "sim":
+      arm.set_max_velocity_scaling_factor(1.0)
+    elif mode == "real":
+      arm.set_max_velocity_scaling_factor(0.5)
 
     arm.set_planning_time(0.05) # 规划时间限制
     
@@ -250,43 +261,75 @@ class MantraPickup:
 
     # self.go_to_joint_state([2.5228, 0.8964, 0.9746, 0.8614, 2.7515, -1.8821, 0.1712])
 
+    self.mode = mode
     self.listener = tf.TransformListener()
     self.handeye_client = handeye_client
     self.im_converter = image_converter()
     self.aruco_pix_listener = aruco_pix_listener()
     self.data_num = 0
 
-    self.states = [
-      [2.5230, 0.8961, 0.9750, 0.8609, 2.7510, -1.8819, 0.1710],
-      [2.4861, 0.9171, 0.9988, 0.8576, 2.8072, -1.8743, 0.1717],
-      [2.5231, 0.8961, 0.9738, 0.8604, 2.7517, -1.8818, 0.1700],
-      [2.4003, 0.7911, 0.9820, 1.0503, 2.8352, -1.6524, 0.3760],
-      [2.5049, 0.9006, 0.9405, 0.8542, 2.8436, -1.8724, 0.4127],
-      [2.6273, 0.8107, 0.9139, 0.9618, 2.7511, -1.7930, 0.5062],
-      [2.7162, 0.8069, 0.8263, 0.9200, 2.7147, -1.8470, 0.7433],
-      [2.7065, 0.8050, 0.8584, 0.9477, 2.4444, -1.8806, 0.1071],
-      [2.2901, 0.7806, 1.0289, 1.2211, 2.7996, -1.7092, 0.1444],
-      [2.1136, 0.7398, 1.0706, 1.2892, 2.7842, -1.5650, -0.0094],
-      [2.7180, 0.7731, 1.0472, 1.2663, 2.4937, -1.7672, 0.5462],
-      [2.7180, 0.7731, 1.0472, 1.2663, 2.4937, -1.7672, 0.5462],
-      [2.6515, 0.6861, 1.0594, 1.4848, 2.5607, -1.5177, 0.8066],
-      [2.7958, 0.8070, 0.9759, 1.2940, 2.4786, -1.6845, 0.7778],
-      [2.8772, 0.7243, 0.9153, 1.4943, 2.3478, -1.4724, 1.0759],
-      [2.3152, 0.8412, 1.1005, 1.1974, 2.5480, -1.6883, 0.2808],
-      [2.0790, 0.8522, 1.0670, 1.6003, 2.6245, -1.2628, 0.5669],
-      [2.1475, 1.0192, 1.0940, 1.3640, 2.6444, -1.3627, 0.3612],
+    if mode == "sim":
+      self.camera_link = "camera_link_optical"
+      self.states = [
+        [2.5230, 0.8961, 0.9750, 0.8609, 2.7510, -1.8819, 0.1710],
+        [2.4861, 0.9171, 0.9988, 0.8576, 2.8072, -1.8743, 0.1717],
+        [2.5231, 0.8961, 0.9738, 0.8604, 2.7517, -1.8818, 0.1700],
+        [2.4003, 0.7911, 0.9820, 1.0503, 2.8352, -1.6524, 0.3760],
+        [2.5049, 0.9006, 0.9405, 0.8542, 2.8436, -1.8724, 0.4127],
+        [2.6273, 0.8107, 0.9139, 0.9618, 2.7511, -1.7930, 0.5062],
+        [2.7162, 0.8069, 0.8263, 0.9200, 2.7147, -1.8470, 0.7433],
+        [2.7065, 0.8050, 0.8584, 0.9477, 2.4444, -1.8806, 0.1071],
+        [2.2901, 0.7806, 1.0289, 1.2211, 2.7996, -1.7092, 0.1444],
+        [2.1136, 0.7398, 1.0706, 1.2892, 2.7842, -1.5650, -0.0094],
+        [2.7180, 0.7731, 1.0472, 1.2663, 2.4937, -1.7672, 0.5462],
+        [2.7180, 0.7731, 1.0472, 1.2663, 2.4937, -1.7672, 0.5462],
+        [2.6515, 0.6861, 1.0594, 1.4848, 2.5607, -1.5177, 0.8066],
+        [2.7958, 0.8070, 0.9759, 1.2940, 2.4786, -1.6845, 0.7778],
+        [2.8772, 0.7243, 0.9153, 1.4943, 2.3478, -1.4724, 1.0759],
+        [2.3152, 0.8412, 1.1005, 1.1974, 2.5480, -1.6883, 0.2808],
+        [2.0790, 0.8522, 1.0670, 1.6003, 2.6245, -1.2628, 0.5669],
+        [2.1475, 1.0192, 1.0940, 1.3640, 2.6444, -1.3627, 0.3612],
 
-      [0.2200, -0.5008, -2.8969, 1.7277, 2.6600, -1.1654, 1.5059],
-      [0.4877, -0.7181, -0.2344, -1.3239, -0.1559, -1.4678, 0.5835],
-      [0.3773, -0.6314, -0.2302, -1.4444, -0.1600, -1.3351, 0.4067],
-      [-2.2371, 1.3616, 1.5669, -1.2129, 0.9923, -1.8344, -0.1351],
-      [-2.3273, 1.3885, 1.5713, -0.9358, 1.0748, -1.9300, 0.5635],
-      [-2.2465, 1.2267, 1.8483, -1.0450, 0.7416, -1.6672, 0.3275],
-      [-1.7879, 1.2150, 1.6576, -1.5896, 0.7221, -1.4276, 0.6940],
-      [-2.2530, 1.0939, 1.8129, -1.3149, 0.7196, -1.6466, 0.4342],
-      [-2.1126, 1.1457, 1.7960, -1.2610, 0.6560, -1.6326, 0.4547],
-      [-2.1270, 1.2311, 1.8561, -1.0124, 0.5739, -1.8181, 0.4290],
-    ]
+        [0.2200, -0.5008, -2.8969, 1.7277, 2.6600, -1.1654, 1.5059],
+        [0.4877, -0.7181, -0.2344, -1.3239, -0.1559, -1.4678, 0.5835],
+        [0.3773, -0.6314, -0.2302, -1.4444, -0.1600, -1.3351, 0.4067],
+        [-2.2371, 1.3616, 1.5669, -1.2129, 0.9923, -1.8344, -0.1351],
+        [-2.3273, 1.3885, 1.5713, -0.9358, 1.0748, -1.9300, 0.5635],
+        [-2.2465, 1.2267, 1.8483, -1.0450, 0.7416, -1.6672, 0.3275],
+        [-1.7879, 1.2150, 1.6576, -1.5896, 0.7221, -1.4276, 0.6940],
+        [-2.2530, 1.0939, 1.8129, -1.3149, 0.7196, -1.6466, 0.4342],
+        [-2.1126, 1.1457, 1.7960, -1.2610, 0.6560, -1.6326, 0.4547],
+        [-2.1270, 1.2311, 1.8561, -1.0124, 0.5739, -1.8181, 0.4290],
+      ]
+    elif mode == "real":
+      self.camera_link = "camera_color_optical_frame"
+      self.states = [
+        [-0.1629, -0.1209, -0.0899, -0.6650, 0.1250, -1.9180, -1.7391],
+        [0.1768, -0.2480, -0.0637, -0.6867, -0.2229, -1.8912, -1.2967],
+        [0.1064, -0.0347, -0.0530, -1.1423, -0.0809, -1.5052, -1.6230],
+        [0.4235, -0.0861, -0.1177, -1.1818, -0.2675, -1.4303, -1.5148],
+        [0.4016, -0.0026, -0.0992, -1.2851, -0.3538, -1.4122, -1.5428],
+        [0.2777, -0.0294, -0.1911, -1.2395, -0.0141, -1.3563, -2.0564],
+        [2.9142, 0.1833, -2.7987, -1.0661, -0.0965, -1.4191, -1.8634],
+        [2.8310, -0.1007, -2.8406, -1.3918, 0.0263, -1.2798, -1.8718],
+        [2.6899, -0.0448, -2.9686, -1.3379, 0.2609, -1.3600, -2.1981],
+        [2.7554, -0.2997, -2.5511, -1.5645, -0.2672, -1.2493, -1.5705],
+        [2.7252, 0.2366, -2.6045, -0.9946, -0.2552, -1.5880, -1.2153],
+        [2.3309, 0.2733, -2.6384, -1.1497, 0.2391, -1.3979, -1.6642],
+        [2.1696, 0.5283, -2.6540, -0.8638, 0.3913, -1.5963, -1.8724],
+        [2.2318, 0.5134, -2.7120, -0.8413, 0.3381, -1.6116, -1.6351],
+        [2.3469, 0.5802, -2.7714, -0.6768, 0.2250, -1.7614, -1.4197],
+        [2.3452, 0.4840, -2.7232, -0.8959, 0.2437, -1.5798, -1.5464],
+        [2.3888, 0.3196, -2.7301, -1.1076, 0.1213, -1.4436, -1.5656],
+        [2.5365, 0.7079, -2.6854, -0.5944, 0.1202, -1.7089, -1.5256],
+        [2.3243, 0.5048, -2.5923, -1.0267, 0.1985, -1.3861, -1.6988],
+        [2.6772, 0.3100, -2.6433, -1.0222, -0.1752, -1.4295, -1.1358],
+        [2.5951, 0.3157, -2.5408, -1.0630, -0.2109, -1.3997, -1.1196],
+        [2.5800, 0.3364, -2.4705, -1.0478, -0.2944, -1.4289, -1.6568],
+        [2.7948, 0.3616, -2.5705, -1.0294, -0.4474, -1.5064, -0.9428],
+        [2.7595, 0.2951, -2.5461, -1.1454, -0.4809, -1.3790, -1.1017],
+      ]
+
 
   def lookup_transform(self, start, end):
     try:
@@ -329,27 +372,27 @@ class MantraPickup:
       self.display_sample_list(self.handeye_client.get_sample_list())
 
       # 保存原始图像
-      color_path = path + "/data/%06d.color.jpg" % self.data_num
+      color_path = path + "/data/%s/%06d.color.jpg" % (self.mode, self.data_num)
       cv2.imwrite(color_path, self.im_converter.cv_image_color, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
       # 保存坐标系可视化的图像
-      aruco_path = path + "/data/%06d.aruco.jpg" % self.data_num
+      aruco_path = path + "/data/%s/%06d.aruco.jpg" % (self.mode, self.data_num)
       cv2.imwrite(aruco_path, self.im_converter.cv_image_aruco, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
 
       # 保存marker中心点像素坐标
-      pix_path = path + "/data/%06d.pixel.txt" % self.data_num
+      pix_path = path + "/data/%s/%06d.pixel.txt" % (self.mode, self.data_num)
       np.savetxt(pix_path, self.aruco_pix_listener.aruco_pix)
 
       # 保存转换关系，保存为齐次变换矩阵， t_c_m表示从相机到标记的转换矩阵，即标记坐标系相对于相机坐标系的转换矩阵
       trans, quat = self.lookup_transform("base_link", "ee_link") # t_b_e
       t_b_e = trans_quat_to_mat44(trans, quat)
-      trans, quat = self.lookup_transform("camera_link_optical", "aruco_marker") # t_c_m
+      trans, quat = self.lookup_transform(self.camera_link, "aruco_marker") # t_c_m
       t_c_m = trans_quat_to_mat44(trans, quat)
 
-      t_b_e_path = path + "/data/%06d.t_b_e.txt" % self.data_num
+      t_b_e_path = path + "/data/%s/%06d.t_b_e.txt" % (self.mode, self.data_num)
       np.savetxt(t_b_e_path, t_b_e)
 
-      t_c_m_path = path + "/data/%06d.t_c_m.txt" % self.data_num
+      t_c_m_path = path + "/data/%s/%06d.t_c_m.txt" % (self.mode, self.data_num)
       np.savetxt(t_c_m_path, t_c_m)
 
       self.data_num += 1
@@ -372,6 +415,8 @@ class MantraPickup:
     trans = [translation.x, translation.y, translation.z]
     quat = [rotation.x, rotation.y, rotation.z, rotation.w]
 
+    print "[DEBUG]", trans, quat
+
     return trans, quat
 
   
@@ -384,8 +429,14 @@ class MantraPickup:
 
 
 if __name__ == "__main__":
+  mode = "sim" # ["sim", "real"]
+
   # 初始化easy_handeye手眼标定客户端
-  namespace = "/mantra_gazebo_eye_on_hand"  # 需根据手眼标定的配置来设置
+  if mode == "sim":
+    namespace = "/mantra_gazebo_eye_on_hand"  # 需根据手眼标定的配置来设置
+  elif mode == "real":
+    namespace = "/mantra_eye_on_hand"  # 需根据手眼标定的配置来设置
+
   handeye_client = HandeyeClient(namespace)
 
   if handeye_client.parameters.eye_on_hand:
@@ -398,16 +449,19 @@ if __name__ == "__main__":
   print('tracking target frame: {}'.format(handeye_client.parameters.tracking_marker_frame))
 
   # 确保运行标定时，样本数为0
-  # sample_num = len(handeye_client.get_sample_list().hand_world_samples)
+  sample_num = len(handeye_client.get_sample_list().hand_world_samples)
   # print sample_num
-  # if sample_num > 0:
-  #   range(sample_num-1,-1,-1): # 倒序删除
-  #     print "remove", i
-  #     handeye_client.remove_sample(i)
+  if sample_num > 0:
+    for i in range(sample_num-1,-1,-1): # 倒序删除
+      # print "remove", i
+      rospy.sleep(0.1)
+      handeye_client.remove_sample(i)
 
+  # print "result", len(handeye_client.get_sample_list().hand_world_samples)
+  # exit()
 
   try:
-    mantra_pickup = MantraPickup(handeye_client)
+    mantra_pickup = MantraPickup(handeye_client, mode)
 
     # 测试
     # mantra_pickup.take_sample()
@@ -418,17 +472,17 @@ if __name__ == "__main__":
 
     # 计算和保存标定结果
     algorithm_ls = ['Tsai-Lenz','Park','Horaud','Andreff','Daniilidis']
-    for algo in algorithm_ls:
+    for algo in algorithm_ls[:1]:
       try: # 仅保存计算成功的(有些算法计算出来的结果会有nan)
         trans, quat = mantra_pickup.compute_calibration('OpenCV/' + algo)
         t_e_c = trans_quat_to_mat44(trans, quat)
-        np.savetxt(path + "/data/t_e_c_%s.txt" % algo, t_e_c)
+        np.savetxt(path + "/data/%s/t_e_c_%s.txt" % (mode, algo), t_e_c)
         print "\nresult of %s:" % algo, trans, quat
       except:
         pass
 
     # 保存相机内参
-    camera_info_path = path + "/data/camera_info.txt"
+    camera_info_path = path + "/data/%s/camera_info.txt" % mode
     mantra_pickup.im_converter.save_camera_info(camera_info_path)
 
     # 关闭并退出moveit
@@ -441,3 +495,17 @@ if __name__ == "__main__":
     pass
 
 
+
+# sim
+# result of Tsai-Lenz: [-0.07160164560846347, -0.0011253596536365436, 0.031513237490110285] [-0.0004284022387325089, 0.0022777350290372755, -0.7063960978547398, 0.707812956458312]
+# result of Park: [-0.07160145637172599, -0.0011667813296825577, 0.03152371428276636] [-0.000177749527278495, 0.0020999935784514756, -0.7064286616916676, 0.7077811133200683]
+# result of Horaud: [-0.07160128768157017, -0.0011616251967257445, 0.031521509277004665] [-0.0001895128150157786, 0.002120060211031727, -0.7064282271194045, 0.7077814841874082]
+# result of Andreff: [-0.07205708963826246, -0.00032957470631941876, 0.034356712114669785] [-0.00025540544303507103, 0.0020301570432484928, -0.706446608980315, 0.70776337987399]
+# result of Daniilidis: [-0.07198965258711985, -0.0011606763930636893, 0.03156098228350543] [-0.0005500575954816343, 0.002079122054706506, -0.7065332113392672, 0.7076766182111326]
+
+# real
+# result of Tsai-Lenz: [-0.03748010130548035, -0.09629382866311062, 0.04867988527310136] [-0.011702659800261781, -0.0071545773494036125, 0.00602671853845912, 0.9998877629215235]
+# result of Park: [-0.03748018957186601, -0.09629620643608905, 0.048679186009584124] [-0.011707650774110142, -0.007171784589512509, 0.006035788327611953, 0.9998875265140661]
+# result of Horaud: [-0.03748156561747055, -0.09629465983236554, 0.04868020922790178] [-0.011705148838259499, -0.007153327365567064, 0.006033499169702405, 0.9998877018375837]
+# result of Andreff: [-0.036684769921625476, -0.09826050927410673, 0.06144543683136272] [-0.011585944497666967, -0.007361641666711494, 0.005729814681024802, 0.9998893645527933]
+# result of Daniilidis: [-0.037172288585535916, -0.09611992626082094, 0.04860023217490725] [-0.011604073612032877, -0.007543602738283028, 0.005313086830818958, 0.999890099281747]

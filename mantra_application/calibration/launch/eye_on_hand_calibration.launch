@@ -34,4 +34,9 @@
         <arg name="robot_acceleration_scaling" value="0.2" />
     </include>
 
+<!-- - Translation: [-0.030, -0.088, 0.053]
+- Rotation: in Quaternion [-0.006, -0.006, -0.002, 1.000]
+            in RPY (radian) [-0.013, -0.013, -0.004]
+            in RPY (degree) [-0.719, -0.746, -0.207] -->
+
 </launch>
