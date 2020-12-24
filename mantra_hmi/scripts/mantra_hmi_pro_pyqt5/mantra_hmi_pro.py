@@ -1058,17 +1058,17 @@ class MyWindow(QtWidgets.QWidget, Ui_Form):
         # 位置刷新显示
         if movel_m_cm_flag is 0:
             if curr_pose[0] < 0:
-                self.label_9.setText("Pose X (%.1f cm )" % float(curr_pose[0] * 100))
+                self.label_9.setText("Pose X (%.3f cm )" % float(curr_pose[0] * 100))
             else:
-                self.label_9.setText("Pose X ( %.1f cm )" % float(curr_pose[0] * 100))
+                self.label_9.setText("Pose X ( %.3f cm )" % float(curr_pose[0] * 100))
             if curr_pose[1] < 0:
-                self.label_10.setText("Pose Y (%.1f cm )" % float(curr_pose[1] * 100))
+                self.label_10.setText("Pose Y (%.3f cm )" % float(curr_pose[1] * 100))
             else:
-                self.label_10.setText("Pose Y ( %.1f cm )" % float(curr_pose[1] * 100))
+                self.label_10.setText("Pose Y ( %.3f cm )" % float(curr_pose[1] * 100))
             if curr_pose[2] < 0:
-                self.label_11.setText("Pose Z (%.1f cm )" % float(curr_pose[2] * 100))
+                self.label_11.setText("Pose Z (%.3f cm )" % float(curr_pose[2] * 100))
             else:
-                self.label_11.setText("Pose Z ( %.1f cm )" % float(curr_pose[2] * 100))
+                self.label_11.setText("Pose Z ( %.3f cm )" % float(curr_pose[2] * 100))
         else:
             if curr_pose[0] < 0:
                 self.label_9.setText("Pose X (%.3f m )" % float(curr_pose[0]))
