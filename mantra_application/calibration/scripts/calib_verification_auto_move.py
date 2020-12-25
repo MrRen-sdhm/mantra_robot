@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''
+根据发布的手眼转换矩阵，控制机械臂移动，使得标定钉对准二维码中心
+'''
+
 import time
 import thread
 import rospy, sys, tf
