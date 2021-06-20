@@ -1,0 +1,1 @@
+python ./generate_markers_model.py -i /home/sdhm/gazebo_models/ar_tags/images -g /home/sdhm/gazebo_models/ar_tags/model_new -s 100 -w 0
